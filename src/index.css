@@ -1,21 +1,21 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Work+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
-  /* Color: warm-neutral base, olive primary (brand-forward), green accent (--color-coral-* name kept for zero-diff reuse across components) */
-  --color-cream: #ffffff;
-  --color-cream-100: #f4ecdd;
-  --color-surface: #ffffff;
-  --color-ink: #211d16;
-  --color-ink-muted: #6b6558;
+  /* Color: warm cream base, muted olive-khaki primary, quiet/editorial (client-referenced palette) */
+  --color-cream: #f7f4ec;
+  --color-cream-100: #ebe3d2;
+  --color-surface: #fcfaf4;
+  --color-ink: #272c0f;
+  --color-ink-muted: #565745;
 
   --color-olive-50: #f2f4e9;
   --color-olive-100: #e2e8cb;
   --color-olive-300: #a8b878;
-  --color-olive-500: #5c7038;
-  --color-olive-600: #4a5a2c;
-  --color-olive-700: #3a4722;
-  --color-olive-900: #232b15;
+  --color-olive-500: #646e38;
+  --color-olive-600: #646e38;
+  --color-olive-700: #4a5a2c;
+  --color-olive-900: #272c0f;
 
   --color-coral-50: #eaf4ec;
   --color-coral-100: #d2e8d7;
@@ -23,13 +23,13 @@
   --color-coral-500: #2e6f40;
   --color-coral-600: #235630;
 
-  --color-border: #ece3d3;
+  --color-border: #dad4c6;
   --color-success: #2f855a;
   --color-warning: #b45309;
   --color-destructive: #c53030;
 
-  /* Type: bold confident headline sans + readable body sans */
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  /* Type: quiet editorial serif headlines (regular weight, italic for emphasis) + readable body sans */
+  --font-display: "Instrument Serif", "Cormorant Garamond", ui-serif, Georgia, serif;
   --font-body: "Work Sans", ui-sans-serif, system-ui, sans-serif;
 
   --text-xs: 0.75rem;
@@ -87,9 +87,20 @@
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-weight: 700;
+    font-weight: 400;
     letter-spacing: -0.02em;
-    line-height: 1.1;
+    line-height: 1;
+  }
+  h1 em, h2 em, h3 em, .eyebrow {
+    font-style: italic;
+  }
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
   }
   :focus-visible {
     outline: 2px solid var(--color-olive-500);

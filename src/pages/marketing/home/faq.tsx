@@ -30,6 +30,7 @@ function Faq() {
     <section id="faq" className="py-20 sm:py-28">
       <div className="mx-auto max-w-5xl px-5 sm:px-8">
         <div className="max-w-xl mb-12">
+          <p className="eyebrow mb-3">FAQ</p>
           <h2 className="text-3xl sm:text-4xl text-ink">Frequently asked questions</h2>
         </div>
         <div className="grid gap-x-10 gap-y-9 sm:grid-cols-2">
