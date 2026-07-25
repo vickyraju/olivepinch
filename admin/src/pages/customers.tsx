@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { Search } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { Header } from "@/components/header"
+import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { api } from "@/lib/api"
 import { ACCOUNT_STATUS_STYLES } from "@/lib/status-styles"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 
 interface CustomerRow {
   id: string
@@ -16,70 +15,109 @@ interface CustomerRow {
   createdAt: string
 }
 
+interface CustomersResponse {
+  customers: CustomerRow[]
+  page: number
+  totalPages: number
+  total: number
+}
+
 function Customers() {
   const [search, setSearch] = useState("")
-  const [customers, setCustomers] = useState<CustomerRow[]>([])
-  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
 
-  useEffect(() => {
-    setLoading(true)
-    const handle = setTimeout(() => {
-      api
-        .get<CustomerRow[]>(`/customers${search ? `?search=${encodeURIComponent(search)}` : ""}`)
-        .then(setCustomers)
-        .finally(() => setLoading(false))
-    }, 250)
-    return () => clearTimeout(handle)
-  }, [search])
+  useEffect(() => setPage(1), [search])
+
+  const customersQuery = useQuery({
+    queryKey: ["customers", search, page],
+    queryFn: () =>
+      api.get<CustomersResponse>(`/customers?page=${page}${search ? `&search=${encodeURIComponent(search)}` : ""}`),
+  })
+  const data = customersQuery.data
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl text-ink">Customers</h1>
-
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
-        <Input placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
-      </div>
-
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <p className="p-5 text-sm text-ink-muted">Loading…</p>
-          ) : customers.length === 0 ? (
-            <p className="p-5 text-sm text-ink-muted">No customers found.</p>
-          ) : (
-            <table className="w-full text-sm">
+    <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
+      <Header title="Customers" />
+      <div className="flex-1 overflow-y-auto p-8">
+        <div className="bg-white rounded-[12px] border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-gray-200 bg-gray-50/50">
+            <div className="relative w-full max-w-[320px]">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+              <input
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none"
+                placeholder="Search by name or email..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Name</th>
-                  <th className="px-5 py-2.5 font-medium">Email</th>
-                  <th className="px-5 py-2.5 font-medium">Postcode</th>
-                  <th className="px-5 py-2.5 font-medium">Status</th>
-                  <th className="px-5 py-2.5 font-medium">Joined</th>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Postcode</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
                 </tr>
               </thead>
-              <tbody>
-                {customers.map((c) => {
-                  const style = ACCOUNT_STATUS_STYLES[c.accountStatus]
-                  return (
-                    <tr key={c.id} className="border-b border-border last:border-0 hover:bg-cream-100">
-                      <td className="px-5 py-2.5">
-                        <Link to={`/customers/${c.id}`} className="text-ink font-medium hover:text-olive-600">
-                          {c.fullName}
-                        </Link>
-                      </td>
-                      <td className="px-5 py-2.5 text-ink-muted">{c.email}</td>
-                      <td className="px-5 py-2.5 text-ink-muted">{c.postcode ?? "—"}</td>
-                      <td className="px-5 py-2.5"><Badge className={style.className}>{style.label}</Badge></td>
-                      <td className="px-5 py-2.5 text-ink-muted">{new Date(c.createdAt).toLocaleDateString("en-GB")}</td>
-                    </tr>
-                  )
-                })}
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {customersQuery.isLoading ? <TableSkeleton columns={5} /> : null}
+                {!customersQuery.isLoading &&
+                  (data?.customers ?? []).map((c) => {
+                    const style = ACCOUNT_STATUS_STYLES[c.accountStatus]
+                    return (
+                      <tr key={c.id} className="hover:bg-gray-50/50">
+                        <td className="py-4 px-6">
+                          <Link to={`/customers/${c.id}`} className="font-semibold text-gray-900 hover:text-primary transition-colors">
+                            {c.fullName}
+                          </Link>
+                        </td>
+                        <td className="py-4 px-6 text-gray-600">{c.email}</td>
+                        <td className="py-4 px-6 text-gray-600">{c.postcode ?? "—"}</td>
+                        <td className="py-4 px-6">
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>{style.label}</span>
+                        </td>
+                        <td className="py-4 px-6 text-gray-600">{new Date(c.createdAt).toLocaleDateString("en-GB")}</td>
+                      </tr>
+                    )
+                  })}
+                {!customersQuery.isLoading && (data?.customers ?? []).length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-10 text-center text-sm text-gray-400">
+                      No customers found.
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </table>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+          {data && data.totalPages > 1 ? (
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+              <p className="text-sm text-gray-500">
+                Page {data.page} of {data.totalPages} · {data.total} customers
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={data.page === 1}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 transition-colors cursor-pointer"
+                >
+                  Prev
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+                  disabled={data.page === data.totalPages}
+                  className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-40 transition-colors cursor-pointer"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   )
 }

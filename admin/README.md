@@ -1,10 +1,10 @@
 # OlivePinch Admin Panel
 
-Internal ops tool for the OlivePinch pilot — menu, zones, customer support, order status, and revenue. Structurally adapted from the Alhaji Foods Agent admin panel (same auth-context/API-client/layout pattern), rebuilt in OlivePinch's design system and wired to the OlivePinch API instead of Supabase.
+Internal ops tool for the OlivePinch pilot — menu, zones, customer support, order status, and revenue. Visual system (colors, typography, icons, card/table/modal chrome, loading skeletons) is a direct port of the Alhaji Foods Agent admin panel, by request — same UI/UX, different business: business logic and data model follow the OlivePinch PRD, not Alhaji's (no stock/agents/fleet/commission concepts).
 
 ## Stack
 
-Vite + React + TypeScript + Tailwind v4, plain `fetch` against the OlivePinch backend (no React Query / Supabase — this panel is small enough not to need them). Separate Vite project from both the customer app and the API server, matching the PRD's system-components split (§4).
+Vite + React + TypeScript + Tailwind v4, React Query for data fetching, `fetch` against the OlivePinch backend (no Supabase — auth is our own JWT). Material Symbols Outlined + Inter (Google Fonts), matching Alhaji's icon/type system exactly rather than OlivePinch's own Outfit/Work Sans + Lucide brand. Separate Vite project from both the customer app and the API server, matching the PRD's system-components split (§4).
 
 ## Setup
 
@@ -25,11 +25,11 @@ Requires the `server/` API running (see `../server/README.md`) with `CORS_ORIGIN
 | Dashboard | FR-A06 — daily/weekly revenue, CSV export |
 | Order Board | FR-A07 — per-day order list, manual status updates (kitchen/delivery are off-platform) |
 | Menu Control | FR-A01/FR-A02 — menu item CRUD, daily capacity |
-| Customers (list + detail) | FR-A04/FR-A05 — search, subscription/payment history, pause override, refund, reactivation |
+| Customers (list + detail) | FR-A04/FR-A05 — search (paginated), subscription/payment history, pause override, refund, reactivation, support-action audit log |
 | Zones | FR-A03 — postcode/zone eligibility |
+| Admin Users | Invite/remove other admins (any logged-in admin can; blocked from removing yourself or the last remaining admin) |
 
 ## What's deferred
 
-- No admin-side audit log of support actions (pause overrides, refunds, reactivations aren't recorded with a reason/actor) — add an `AdminAuditLog` table if that's needed for compliance.
-- No pagination on the customer list (`GET /admin/customers` caps at 50) — fine for a pilot, needs proper paging before the customer base grows.
-- Admin users are seed-only — no self-service admin invite/create flow.
+- Admin invites are in-panel only — no email-based invite flow; the inviter just hands the new admin their temporary password directly.
+- Support-action audit log records action/customer/admin/timestamp, not a free-text reason — add a reason field if compliance needs one.

@@ -1,13 +1,10 @@
-import { useEffect, useState, useCallback } from "react"
+import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
-import { ArrowLeft, RotateCcw, Undo2, PauseCircle } from "lucide-react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { Header } from "@/components/header"
 import { api, ApiError } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { ACCOUNT_STATUS_STYLES } from "@/lib/status-styles"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 
 interface Subscription {
   id: string
@@ -38,18 +35,41 @@ interface CustomerDetail {
   payments: Payment[]
 }
 
+interface AuditLogEntry {
+  id: string
+  action: string
+  detail: string | null
+  createdAt: string
+  admin: { name: string; email: string }
+}
+
+const AUDIT_ACTION_LABELS: Record<string, string> = {
+  "pause-override": "Pause override",
+  refund: "Refund",
+  reactivate: "Reactivate",
+}
+
 function CustomerDetail() {
   const { id } = useParams<{ id: string }>()
-  const [customer, setCustomer] = useState<CustomerDetail | null>(null)
+  const queryClient = useQueryClient()
   const [error, setError] = useState("")
   const [pauseDate, setPauseDate] = useState("")
 
-  const load = useCallback(() => {
-    if (!id) return
-    api.get<CustomerDetail>(`/customers/${id}`).then(setCustomer)
-  }, [id])
+  const customerQuery = useQuery({
+    queryKey: ["customer", id],
+    queryFn: () => api.get<CustomerDetail>(`/customers/${id}`),
+  })
+  const customer = customerQuery.data
 
-  useEffect(load, [load])
+  const auditLogQuery = useQuery({
+    queryKey: ["customer", id, "audit-log"],
+    queryFn: () => api.get<AuditLogEntry[]>(`/customers/${id}/audit-log`),
+  })
+
+  function invalidate() {
+    // Prefix match — also invalidates ["customer", id, "audit-log"]
+    return queryClient.invalidateQueries({ queryKey: ["customer", id] })
+  }
 
   async function pauseOverride(subscriptionId: string) {
     if (!pauseDate) return setError("Pick a date to pause first.")
@@ -57,7 +77,7 @@ function CustomerDetail() {
     try {
       await api.post(`/customers/${id}/pause-override`, { subscriptionId, date: pauseDate })
       setPauseDate("")
-      load()
+      await invalidate()
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not pause that date.")
     }
@@ -66,124 +86,207 @@ function CustomerDetail() {
   async function refund(paymentId: string) {
     if (!confirm("Mark this payment as refunded?")) return
     await api.post(`/customers/${id}/refund`, { paymentId })
-    load()
+    await invalidate()
   }
 
   async function reactivate() {
     await api.post(`/customers/${id}/reactivate`)
-    load()
+    await invalidate()
   }
 
-  if (!customer) return <p className="text-sm text-ink-muted">Loading…</p>
+  if (customerQuery.isLoading || !customer) {
+    return (
+      <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
+        <Header title="Customer" />
+        <div className="flex-1 flex items-center justify-center">
+          <span className="material-symbols-outlined text-gray-400 animate-spin text-3xl">progress_activity</span>
+        </div>
+      </div>
+    )
+  }
 
   const style = ACCOUNT_STATUS_STYLES[customer.accountStatus]
   const activeSub = customer.subscriptions.find((s) => s.status === "ACTIVE" || s.status === "PENDING_PAYMENT")
 
   return (
-    <div className="space-y-6">
-      <Link to="/customers" className="inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-ink">
-        <ArrowLeft className="h-4 w-4" /> Back to customers
-      </Link>
+    <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
+      <Header title={customer.fullName} />
+      <div className="flex-1 overflow-y-auto p-8 space-y-6">
+        <Link to="/customers" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span> Back to customers
+        </Link>
 
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl text-ink">{customer.fullName}</h1>
-          <p className="text-sm text-ink-muted">{customer.email}</p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 className="text-[20px] font-bold text-gray-900">{customer.fullName}</h2>
+            <p className="text-sm text-gray-500">{customer.email}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>{style.label}</span>
+            {customer.accountStatus !== "ACTIVE" ? (
+              <button
+                onClick={reactivate}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">restart_alt</span> Reactivate
+              </button>
+            ) : null}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge className={style.className}>{style.label}</Badge>
-          {customer.accountStatus !== "ACTIVE" && (
-            <Button size="sm" variant="outline" onClick={reactivate}>
-              <RotateCcw className="h-3.5 w-3.5" /> Reactivate
-            </Button>
-          )}
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
+            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Age</p>
+            <p className="text-gray-900 font-semibold">{customer.age ?? "—"}</p>
+          </div>
+          <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
+            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Postcode</p>
+            <p className="text-gray-900 font-semibold">{customer.postcode ?? "—"}</p>
+          </div>
+          <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
+            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Address</p>
+            <p className="text-gray-900 font-semibold truncate">{customer.address ?? "—"}</p>
+          </div>
         </div>
-      </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card><CardContent><p className="text-xs text-ink-muted">Age</p><p className="text-ink font-medium">{customer.age ?? "—"}</p></CardContent></Card>
-        <Card><CardContent><p className="text-xs text-ink-muted">Postcode</p><p className="text-ink font-medium">{customer.postcode ?? "—"}</p></CardContent></Card>
-        <Card><CardContent><p className="text-xs text-ink-muted">Address</p><p className="text-ink font-medium truncate">{customer.address ?? "—"}</p></CardContent></Card>
-      </div>
-
-      <Card>
-        <CardHeader><CardTitle>Subscriptions</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-[16px] font-bold text-gray-900">Subscriptions</h3>
+          </div>
+          <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-ink-muted">
-                <th className="px-5 py-2.5 font-medium">Started</th>
-                <th className="px-5 py-2.5 font-medium">Length</th>
-                <th className="px-5 py-2.5 font-medium">Meals/day</th>
-                <th className="px-5 py-2.5 font-medium">Status</th>
-                <th className="px-5 py-2.5 font-medium">Paused days</th>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Started</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Length</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Meals/day</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Paused Days</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {customer.subscriptions.map((s) => (
-                <tr key={s.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-2.5 text-ink">{new Date(s.startDate).toLocaleDateString("en-GB")}</td>
-                  <td className="px-5 py-2.5 text-ink-muted">{s.planDuration} days</td>
-                  <td className="px-5 py-2.5 text-ink-muted">{s.mealsPerDay}</td>
-                  <td className="px-5 py-2.5 text-ink-muted">{s.status}</td>
-                  <td className="px-5 py-2.5 text-ink-muted">{s.pausedDates.length}</td>
+                <tr key={s.id}>
+                  <td className="py-3 px-6 text-gray-900">{new Date(s.startDate).toLocaleDateString("en-GB")}</td>
+                  <td className="py-3 px-6 text-gray-600">{s.planDuration} days</td>
+                  <td className="py-3 px-6 text-gray-600">{s.mealsPerDay}</td>
+                  <td className="py-3 px-6 text-gray-600">{s.status}</td>
+                  <td className="py-3 px-6 text-gray-600">{s.pausedDates.length}</td>
                 </tr>
               ))}
+              {customer.subscriptions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-sm text-gray-400">
+                    No subscriptions yet.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
+        </div>
 
-      {activeSub && (
-        <Card>
-          <CardHeader><CardTitle>Support: pause override</CardTitle></CardHeader>
-          <CardContent>
-            <p className="text-xs text-ink-muted mb-3">Bypasses the customer's 4-pauses-per-month cap for support cases.</p>
+        {activeSub ? (
+          <div className="bg-white border border-gray-200 rounded-[12px] p-6">
+            <h3 className="text-[16px] font-bold text-gray-900 mb-1">Support: Pause Override</h3>
+            <p className="text-sm text-gray-500 mb-4">Bypasses the customer's 4-pauses-per-month cap for support cases.</p>
             <div className="flex items-end gap-3">
               <div>
-                <label className="text-xs font-medium text-ink-muted block mb-1.5" htmlFor="pause-date">Date</label>
-                <Input id="pause-date" type="date" value={pauseDate} onChange={(e) => setPauseDate(e.target.value)} />
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5" htmlFor="pause-date">
+                  Date
+                </label>
+                <input
+                  id="pause-date"
+                  type="date"
+                  className="h-10 border border-gray-200 rounded-lg px-3 text-sm"
+                  value={pauseDate}
+                  onChange={(e) => setPauseDate(e.target.value)}
+                />
               </div>
-              <Button size="sm" onClick={() => pauseOverride(activeSub.id)}>
-                <PauseCircle className="h-3.5 w-3.5" /> Pause that day
-              </Button>
+              <button
+                onClick={() => pauseOverride(activeSub.id)}
+                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer h-10"
+              >
+                <span className="material-symbols-outlined text-[16px]">pause_circle</span> Pause That Day
+              </button>
             </div>
-            {error && <p role="alert" className="mt-2 text-sm text-destructive">{error}</p>}
-          </CardContent>
-        </Card>
-      )}
+            {error ? <p role="alert" className="mt-2 text-sm text-status-red">{error}</p> : null}
+          </div>
+        ) : null}
 
-      <Card>
-        <CardHeader><CardTitle>Payments</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <table className="w-full text-sm">
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-[16px] font-bold text-gray-900">Payments</h3>
+          </div>
+          <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-ink-muted">
-                <th className="px-5 py-2.5 font-medium">Date</th>
-                <th className="px-5 py-2.5 font-medium">Amount</th>
-                <th className="px-5 py-2.5 font-medium">Status</th>
-                <th className="px-5 py-2.5 font-medium" />
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-100">
               {customer.payments.map((p) => (
-                <tr key={p.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-2.5 text-ink">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
-                  <td className="px-5 py-2.5 text-ink font-medium">{formatGBP(Number(p.amount))}</td>
-                  <td className="px-5 py-2.5 text-ink-muted">{p.status}</td>
-                  <td className="px-5 py-2.5 text-right">
-                    {p.status === "succeeded" && (
-                      <button onClick={() => refund(p.id)} className="inline-flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 cursor-pointer">
-                        <Undo2 className="h-3.5 w-3.5" /> Refund
+                <tr key={p.id}>
+                  <td className="py-3 px-6 text-gray-900">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
+                  <td className="py-3 px-6 text-gray-900 font-semibold">{formatGBP(Number(p.amount))}</td>
+                  <td className="py-3 px-6 text-gray-600">{p.status}</td>
+                  <td className="py-3 px-6 text-right">
+                    {p.status === "succeeded" ? (
+                      <button
+                        onClick={() => refund(p.id)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">undo</span> Refund
                       </button>
-                    )}
+                    ) : null}
                   </td>
                 </tr>
               ))}
+              {customer.payments.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
+                    No payments yet.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-[16px] font-bold text-gray-900">Support Action History</h3>
+          </div>
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Admin</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Detail</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {(auditLogQuery.data ?? []).map((entry) => (
+                <tr key={entry.id}>
+                  <td className="py-3 px-6 text-gray-900">{new Date(entry.createdAt).toLocaleString("en-GB")}</td>
+                  <td className="py-3 px-6 text-gray-900 font-semibold">{AUDIT_ACTION_LABELS[entry.action] ?? entry.action}</td>
+                  <td className="py-3 px-6 text-gray-600">{entry.admin.name}</td>
+                  <td className="py-3 px-6 text-gray-600">{entry.detail ?? "—"}</td>
+                </tr>
+              ))}
+              {(auditLogQuery.data ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
+                    No support actions recorded yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   )
 }

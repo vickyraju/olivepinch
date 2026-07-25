@@ -1,14 +1,13 @@
 import { Navigate, Outlet } from "react-router-dom"
-import { Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 
-function ProtectedRoute() {
+export function ProtectedRoute() {
   const { isLoading, isAuthenticated } = useAuth()
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-cream-100">
-        <Loader2 className="h-6 w-6 animate-spin text-olive-600" />
+      <div className="min-h-screen flex items-center justify-center bg-page-bg">
+        <span className="material-symbols-outlined text-gray-400 animate-spin text-3xl">progress_activity</span>
       </div>
     )
   }
@@ -17,5 +16,3 @@ function ProtectedRoute() {
 
   return <Outlet />
 }
-
-export { ProtectedRoute }

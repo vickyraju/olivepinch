@@ -1,61 +1,64 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, UtensilsCrossed, MapPin, Users, Truck, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth"
-import { cn } from "@/lib/utils"
 
-const NAV_ITEMS = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/orders", label: "Order Board", icon: Truck },
-  { path: "/menu", label: "Menu Control", icon: UtensilsCrossed },
-  { path: "/customers", label: "Customers", icon: Users },
-  { path: "/zones", label: "Zones", icon: MapPin },
+const navItems = [
+  { path: "/", label: "Dashboard", icon: "dashboard" },
+  { path: "/orders", label: "Order Board", icon: "list_alt" },
+  { path: "/menu", label: "Menu Control", icon: "restaurant_menu" },
+  { path: "/customers", label: "Customers", icon: "group" },
+  { path: "/zones", label: "Zones", icon: "storefront" },
 ]
 
-function Sidebar() {
+export function Sidebar() {
   const location = useLocation()
-  const { logout, admin } = useAuth()
+  const { logout } = useAuth()
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-[220px] bg-surface border-r border-border flex flex-col z-20">
-      <div className="h-16 flex items-center px-5 border-b border-border">
-        <span className="font-display text-lg font-extrabold text-olive-700">
-          Olive<span className="text-coral-500">Pinch</span>
-        </span>
+    <aside className="fixed left-0 top-0 h-full w-[260px] bg-white border-r border-gray-200 flex flex-col z-20">
+      <div className="h-[80px] flex items-center px-6 border-b border-gray-100">
+        <span className="font-bold text-brand-green text-[22px] leading-none">OlivePinch</span>
       </div>
-
-      <nav className="flex-1 overflow-y-auto py-4 flex flex-col gap-0.5">
-        {NAV_ITEMS.map((item) => {
+      <nav className="flex-1 overflow-y-auto py-6 flex flex-col gap-1">
+        {navItems.map((item) => {
           const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={cn(
-                "flex items-center gap-2.5 px-5 py-2.5 text-sm transition-colors",
+              className={`flex items-center gap-3 px-6 py-3 transition-colors text-[14px] ${
                 isActive
-                  ? "font-semibold bg-olive-50 text-olive-700 border-l-2 border-olive-600"
-                  : "font-medium text-ink-muted hover:bg-cream-100 border-l-2 border-transparent"
-              )}
+                  ? "font-bold bg-[#F0F7F3] text-[#2E6B3E] border-l-[3px] border-[#418A56]"
+                  : "font-medium text-gray-600 hover:bg-gray-50"
+              }`}
             >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {item.label}
+              <span className="material-symbols-outlined">{item.icon}</span>
+              <span>{item.label}</span>
             </Link>
           )
         })}
       </nav>
-
-      <div className="border-t border-border p-4">
-        <p className="text-xs text-ink-muted mb-2 truncate">{admin?.email}</p>
-        <button
-          onClick={logout}
-          className="flex items-center gap-2 text-xs font-medium text-destructive hover:text-destructive/80 cursor-pointer"
+      <div className="border-t border-gray-100 py-2">
+        <Link
+          to="/admins"
+          className={`flex items-center gap-3 px-6 py-3 text-[14px] transition-colors ${
+            location.pathname.startsWith("/admins")
+              ? "font-bold bg-[#F0F7F3] text-[#2E6B3E] border-l-[3px] border-[#418A56]"
+              : "font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+          }`}
         >
-          <LogOut className="h-3.5 w-3.5" />
-          Log out
-        </button>
+          <span className="material-symbols-outlined">admin_panel_settings</span>
+          <span>Admin Users</span>
+        </Link>
+        <div className="px-6 pt-2 pb-4">
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 text-status-red hover:text-red-700 text-[14px] font-medium cursor-pointer"
+          >
+            <span className="material-symbols-outlined">logout</span>
+            <span>Logout</span>
+          </button>
+        </div>
       </div>
     </aside>
   )
 }
-
-export { Sidebar }

@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react"
-import { Plus } from "lucide-react"
+import { useState } from "react"
+import type { FormEvent } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { Header } from "@/components/header"
+import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { api } from "@/lib/api"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
 
 interface Zone {
   id: string
@@ -15,21 +13,15 @@ interface Zone {
 }
 
 function Zones() {
-  const [zones, setZones] = useState<Zone[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
+  const queryClient = useQueryClient()
+  const [showModal, setShowModal] = useState(false)
   const [name, setName] = useState("")
   const [prefixes, setPrefixes] = useState("")
   const [error, setError] = useState("")
 
-  function load() {
-    setLoading(true)
-    api.get<Zone[]>("/zones").then(setZones).finally(() => setLoading(false))
-  }
+  const zonesQuery = useQuery({ queryKey: ["zones"], queryFn: () => api.get<Zone[]>("/zones") })
 
-  useEffect(load, [])
-
-  async function submit(e: React.FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault()
     setError("")
     const list = prefixes.split(",").map((p) => p.trim().toUpperCase()).filter(Boolean)
@@ -41,8 +33,8 @@ function Zones() {
       await api.post("/zones", { name, postcodePrefixes: list, isActive: true })
       setName("")
       setPrefixes("")
-      setShowForm(false)
-      load()
+      setShowModal(false)
+      await queryClient.invalidateQueries({ queryKey: ["zones"] })
     } catch {
       setError("Could not save this zone.")
     }
@@ -50,80 +42,122 @@ function Zones() {
 
   async function toggleActive(zone: Zone) {
     await api.patch(`/zones/${zone.id}`, { isActive: !zone.isActive })
-    load()
+    await queryClient.invalidateQueries({ queryKey: ["zones"] })
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl text-ink">Delivery Zones</h1>
-        <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="h-4 w-4" /> New zone
-        </Button>
-      </div>
+    <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
+      <Header title="Delivery Zones" />
+      <div className="flex-1 overflow-y-auto p-8">
+        <div className="mb-6 flex justify-between items-center">
+          <p className="text-sm text-gray-500">Controls which postcode areas are eligible for delivery at signup.</p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-[#2E6B3E] text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span> New Zone
+          </button>
+        </div>
 
-      {showForm && (
-        <Card>
-          <CardContent>
-            <form onSubmit={submit} className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="zone-name">Zone name</Label>
-                <Input id="zone-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Birmingham" />
-              </div>
-              <div>
-                <Label htmlFor="zone-prefixes">Postcode areas (comma-separated)</Label>
-                <Input id="zone-prefixes" value={prefixes} onChange={(e) => setPrefixes(e.target.value)} placeholder="B" />
-              </div>
-              {error && <p role="alert" className="col-span-2 text-sm text-destructive">{error}</p>}
-              <div className="col-span-2 flex justify-end gap-2">
-                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button type="submit">Save zone</Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardContent className="p-0">
-          {loading ? (
-            <p className="p-5 text-sm text-ink-muted">Loading…</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Zone</th>
-                  <th className="px-5 py-2.5 font-medium">Postcode areas</th>
-                  <th className="px-5 py-2.5 font-medium">Status</th>
-                  <th className="px-5 py-2.5 font-medium" />
-                </tr>
-              </thead>
-              <tbody>
-                {zones.map((zone) => (
-                  <tr key={zone.id} className="border-b border-border last:border-0">
-                    <td className="px-5 py-2.5 text-ink font-medium">{zone.name}</td>
-                    <td className="px-5 py-2.5">
+        <div className="bg-white rounded-[12px] border border-gray-200 overflow-hidden">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Zone</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Postcode Areas</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 text-sm">
+              {zonesQuery.isLoading ? (
+                <TableSkeleton columns={4} rows={3} />
+              ) : (
+                (zonesQuery.data ?? []).map((zone) => (
+                  <tr key={zone.id} className="hover:bg-gray-50/50">
+                    <td className="py-4 px-6 font-semibold text-gray-900">{zone.name}</td>
+                    <td className="py-4 px-6">
                       <div className="flex gap-1 flex-wrap">
-                        {zone.postcodePrefixes.map((p) => <Badge key={p} className="bg-cream-100 text-ink-muted border-border">{p}</Badge>)}
+                        {zone.postcodePrefixes.map((p) => (
+                          <span key={p} className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-gray-100 text-gray-600 border-gray-200">
+                            {p}
+                          </span>
+                        ))}
                       </div>
                     </td>
-                    <td className="px-5 py-2.5">
-                      <Badge className={zone.isActive ? "bg-olive-50 text-olive-700 border-olive-100" : "bg-cream-100 text-ink-muted border-border"}>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                          zone.isActive ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200"
+                        }`}
+                      >
                         {zone.isActive ? "Active" : "Inactive"}
-                      </Badge>
+                      </span>
                     </td>
-                    <td className="px-5 py-2.5 text-right">
-                      <Button variant="outline" size="sm" onClick={() => toggleActive(zone)}>
+                    <td className="py-4 px-6 text-right">
+                      <button
+                        onClick={() => toggleActive(zone)}
+                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
                         {zone.isActive ? "Deactivate" : "Activate"}
-                      </Button>
+                      </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </CardContent>
-      </Card>
+                ))
+              )}
+              {!zonesQuery.isLoading && (zonesQuery.data ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-10 text-center text-sm text-gray-400">
+                    No zones configured yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[16px] w-[420px] shadow-xl flex flex-col overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-[18px] font-bold">New Zone</h3>
+              <button onClick={() => setShowModal(false)} className="cursor-pointer">
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <form onSubmit={submit} className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Zone Name</label>
+                <input
+                  className="w-full h-10 border border-gray-200 rounded-lg px-3"
+                  placeholder="Birmingham"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Postcode Areas (comma-separated)</label>
+                <input
+                  className="w-full h-10 border border-gray-200 rounded-lg px-3"
+                  placeholder="B"
+                  value={prefixes}
+                  onChange={(e) => setPrefixes(e.target.value)}
+                />
+              </div>
+              {error ? <p role="alert" className="text-sm text-status-red">{error}</p> : null}
+              <div className="pt-2 flex justify-end gap-3">
+                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
+                  Cancel
+                </button>
+                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm cursor-pointer">
+                  Save Zone
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
