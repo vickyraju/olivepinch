@@ -36,12 +36,19 @@ function Health() {
   const category = bmi ? bmiCategory(bmi) : null
   const weightTrend = [...sortedLogs].reverse().map((l) => l.weightKg)
 
-  function submit(e: React.FormEvent) {
+  const [saving, setSaving] = useState(false)
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
     const values = Object.fromEntries(FIELDS.map((f) => [f.key, parseFloat(form[f.key])])) as Record<string, number>
     if (Object.values(values).some((v) => isNaN(v))) return
-    addHealthLog({ date: new Date().toISOString().slice(0, 10), ...values } as Omit<typeof customer.healthLogs[number], "id">)
-    setShowForm(false)
+    setSaving(true)
+    try {
+      await addHealthLog(values as Omit<typeof customer.healthLogs[number], "id" | "date">)
+      setShowForm(false)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -74,7 +81,7 @@ function Health() {
             ))}
             <div className="col-span-2 sm:col-span-3 flex justify-end gap-3 pt-2">
               <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
-              <Button type="submit" variant="primary">Save entry</Button>
+              <Button type="submit" variant="primary" disabled={saving}>{saving ? "Saving…" : "Save entry"}</Button>
             </div>
           </form>
         </Card>

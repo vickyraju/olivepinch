@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { FoodPhoto } from "@/components/ui/food-photo"
-import { GOALS } from "@/data/menu"
+import { GOALS, GOAL_PHOTOS } from "@/data/menu"
 import { cn } from "@/lib/utils"
 
 const TEASER_META: Record<string, { kcal: string; protein: string }> = {
@@ -34,7 +34,7 @@ function DietPlansTeaser() {
           {GOALS.map((goal, i) => (
             <Link key={goal.id} to="/diet-plans" className={cn("group", i % 2 === 1 && "lg:mt-8")}>
               <Card className="overflow-hidden flex flex-col h-full hover:shadow-lifted hover:-translate-y-1 transition-[box-shadow,transform] duration-200">
-                <FoodPhoto seed={i} className="aspect-[4/3] rounded-none" />
+                <FoodPhoto seed={i} src={GOAL_PHOTOS[goal.id]} alt={goal.id} className="aspect-[4/3] rounded-none" />
                 <div className="p-6 flex flex-col flex-1">
                   <h3 className="text-lg text-ink mb-1.5">{goal.id}</h3>
                   <p className="text-sm text-ink-muted mb-4 flex-1">{goal.description}</p>

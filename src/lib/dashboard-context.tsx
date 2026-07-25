@@ -1,6 +1,9 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { createContext, useContext, useCallback, useMemo, useState, useEffect, type ReactNode } from "react"
 import type { DietType, Goal } from "@/data/menu"
-import { computeEndDate, pausesUsedThisMonth, MAX_PAUSES_PER_MONTH } from "@/lib/subscription"
+import { computeEndDate, pausesUsedThisMonth, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
+import { api, ApiError } from "@/lib/api"
+import { useAuth } from "@/lib/auth"
+import { goalFromEnum, dietFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
 
 export interface HealthLog {
   id: string
@@ -13,7 +16,15 @@ export interface HealthLog {
   waistCm: number
 }
 
+export interface OrderDay {
+  id: string
+  date: string
+  status: OrderStatus
+  items: { name: string; slot: string }[]
+}
+
 export interface Subscription {
+  id: string
   status: "active" | "expired"
   planDuration: 7 | 14 | 28
   startDate: string
@@ -22,6 +33,7 @@ export interface Subscription {
   dietType: DietType
   allergens: string[]
   pausedDates: string[]
+  orders: OrderDay[]
 }
 
 export interface DashboardCustomer {
@@ -33,132 +45,178 @@ export interface DashboardCustomer {
   healthLogs: HealthLog[]
 }
 
-function daysAgo(n: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() - n)
-  return d.toISOString().slice(0, 10)
+interface RawSubscription {
+  id: string
+  status: "PENDING_PAYMENT" | "ACTIVE" | "EXPIRED"
+  planDuration: 7 | 14 | 28
+  startDate: string
+  mealsPerDay: 1 | 2 | 3
+  pausedDates: string[]
+  orders: { id: string; deliveryDate: string; status: string; items: { slot: string; menuItem: { name: string } }[] }[]
 }
 
-function daysFromNow(n: number): string {
-  const d = new Date()
-  d.setDate(d.getDate() + n)
-  return d.toISOString().slice(0, 10)
+/** SCHEDULED never advances on its own in this pilot (no ops staff/cron flips it) — derive a
+ * sane display status from the delivery date once nothing has explicitly overridden it. */
+function displayStatusFor(deliveryDateIso: string, backendStatus: string): OrderStatus {
+  if (backendStatus !== "SCHEDULED") return orderStatusFromEnum(backendStatus)
+  const today = new Date().toISOString().slice(0, 10)
+  if (deliveryDateIso < today) return "Delivered"
+  if (deliveryDateIso === today) return "Out for Delivery"
+  return "Scheduled"
 }
 
-const SEED: DashboardCustomer = {
-  name: "Amelia Clarke",
-  email: "amelia.clarke@example.com",
-  age: 29,
-  marketingOptIn: false,
-  subscription: {
-    status: "active",
-    planDuration: 14,
-    startDate: daysAgo(4),
-    mealsPerDay: 3,
-    goal: "Muscle Building",
-    dietType: "Meat",
-    allergens: ["Shellfish"],
-    pausedDates: [daysFromNow(3)],
-  },
-  healthLogs: [
-    { id: "h1", date: daysAgo(28), heightCm: 167, weightKg: 64.2, chestCm: 92, bicepCm: 27, abdomenCm: 76, waistCm: 71 },
-    { id: "h2", date: daysAgo(14), heightCm: 167, weightKg: 63.6, chestCm: 92, bicepCm: 27.3, abdomenCm: 75, waistCm: 70 },
-    { id: "h3", date: daysAgo(2), heightCm: 167, weightKg: 63.0, chestCm: 93, bicepCm: 27.6, abdomenCm: 74, waistCm: 69 },
-  ],
+function mapSubscription(raw: RawSubscription, goal: Goal, dietType: DietType, allergens: string[]): Subscription {
+  return {
+    id: raw.id,
+    status: subscriptionStatusFromEnum(raw.status),
+    planDuration: raw.planDuration,
+    startDate: raw.startDate.slice(0, 10),
+    mealsPerDay: raw.mealsPerDay,
+    goal,
+    dietType,
+    allergens,
+    pausedDates: raw.pausedDates.map((d) => d.slice(0, 10)),
+    orders: raw.orders.map((o) => ({
+      id: o.id,
+      date: o.deliveryDate.slice(0, 10),
+      status: displayStatusFor(o.deliveryDate.slice(0, 10), o.status),
+      items: o.items.map((i) => ({ name: i.menuItem.name, slot: i.slot })),
+    })),
+  }
 }
-
-const STORAGE_KEY = "olivepinch.dashboard"
 
 interface DashboardContextValue {
   customer: DashboardCustomer
-  addHealthLog: (log: Omit<HealthLog, "id">) => void
-  togglePause: (date: string) => { ok: boolean; reason?: string }
-  renew: (planDuration: 7 | 14 | 28) => void
-  updateMarketingOptIn: (value: boolean) => void
-  deleteAccount: () => void
+  addHealthLog: (log: Omit<HealthLog, "id" | "date">) => Promise<void>
+  togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
+  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => Promise<void>
+  updateMarketingOptIn: (value: boolean) => Promise<void>
+  deleteAccount: () => Promise<void>
   endDate: string
   pausesUsed: number
 }
 
 const DashboardContext = createContext<DashboardContextValue | null>(null)
 
-function loadInitial(): DashboardCustomer {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return SEED
-    return JSON.parse(raw)
-  } catch {
-    return SEED
-  }
-}
+function DashboardProviderInner({ initial, refetch, children }: { initial: DashboardCustomer; refetch: () => Promise<DashboardCustomer>; children: ReactNode }) {
+  const { logout } = useAuth()
+  const [customer, setCustomer] = useState<DashboardCustomer>(initial)
 
-export function DashboardProvider({ children }: { children: ReactNode }) {
-  const [customer, setCustomer] = useState<DashboardCustomer>(loadInitial)
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(customer))
-  }, [customer])
-
-  const addHealthLog = (log: Omit<HealthLog, "id">) => {
+  const addHealthLog = useCallback(async (log: Omit<HealthLog, "id" | "date">) => {
+    const created = await api.post<{ id: string; loggedAt: string } & Omit<HealthLog, "id" | "date">>("/health-logs", log)
     setCustomer((c) => ({
       ...c,
-      healthLogs: [{ ...log, id: crypto.randomUUID() }, ...c.healthLogs],
+      healthLogs: [{ ...log, id: created.id, date: created.loggedAt.slice(0, 10) }, ...c.healthLogs],
     }))
-  }
+  }, [])
 
-  const togglePause = (date: string) => {
-    const sub = customer.subscription
-    const alreadyPaused = sub.pausedDates.includes(date)
-    if (!alreadyPaused && pausesUsedThisMonth(sub.pausedDates) >= MAX_PAUSES_PER_MONTH) {
-      return { ok: false, reason: `You've used all ${MAX_PAUSES_PER_MONTH} pauses for this month.` }
-    }
-    setCustomer((c) => ({
-      ...c,
-      subscription: {
-        ...c.subscription,
-        pausedDates: alreadyPaused
-          ? c.subscription.pausedDates.filter((d) => d !== date)
-          : [...c.subscription.pausedDates, date],
-      },
-    }))
-    return { ok: true }
-  }
-
-  const renew = (planDuration: 7 | 14 | 28) => {
-    setCustomer((c) => ({
-      ...c,
-      subscription: {
-        ...c.subscription,
-        status: "active",
-        planDuration,
-        startDate: new Date().toISOString().slice(0, 10),
-        pausedDates: [],
-      },
-    }))
-  }
-
-  const updateMarketingOptIn = (value: boolean) => {
-    setCustomer((c) => ({ ...c, marketingOptIn: value }))
-  }
-
-  const deleteAccount = () => {
-    localStorage.removeItem(STORAGE_KEY)
-    setCustomer(SEED)
-  }
-
-  const endDate = computeEndDate(
-    customer.subscription.startDate,
-    customer.subscription.planDuration,
-    customer.subscription.pausedDates
+  const togglePause = useCallback(
+    async (date: string) => {
+      const sub = customer.subscription
+      const alreadyPaused = sub.pausedDates.includes(date)
+      if (!alreadyPaused && pausesUsedThisMonth(sub.pausedDates) >= MAX_PAUSES_PER_MONTH) {
+        return { ok: false, reason: `You've used all ${MAX_PAUSES_PER_MONTH} pauses for this month.` }
+      }
+      try {
+        await api.post(`/subscriptions/${sub.id}/${alreadyPaused ? "resume" : "pause"}`, { date })
+        setCustomer(await refetch())
+        return { ok: true }
+      } catch (err) {
+        return { ok: false, reason: err instanceof ApiError ? err.message : "Couldn't update that day — try again." }
+      }
+    },
+    [customer.subscription, refetch]
   )
+
+  const renew = useCallback(
+    async (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => {
+      await api.post(`/subscriptions/${customer.subscription.id}/renew`, {
+        planDuration,
+        goal: GOAL_TO_ENUM[goal],
+        dietType: DIET_TO_ENUM[dietType],
+        allergens,
+      })
+      setCustomer(await refetch())
+    },
+    [customer.subscription.id, refetch]
+  )
+
+  const updateMarketingOptIn = useCallback(async (value: boolean) => {
+    await api.patch("/customers/me", { marketingOptIn: value })
+    setCustomer((c) => ({ ...c, marketingOptIn: value }))
+  }, [])
+
+  const deleteAccount = useCallback(async () => {
+    await api.del("/customers/me")
+    logout()
+  }, [logout])
+
+  const endDate = computeEndDate(customer.subscription.startDate, customer.subscription.planDuration, customer.subscription.pausedDates)
   const pausesUsed = pausesUsedThisMonth(customer.subscription.pausedDates)
 
   const value = useMemo(
     () => ({ customer, addHealthLog, togglePause, renew, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
-    [customer, endDate, pausesUsed]
+    [customer, addHealthLog, togglePause, renew, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
   )
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>
+}
+
+export function DashboardProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: DashboardCustomer }>({
+    status: "loading",
+  })
+
+  const load = useCallback(async (): Promise<DashboardCustomer> => {
+    const [me, rawSub, healthLogs] = await Promise.all([
+      api.get<{ fullName: string; email: string; age: number | null; marketingOptIn: boolean; goal: string; dietType: string; allergens: string[] }>(
+        "/customers/me"
+      ),
+      api.get<RawSubscription>("/subscriptions/current"),
+      api.get<{ id: string; heightCm: number; weightKg: number; chestCm: number; bicepCm: number; abdomenCm: number; waistCm: number; loggedAt: string }[]>(
+        "/health-logs"
+      ),
+    ])
+
+    return {
+      name: me.fullName,
+      email: me.email,
+      age: me.age ?? 0,
+      marketingOptIn: me.marketingOptIn,
+      // goal/dietType/allergens live on the customer, not the subscription
+      subscription: mapSubscription(rawSub, goalFromEnum(me.goal), dietFromEnum(me.dietType), me.allergens),
+      healthLogs: healthLogs.map((h) => ({ ...h, date: h.loggedAt.slice(0, 10) })),
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+      .then((data) => setState({ status: "ready", data }))
+      .catch((err) => setState({ status: "error", message: err instanceof ApiError ? err.message : "Couldn't load your dashboard — try refreshing." }))
+  }, [load])
+
+  if (state.status === "loading") {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="h-6 w-6 rounded-full border-2 border-olive-600 border-t-transparent animate-spin" />
+      </div>
+    )
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="max-w-md mx-auto py-24 text-center">
+        <p className="text-ink font-medium mb-2">Couldn't load your dashboard</p>
+        <p className="text-sm text-ink-muted">{state.message}</p>
+      </div>
+    )
+  }
+
+  return (
+    <DashboardProviderInner initial={state.data} refetch={load}>
+      {children}
+    </DashboardProviderInner>
+  )
 }
 
 export function useDashboard() {

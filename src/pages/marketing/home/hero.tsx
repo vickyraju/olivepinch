@@ -35,8 +35,8 @@ function Hero() {
 
         <div className="relative">
           <div className="grid grid-cols-2 gap-4">
-            <FoodPhoto seed={0} className="aspect-[4/5]" />
-            <FoodPhoto seed={1} className="aspect-[4/5] mt-8" />
+            <FoodPhoto seed={0} src="/images/hero-1.jpg" alt="Grilled chicken breast over jasmine rice with broccoli" className="aspect-[4/5]" />
+            <FoodPhoto seed={1} src="/images/hero-2.jpg" alt="Pan-seared salmon over quinoa with roasted vegetables" className="aspect-[4/5] mt-8" />
           </div>
           <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[85%] rounded-2xl bg-surface border border-border shadow-lifted px-5 py-4">
             <div className="flex items-center justify-between mb-2">

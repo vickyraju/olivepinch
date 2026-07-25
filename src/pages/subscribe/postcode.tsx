@@ -6,18 +6,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe } from "@/lib/subscribe-context"
-import { isBirminghamPostcode, formatPostcode } from "@/lib/postcode"
+import { formatPostcode } from "@/lib/postcode"
+import { api } from "@/lib/api"
 
 function Postcode() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
   const [postcode, setPostcode] = useState(state.postcode)
   const [checked, setChecked] = useState<"valid" | "invalid" | null>(null)
+  const [checking, setChecking] = useState(false)
   const [error, setError] = useState("")
   const [notifyEmail, setNotifyEmail] = useState("")
   const [notifySent, setNotifySent] = useState(false)
 
-  function handleCheck(e: React.FormEvent) {
+  async function handleCheck(e: React.FormEvent) {
     e.preventDefault()
     if (!postcode.trim()) {
       setError("Enter your postcode to continue.")
@@ -25,10 +27,26 @@ function Postcode() {
       return
     }
     setError("")
-    const valid = isBirminghamPostcode(postcode)
-    setChecked(valid ? "valid" : "invalid")
-    if (valid) {
-      update({ postcode: formatPostcode(postcode), postcodeConfirmed: true })
+    setChecking(true)
+    try {
+      const res = await api.post<{ valid: boolean; postcode: string }>("/postcode/check", { postcode })
+      setChecked(res.valid ? "valid" : "invalid")
+      if (res.valid) {
+        update({ postcode: formatPostcode(postcode), postcodeConfirmed: true })
+      }
+    } catch {
+      setError("Couldn't check that postcode — try again.")
+    } finally {
+      setChecking(false)
+    }
+  }
+
+  async function handleNotifyMe() {
+    try {
+      await api.post("/postcode/leads", { email: notifyEmail, postcode: formatPostcode(postcode) })
+      setNotifySent(true)
+    } catch {
+      setNotifySent(true) // Don't block the demo on a non-critical lead-capture failure
     }
   }
 
@@ -59,8 +77,8 @@ function Postcode() {
             autoComplete="postal-code"
             className="flex-1"
           />
-          <Button type="submit" variant="primary" size="md" className="sm:w-auto">
-            Check availability
+          <Button type="submit" variant="primary" size="md" className="sm:w-auto" disabled={checking}>
+            {checking ? "Checking…" : "Check availability"}
           </Button>
         </div>
         <FieldError>{error}</FieldError>
@@ -103,7 +121,7 @@ function Postcode() {
                   type="button"
                   variant="outline"
                   disabled={!notifyEmail.includes("@")}
-                  onClick={() => setNotifySent(true)}
+                  onClick={handleNotifyMe}
                 >
                   Notify me
                 </Button>

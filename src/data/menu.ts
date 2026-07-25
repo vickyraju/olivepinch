@@ -9,6 +9,30 @@ export const GOALS: { id: Goal; description: string }[] = [
   { id: "Muscle Building", description: "High-protein meals built to support training and recovery." },
 ]
 
+export const GOAL_PHOTOS: Record<Goal, string> = {
+  "Weight Loss": "/images/goal-weight-loss.jpg",
+  "Weight Gain": "/images/goal-weight-gain.jpg",
+  "Weight Maintenance": "/images/goal-weight-maintenance.jpg",
+  "Muscle Building": "/images/goal-muscle-building.jpg",
+}
+
+export const MENU_ITEM_PHOTOS: Record<string, string> = {
+  "b-oats": "/images/menu-b-oats.jpg",
+  "b-egg-wrap": "/images/menu-b-egg-wrap.jpg",
+  "b-protein-pancakes": "/images/goal-muscle-building.jpg",
+  "b-tofu-scramble": "/images/menu-b-tofu-scramble.jpg",
+  "l-chicken-rice": "/images/hero-1.jpg",
+  "l-salmon-quinoa": "/images/hero-2.jpg",
+  "l-chickpea-bowl": "/images/goal-weight-loss.jpg",
+  "l-turkey-wrap": "/images/cta-accent.jpg",
+  "l-paneer-curry": "/images/menu-l-paneer-curry.jpg",
+  "d-steak-veg": "/images/goal-weight-gain.jpg",
+  "d-cod-veg": "/images/goal-weight-maintenance.jpg",
+  "d-lentil-dahl": "/images/about-2.jpg",
+  "d-egg-fried-rice": "/images/menu-d-egg-fried-rice.jpg",
+  "d-chicken-pasta": "/images/menu-d-chicken-pasta.jpg",
+}
+
 export const DIET_TYPES: DietType[] = ["Meat", "Fish", "Vegan", "Vegetarian", "Egg"]
 
 export const ALLERGENS = [

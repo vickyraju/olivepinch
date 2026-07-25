@@ -8,7 +8,15 @@ const STYLES = [
   { radial: "circle at 75% 70%, var(--color-coral-50), var(--color-olive-50) 55%, var(--color-olive-100)", icon: Wheat },
 ]
 
-function FoodPhoto({ seed = 0, className }: { seed?: number; className?: string }) {
+function FoodPhoto({ seed = 0, src, alt, className }: { seed?: number; src?: string; alt?: string; className?: string }) {
+  if (src) {
+    return (
+      <div className={cn("relative overflow-hidden rounded-xl", className)}>
+        <img src={src} alt={alt ?? ""} className="h-full w-full object-cover" loading="lazy" />
+      </div>
+    )
+  }
+
   const { radial, icon: Icon } = STYLES[seed % STYLES.length]
   return (
     <div

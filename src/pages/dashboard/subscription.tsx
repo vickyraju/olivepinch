@@ -19,14 +19,24 @@ function Subscription() {
   const [dietType, setDietType] = useState<DietType>(sub.dietType)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
   const [confirmed, setConfirmed] = useState(false)
+  const [renewing, setRenewing] = useState(false)
+  const [error, setError] = useState("")
 
   const isExpired = sub.status === "expired"
 
-  function handleRenew(e: React.FormEvent) {
+  async function handleRenew(e: React.FormEvent) {
     e.preventDefault()
-    renew(duration)
-    setConfirmed(true)
-    setTimeout(() => setConfirmed(false), 4000)
+    setError("")
+    setRenewing(true)
+    try {
+      await renew(duration, goal, dietType, allergens)
+      setConfirmed(true)
+      setTimeout(() => setConfirmed(false), 4000)
+    } catch {
+      setError("Couldn't renew your subscription — try again.")
+    } finally {
+      setRenewing(false)
+    }
   }
 
   return (
@@ -162,9 +172,12 @@ function Subscription() {
               <p className="text-sm font-medium text-olive-700">Renewed — you're still logged in, no need to sign in again.</p>
             </div>
           )}
+          {error && (
+            <div role="alert" className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600 font-medium">{error}</div>
+          )}
 
-          <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto">
-            Confirm &amp; renew
+          <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing}>
+            {renewing ? "Renewing…" : "Confirm & renew"}
           </Button>
         </Card>
       </form>

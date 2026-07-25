@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { AlertCircle, ArrowLeft, CreditCard, Lock } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { priceForDayMenus, formatGBP } from "@/lib/pricing"
+import { api, ApiError } from "@/lib/api"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -17,10 +18,11 @@ function Payment() {
   const [simulateDecline, setSimulateDecline] = useState(false)
   const [status, setStatus] = useState<"idle" | "processing" | "failed">("idle")
   const [error, setError] = useState("")
+  const [declineMessage, setDeclineMessage] = useState("")
 
   const total = priceForDayMenus(state.dayMenus)
 
-  function handlePay(e: React.FormEvent) {
+  async function handlePay(e: React.FormEvent) {
     e.preventDefault()
     if (!address.trim()) {
       setError("Enter your delivery address.")
@@ -30,13 +32,36 @@ function Payment() {
     update({ deliveryAddress: address, paymentAttempted: true })
     setStatus("processing")
 
-    setTimeout(() => {
-      if (simulateDecline) {
-        setStatus("failed")
-        return
-      }
+    // Demo-only decline: checked before touching the API at all, so a "declined" attempt
+    // never creates a real Subscription/Payment row.
+    if (simulateDecline) {
+      await new Promise((r) => setTimeout(r, 700))
+      setDeclineMessage("Your card issuer declined this payment. Nothing else has changed — check your details and try again.")
+      setStatus("failed")
+      return
+    }
+
+    try {
+      if (!state.customerId) throw new Error("Missing your profile — go back and complete the earlier steps.")
+
+      const subscription = await api.post<{ subscriptionId: string }>("/subscriptions", {
+        customerId: state.customerId,
+        planDuration: state.planDuration,
+        startDate: state.startDate,
+        mealsPerDay: state.mealsPerDay,
+        address,
+        dayMenus: state.dayMenus,
+      })
+      update({ subscriptionId: subscription.subscriptionId })
+
+      await api.post("/payments/intent", { subscriptionId: subscription.subscriptionId })
+      await api.post("/payments/confirm", { subscriptionId: subscription.subscriptionId })
+
       navigate("/subscribe/account")
-    }, 900)
+    } catch (err) {
+      setDeclineMessage(err instanceof ApiError ? err.message : "Something went wrong processing your payment — please try again.")
+      setStatus("failed")
+    }
   }
 
   return (
@@ -95,9 +120,7 @@ function Payment() {
               <AlertCircle className="h-5 w-5 text-coral-600 shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-coral-600">Payment declined</p>
-                <p className="text-sm text-ink-muted mt-0.5">
-                  Your card issuer declined this payment. Nothing else has changed — check your details and try again.
-                </p>
+                <p className="text-sm text-ink-muted mt-0.5">{declineMessage}</p>
               </div>
             </div>
           )}

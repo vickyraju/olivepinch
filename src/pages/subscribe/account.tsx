@@ -2,37 +2,50 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { CheckCircle2, Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
+import { useAuth } from "@/lib/auth"
+import { api, ApiError } from "@/lib/api"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field-error"
 
-const DEMO_OTP = "123456"
-
 function Account() {
-  const { state } = useSubscribe()
+  const { state, reset } = useSubscribe()
+  const { setSession } = useAuth()
   const navigate = useNavigate()
   const email = state.profile.email || "your email"
 
   const [stage, setStage] = useState<"otp" | "password" | "done">("otp")
   const [otp, setOtp] = useState("")
   const [otpError, setOtpError] = useState("")
+  const [otpSubmitting, setOtpSubmitting] = useState(false)
+  const [verificationToken, setVerificationToken] = useState("")
   const [password, setPassword] = useState("")
   const [confirm, setConfirm] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [pwError, setPwError] = useState("")
+  const [pwSubmitting, setPwSubmitting] = useState(false)
 
-  function verifyOtp(e: React.FormEvent) {
+  async function verifyOtp(e: React.FormEvent) {
     e.preventDefault()
-    if (otp !== DEMO_OTP) {
-      setOtpError("That code isn't right. For this demo, use 123456.")
-      return
-    }
     setOtpError("")
-    setStage("password")
+    setOtpSubmitting(true)
+    try {
+      const res = await api.post<{ verificationToken: string }>("/auth/otp/verify", {
+        customerId: state.customerId,
+        code: otp,
+        purpose: "signup",
+      })
+      setVerificationToken(res.verificationToken)
+      setStage("password")
+    } catch (err) {
+      setOtpError(err instanceof ApiError ? err.message : "That code isn't right — check your email and try again.")
+    } finally {
+      setOtpSubmitting(false)
+    }
   }
 
-  function createPassword(e: React.FormEvent) {
+  async function createPassword(e: React.FormEvent) {
     e.preventDefault()
     if (password.length < 8) {
       setPwError("Password must be at least 8 characters.")
@@ -43,7 +56,20 @@ function Account() {
       return
     }
     setPwError("")
-    setStage("done")
+    setPwSubmitting(true)
+    try {
+      const res = await api.post<{ token: string }>("/auth/password", {
+        customerId: state.customerId,
+        password,
+        verificationToken,
+      })
+      await setSession(res.token)
+      setStage("done")
+    } catch (err) {
+      setPwError(err instanceof ApiError ? err.message : "Couldn't create your account — try again.")
+    } finally {
+      setPwSubmitting(false)
+    }
   }
 
   return (
@@ -79,9 +105,9 @@ function Account() {
             className="tracking-[0.5em] text-center text-lg"
           />
           <FieldError>{otpError}</FieldError>
-          <p className="mt-2 text-xs text-ink-muted">Demo hint: the code is 123456.</p>
-          <Button type="submit" variant="accent" size="lg" className="w-full mt-5">
-            Verify code
+          <p className="mt-2 text-xs text-ink-muted">Dev mode: check the server console for your code if email isn't configured.</p>
+          <Button type="submit" variant="accent" size="lg" className="w-full mt-5" disabled={otpSubmitting}>
+            {otpSubmitting ? "Verifying…" : "Verify code"}
           </Button>
         </form>
       )}
@@ -120,8 +146,8 @@ function Account() {
             />
           </div>
           <FieldError>{pwError}</FieldError>
-          <Button type="submit" variant="accent" size="lg" className="w-full">
-            Create account
+          <Button type="submit" variant="accent" size="lg" className="w-full" disabled={pwSubmitting}>
+            {pwSubmitting ? "Creating account…" : "Create account"}
           </Button>
         </form>
       )}
@@ -131,7 +157,15 @@ function Account() {
           <p className="text-sm text-ink-muted mb-6">
             Log in any time with <strong className="text-ink">{email}</strong> and your new password.
           </p>
-          <Button variant="accent" size="lg" className="w-full" onClick={() => navigate("/dashboard")}>
+          <Button
+            variant="accent"
+            size="lg"
+            className="w-full"
+            onClick={() => {
+              reset()
+              navigate("/dashboard")
+            }}
+          >
             Go to your dashboard
           </Button>
         </div>

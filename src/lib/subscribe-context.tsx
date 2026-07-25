@@ -34,6 +34,8 @@ export interface SubscribeState {
   dayMenus: DayMenu[]
   deliveryAddress: string
   paymentAttempted: boolean
+  customerId: string | null
+  subscriptionId: string | null
 }
 
 const EMPTY_PROFILE: CustomerProfile = {
@@ -59,6 +61,8 @@ const INITIAL_STATE: SubscribeState = {
   dayMenus: [],
   deliveryAddress: "",
   paymentAttempted: false,
+  customerId: null,
+  subscriptionId: null,
 }
 
 const STORAGE_KEY = "olivepinch.subscribe"

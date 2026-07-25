@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, NavLink } from "react-router-dom"
 import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Logo } from "@/components/ui/logo"
 import { cn } from "@/lib/utils"
 
 const NAV_LINKS = [
@@ -17,8 +18,8 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 py-3 sm:px-8">
-        <Link to="/" className="font-display text-xl font-extrabold text-olive-700">
-          Olive<span className="text-coral-500">Pinch</span>
+        <Link to="/">
+          <Logo className="text-xl" />
         </Link>
 
         <nav aria-label="Primary" className="hidden md:flex items-center gap-8">

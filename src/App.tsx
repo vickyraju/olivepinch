@@ -4,6 +4,9 @@ import Home from '@/pages/marketing/home'
 import About from '@/pages/marketing/about'
 import DietPlans from '@/pages/marketing/diet-plans'
 import Contact from '@/pages/marketing/contact'
+import Login from '@/pages/login'
+import CompleteAccount from '@/pages/complete-account'
+import { ProtectedRoute } from '@/components/protected-route'
 import SubscribeLayout from '@/pages/subscribe/layout'
 import Postcode from '@/pages/subscribe/postcode'
 import Plan from '@/pages/subscribe/plan'
@@ -29,6 +32,8 @@ function App() {
         <Route path="/diet-plans" element={<DietPlans />} />
         <Route path="/contact" element={<Contact />} />
       </Route>
+      <Route path="/login" element={<Login />} />
+      <Route path="/complete-account" element={<CompleteAccount />} />
       <Route path="/subscribe" element={<SubscribeLayout />}>
         <Route index element={<Postcode />} />
         <Route path="plan" element={<Plan />} />
@@ -40,11 +45,13 @@ function App() {
         <Route path="payment" element={<Payment />} />
         <Route path="account" element={<Account />} />
       </Route>
-      <Route path="/dashboard" element={<DashboardLayout />}>
-        <Route index element={<DashboardProfile />} />
-        <Route path="health" element={<DashboardHealth />} />
-        <Route path="delivery" element={<DashboardDelivery />} />
-        <Route path="subscription" element={<DashboardSubscription />} />
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardProfile />} />
+          <Route path="health" element={<DashboardHealth />} />
+          <Route path="delivery" element={<DashboardDelivery />} />
+          <Route path="subscription" element={<DashboardSubscription />} />
+        </Route>
       </Route>
     </Routes>
   )

@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Sparkles } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
-import { MENU_ITEMS, SLOTS_BY_MEALS_PER_DAY, menuOptionsFor } from "@/data/menu"
+import { MENU_ITEMS, MENU_ITEM_PHOTOS, SLOTS_BY_MEALS_PER_DAY, menuOptionsFor } from "@/data/menu"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
@@ -69,7 +69,7 @@ function Menu() {
               const item = itemById.get(itemId)!
               return (
                 <div key={i} className="rounded-xl border border-border bg-surface overflow-hidden">
-                  <FoodPhoto seed={i} className="aspect-[4/3] rounded-none" />
+                  <FoodPhoto seed={i} src={MENU_ITEM_PHOTOS[item.id]} alt={item.name} className="aspect-[4/3] rounded-none" />
                   <div className="p-4">
                     <span className="text-xs font-semibold text-coral-600">{slots[i]}</span>
                     <h3 className="text-base text-ink mt-0.5 mb-2">{item.name}</h3>

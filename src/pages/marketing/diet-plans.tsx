@@ -8,7 +8,7 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { GOALS, DIET_TYPES, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal, type DietType } from "@/data/menu"
+import { GOALS, GOAL_PHOTOS, DIET_TYPES, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal, type DietType } from "@/data/menu"
 import type { MealsPerDay } from "@/lib/subscribe-context"
 import { formatGBP } from "@/lib/pricing"
 import { cn } from "@/lib/utils"
@@ -29,7 +29,7 @@ function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }
 
   return (
     <Card className="overflow-hidden flex flex-col">
-      <FoodPhoto seed={seed} className="aspect-[16/9] rounded-none" />
+      <FoodPhoto seed={seed} src={GOAL_PHOTOS[goal.id]} alt={goal.id} className="aspect-[16/9] rounded-none" />
       <div className="p-6 flex flex-col flex-1">
         <h3 className="text-xl text-ink mb-1.5">{goal.id}</h3>
         <p className="text-sm text-ink-muted mb-4">{goal.description}</p>

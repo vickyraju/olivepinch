@@ -1,20 +1,45 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { DIET_TYPES, ALLERGENS, type DietType } from "@/data/menu"
 import { useSubscribe } from "@/lib/subscribe-context"
+import { GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
+import { api, ApiError } from "@/lib/api"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { FieldError } from "@/components/ui/field-error"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
 function Preferences() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
 
   function toggleAllergen(allergen: string, checked: boolean) {
     const next = checked
       ? [...state.allergens, allergen]
       : state.allergens.filter((a) => a !== allergen)
     update({ allergens: next })
+  }
+
+  async function handleContinue() {
+    if (!state.goal || !state.dietType || !state.customerId) return
+    setError("")
+    setSaving(true)
+    try {
+      await api.patch(`/customers/${state.customerId}/preferences`, {
+        goal: GOAL_TO_ENUM[state.goal],
+        dietType: DIET_TO_ENUM[state.dietType],
+        allergens: state.allergens,
+        postcode: state.postcode,
+      })
+      navigate("/subscribe/meals")
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't save your preferences — try again.")
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -64,10 +89,12 @@ function Preferences() {
         </div>
       </div>
 
+      <FieldError>{error}</FieldError>
       <StepNav
         backTo="/subscribe/goal"
-        continueDisabled={!state.dietType}
-        onContinue={() => navigate("/subscribe/meals")}
+        continueDisabled={!state.dietType || saving}
+        continueLabel={saving ? "Saving…" : "Continue"}
+        onContinue={handleContinue}
       />
     </div>
   )

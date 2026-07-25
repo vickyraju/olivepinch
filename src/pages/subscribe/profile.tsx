@@ -3,11 +3,13 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
+import { FieldError } from "@/components/ui/field-error"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { useSubscribe, type Gender } from "@/lib/subscribe-context"
 import { calculateBmi, bmiCategory, BMI_CATEGORY_COLOR } from "@/lib/bmi"
+import { api, ApiError } from "@/lib/api"
 import { StepNav } from "./step-nav"
 import { useState } from "react"
 
@@ -17,6 +19,8 @@ function Profile() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
   const [healthConsent, setHealthConsent] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState("")
   const p = state.profile
 
   const height = parseFloat(p.heightCm)
@@ -32,6 +36,29 @@ function Profile() {
     p.age !== "" &&
     hasHealthData &&
     healthConsent
+
+  async function handleContinue() {
+    setError("")
+    setSaving(true)
+    try {
+      const res = await api.post<{ customerId: string }>("/customers/provisional", {
+        fullName: p.fullName.trim(),
+        email: p.email.trim(),
+        gender: p.gender || undefined,
+        age: Number(p.age),
+        heightCm: Number(p.heightCm),
+        weightKg: Number(p.weightKg),
+        healthConsent: true,
+        marketingOptIn: false,
+      })
+      update({ customerId: res.customerId })
+      navigate("/subscribe/goal")
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Couldn't save your profile — try again.")
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div>
@@ -142,7 +169,13 @@ function Profile() {
         )}
       </div>
 
-      <StepNav backTo="/subscribe/plan" continueDisabled={!canContinue} onContinue={() => navigate("/subscribe/goal")} />
+      <FieldError>{error}</FieldError>
+      <StepNav
+        backTo="/subscribe/plan"
+        continueDisabled={!canContinue || saving}
+        continueLabel={saving ? "Saving…" : "Continue"}
+        onContinue={handleContinue}
+      />
     </div>
   )
 }

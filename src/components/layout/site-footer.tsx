@@ -1,13 +1,12 @@
 import { Link } from "react-router-dom"
+import { Logo } from "@/components/ui/logo"
 
 function SiteFooter() {
   return (
     <footer className="border-t border-border bg-cream-100">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 py-14 grid grid-cols-2 gap-10 md:grid-cols-4">
         <div className="col-span-2 md:col-span-1">
-          <span className="font-display text-xl font-extrabold text-olive-700">
-            Olive<span className="text-coral-500">Pinch</span>
-          </span>
+          <Logo className="text-xl" />
           <p className="mt-3 text-sm text-ink-muted max-w-xs">
             Freshly prepared, goal-based meal plans delivered daily, one UK city at a time.
           </p>

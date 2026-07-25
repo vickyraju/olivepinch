@@ -1,6 +1,8 @@
+import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Activity, Truck, RefreshCw, UtensilsCrossed, Download, Trash2, ArrowRight } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
+import { fetchWithAuth } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -14,8 +16,9 @@ const LINKS = [
   { to: "/dashboard/subscription", label: "Subscription", desc: "Renew, change plan length", icon: RefreshCw },
 ]
 
-function downloadData(customer: unknown) {
-  const blob = new Blob([JSON.stringify(customer, null, 2)], { type: "application/json" })
+async function downloadData() {
+  const res = await fetchWithAuth("/customers/me/export")
+  const blob = await res.blob()
   const url = URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = url
@@ -27,6 +30,7 @@ function downloadData(customer: unknown) {
 function Profile() {
   const { customer, updateMarketingOptIn, deleteAccount } = useDashboard()
   const navigate = useNavigate()
+  const [deleting, setDeleting] = useState(false)
 
   return (
     <div className="space-y-8">
@@ -88,7 +92,7 @@ function Profile() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button type="button" variant="outline" onClick={() => downloadData(customer)}>
+          <Button type="button" variant="outline" onClick={() => downloadData()}>
             <Download className="h-4 w-4" /> Download my data
           </Button>
 
@@ -111,12 +115,14 @@ function Profile() {
                 <Button
                   type="button"
                   variant="destructive"
-                  onClick={() => {
-                    deleteAccount()
+                  disabled={deleting}
+                  onClick={async () => {
+                    setDeleting(true)
+                    await deleteAccount()
                     navigate("/")
                   }}
                 >
-                  Confirm deletion
+                  {deleting ? "Deleting…" : "Confirm deletion"}
                 </Button>
               </div>
             </DialogContent>

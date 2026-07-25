@@ -1,0 +1,54 @@
+import type { DietType, Goal, MealSlot } from "@/data/menu"
+import type { OrderStatus } from "@/lib/subscription"
+
+// Mirrors server/src/lib/enums.ts (labels) and the Prisma schema enums (values) — the
+// backend speaks WEIGHT_LOSS/MEAT/BREAKFAST, the frontend speaks "Weight Loss"/"Meat"/"Breakfast".
+export const GOAL_TO_ENUM: Record<Goal, string> = {
+  "Weight Loss": "WEIGHT_LOSS",
+  "Weight Gain": "WEIGHT_GAIN",
+  "Weight Maintenance": "WEIGHT_MAINTENANCE",
+  "Muscle Building": "MUSCLE_BUILDING",
+}
+
+export const DIET_TO_ENUM: Record<DietType, string> = {
+  Meat: "MEAT",
+  Fish: "FISH",
+  Vegan: "VEGAN",
+  Vegetarian: "VEGETARIAN",
+  Egg: "EGG",
+}
+
+export const MEAL_SLOT_TO_ENUM: Record<MealSlot, string> = {
+  Breakfast: "BREAKFAST",
+  Lunch: "LUNCH",
+  Dinner: "DINNER",
+}
+
+const ENUM_TO_GOAL = Object.fromEntries(Object.entries(GOAL_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, Goal>
+const ENUM_TO_DIET = Object.fromEntries(Object.entries(DIET_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, DietType>
+
+export function goalFromEnum(value: string): Goal {
+  return ENUM_TO_GOAL[value]
+}
+
+export function dietFromEnum(value: string): DietType {
+  return ENUM_TO_DIET[value]
+}
+
+const ORDER_STATUS_FROM_ENUM: Record<string, OrderStatus> = {
+  SCHEDULED: "Scheduled",
+  OUT_FOR_DELIVERY: "Out for Delivery",
+  DELIVERED: "Delivered",
+  ATTEMPTED: "Attempted",
+  PAUSED: "Paused",
+}
+
+export function orderStatusFromEnum(value: string): OrderStatus {
+  return ORDER_STATUS_FROM_ENUM[value] ?? "Scheduled"
+}
+
+export type BackendSubscriptionStatus = "PENDING_PAYMENT" | "ACTIVE" | "EXPIRED"
+
+export function subscriptionStatusFromEnum(value: BackendSubscriptionStatus): "active" | "expired" {
+  return value === "EXPIRED" ? "expired" : "active"
+}

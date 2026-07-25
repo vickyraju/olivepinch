@@ -21,7 +21,12 @@ function FinalCta() {
               <Link to="/subscribe">Check your postcode</Link>
             </Button>
           </div>
-          <FoodPhoto seed={2} className="relative hidden sm:block w-40 h-40 rounded-xl rotate-3 shadow-lifted" />
+          <FoodPhoto
+            seed={2}
+            src="/images/cta-accent.jpg"
+            alt="Turkey and avocado wrap"
+            className="relative hidden sm:block w-40 h-40 rounded-xl rotate-3 shadow-lifted"
+          />
         </div>
       </div>
     </section>

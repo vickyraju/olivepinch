@@ -23,8 +23,8 @@ function About() {
       <section className="pt-14 pb-16 sm:pt-20 sm:pb-20">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
           <div className="grid grid-cols-2 gap-4 order-2 lg:order-1">
-            <FoodPhoto seed={1} className="aspect-square" />
-            <FoodPhoto seed={2} className="aspect-square mt-8" />
+            <FoodPhoto seed={1} src="/images/about-1.jpg" alt="Kitchen prep early in the morning" className="aspect-square" />
+            <FoodPhoto seed={2} src="/images/about-2.jpg" alt="Red lentil dahl over brown rice" className="aspect-square mt-8" />
           </div>
 
           <div className="order-1 lg:order-2">

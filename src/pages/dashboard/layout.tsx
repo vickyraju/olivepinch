@@ -1,6 +1,8 @@
-import { Link, NavLink, Outlet } from "react-router-dom"
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom"
 import { User, Activity, Truck, RefreshCw, LogOut } from "lucide-react"
 import { DashboardProvider } from "@/lib/dashboard-context"
+import { useAuth } from "@/lib/auth"
+import { Logo } from "@/components/ui/logo"
 import { cn } from "@/lib/utils"
 
 const NAV = [
@@ -11,16 +13,24 @@ const NAV = [
 ]
 
 function DashboardLayoutInner() {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  function handleLogout() {
+    logout()
+    navigate("/")
+  }
+
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="font-display text-lg font-extrabold text-olive-700">
-            Olive<span className="text-coral-500">Pinch</span>
+          <Link to="/">
+            <Logo className="text-lg" />
           </Link>
-          <Link to="/" className="flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink">
+          <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink cursor-pointer">
             <LogOut className="h-4 w-4" /> Log out
-          </Link>
+          </button>
         </div>
       </header>
 
