@@ -30,7 +30,7 @@ function SiteHeader() {
               end={link.to === "/"}
               className={({ isActive }) =>
                 cn(
-                  "text-sm font-medium transition-colors",
+                  "font-body text-sm font-normal transition-colors",
                   isActive ? "text-olive-600" : "text-ink hover:text-olive-600"
                 )
               }
@@ -65,7 +65,7 @@ function SiteHeader() {
               to={link.to}
               end={link.to === "/"}
               onClick={() => setOpen(false)}
-              className={({ isActive }) => cn("text-base font-medium", isActive ? "text-olive-600" : "text-ink")}
+              className={({ isActive }) => cn("font-body text-base font-normal", isActive ? "text-olive-600" : "text-ink")}
             >
               {link.label}
             </NavLink>
