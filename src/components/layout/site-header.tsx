@@ -41,7 +41,7 @@ function SiteHeader() {
         </nav>
 
         <div className="hidden md:block">
-          <Button asChild variant="accent" size="sm">
+          <Button asChild variant="primary" size="sm">
             <Link to="/subscribe">Subscribe Now</Link>
           </Button>
         </div>
@@ -70,7 +70,7 @@ function SiteHeader() {
               {link.label}
             </NavLink>
           ))}
-          <Button asChild variant="accent" size="md" className="w-full">
+          <Button asChild variant="primary" size="md" className="w-full">
             <Link to="/subscribe">Subscribe Now</Link>
           </Button>
         </nav>
