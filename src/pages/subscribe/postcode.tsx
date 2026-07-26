@@ -75,7 +75,7 @@ function Postcode() {
             }}
             aria-invalid={!!error}
             autoComplete="postal-code"
-            className="flex-1"
+            className="w-full sm:flex-1"
           />
           <Button type="submit" variant="primary" size="md" className="sm:w-auto" disabled={checking}>
             {checking ? "Checking…" : "Check availability"}
@@ -114,7 +114,7 @@ function Postcode() {
                   placeholder="you@example.com"
                   value={notifyEmail}
                   onChange={(e) => setNotifyEmail(e.target.value)}
-                  className="flex-1"
+                  className="w-full sm:flex-1"
                   aria-label="Email for launch notification"
                 />
                 <Button
