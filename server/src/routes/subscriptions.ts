@@ -195,14 +195,8 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     0
   )
 
-  // ponytail: renewal has no card-entry UI (it charges "the card on file"), and there's no
-  // saved-payment-method/SetupIntent support to actually charge one — so renewal always
-  // auto-activates like dev-mode checkout, real or not. Add Stripe saved-card charging here
-  // if renewal needs to be a real payment.
-  await prisma.payment.create({
-    data: { customerId: req.customerId!, subscriptionId: subscription.id, amount: total, status: "succeeded", paidAt: new Date() },
-  })
-  await prisma.subscription.update({ where: { id: subscription.id }, data: { status: "ACTIVE" } })
-
-  res.status(201).json({ subscriptionId: subscription.id, total, status: "ACTIVE" })
+  // Renewal goes through the same /payments/intent + /payments/confirm chain as initial
+  // checkout (see payment.tsx) — that's the only place Stripe-vs-dev-mode is decided, so
+  // renewal must not shortcut it with its own auto-succeed logic.
+  res.status(201).json({ subscriptionId: subscription.id, total, status: subscription.status })
 })

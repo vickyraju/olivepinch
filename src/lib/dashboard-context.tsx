@@ -130,12 +130,16 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
 
   const renew = useCallback(
     async (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => {
-      await api.post(`/subscriptions/${customer.subscription.id}/renew`, {
+      const { subscriptionId } = await api.post<{ subscriptionId: string }>(`/subscriptions/${customer.subscription.id}/renew`, {
         planDuration,
         goal: GOAL_TO_ENUM[goal],
         dietType: DIET_TO_ENUM[dietType],
         allergens,
       })
+      // Same intent → confirm chain initial checkout uses — the only place that decides
+      // real Stripe vs. dev-mode auto-succeed, so renewal reuses it rather than faking success.
+      await api.post("/payments/intent", { subscriptionId })
+      await api.post("/payments/confirm", { subscriptionId })
       setCustomer(await refetch())
     },
     [customer.subscription.id, refetch]

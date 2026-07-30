@@ -25,7 +25,9 @@ customersRouter.post("/provisional", validateBody(provisionalSchema), async (req
   const body = req.body as z.infer<typeof provisionalSchema>
 
   const existing = await prisma.customer.findUnique({ where: { email: body.email }, select: { accountStatus: true } })
-  if (existing && existing.accountStatus === "ACTIVE") {
+  // ACTIVE and READ_ONLY both mean a real password already exists on this email — only
+  // PROVISIONAL (mid-signup) and DELETED (scrubbed) are safe to upsert over.
+  if (existing && (existing.accountStatus === "ACTIVE" || existing.accountStatus === "READ_ONLY")) {
     return res.status(409).json({ error: "An account with this email already exists — log in instead." })
   }
 

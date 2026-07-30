@@ -35,10 +35,14 @@ export async function runRecoverySweep() {
 
 // Cron-only endpoint — no admin login involved (nothing to click), gated by a shared
 // secret instead. Vercel Cron sends this same value as a Bearer token automatically
-// when CRON_SECRET is set as an env var; call manually with the same header otherwise.
+// when CRON_SECRET is set as an env var. Fails closed: without CRON_SECRET configured,
+// this endpoint refuses to run rather than being open to anyone on the internet.
 internalRouter.post("/recovery-sweep", async (req, res) => {
   const secret = process.env.CRON_SECRET
-  if (secret && req.headers.authorization !== `Bearer ${secret}`) {
+  if (!secret) {
+    return res.status(501).json({ error: "CRON_SECRET is not configured" })
+  }
+  if (req.headers.authorization !== `Bearer ${secret}`) {
     return res.status(401).json({ error: "Invalid cron secret" })
   }
   res.json(await runRecoverySweep())
