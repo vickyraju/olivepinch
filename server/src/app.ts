@@ -10,6 +10,7 @@ import { paymentsRouter } from "./routes/payments.js"
 import { menuItemsRouter } from "./routes/menu-items.js"
 import { pricingRouter } from "./routes/pricing.js"
 import { adminRouter } from "./routes/admin/index.js"
+import { internalRouter } from "./routes/internal.js"
 import { errorHandler } from "./middleware/error.js"
 
 export function createApp() {
@@ -37,6 +38,7 @@ export function createApp() {
   app.use("/api/menu-items", menuItemsRouter)
   app.use("/api/pricing", pricingRouter)
   app.use("/api/admin", adminRouter)
+  app.use("/api/internal", internalRouter)
 
   app.use(errorHandler)
 

@@ -16,10 +16,16 @@ const createSchema = z.object({
   startDate: z.string(), // YYYY-MM-DD
   mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   address: z.string().min(1),
+  // Optional per-day menu customization from the "customize your menu" funnel step.
+  // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
+  // Falls back to the goal/diet-matched default when omitted.
+  dayMenus: z.array(z.object({ date: z.string(), items: z.array(z.string()) })).optional(),
 })
 
-// Builds every day's default menu server-side (source of truth for FR-C10/FR-C12 pricing)
-// and creates the Subscription + Order + OrderItem rows in one transaction.
+// Builds every day's menu server-side (source of truth for FR-C10/FR-C12 pricing) — either
+// from the caller's day-by-day selections (validated against real MenuItem ids) or the
+// goal/diet-matched default — and creates the Subscription + Order + OrderItem rows in one
+// transaction.
 subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
   const body = req.body as z.infer<typeof createSchema>
   const customer = await prisma.customer.findUniqueOrThrow({ where: { id: body.customerId } })
@@ -31,16 +37,32 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
   const startDate = new Date(`${body.startDate}T00:00:00.000Z`)
   const deliveryDates = buildDeliveryDates(startDate, body.planDuration, [])
 
+  const customDayByDate = new Map((body.dayMenus ?? []).map((d) => [d.date, d.items]))
+  const menuItemIds = new Set([...customDayByDate.values()].flat())
+  const menuItemsById = menuItemIds.size
+    ? new Map((await prisma.menuItem.findMany({ where: { id: { in: [...menuItemIds] } } })).map((m) => [m.id, m]))
+    : new Map()
+
   const dayItems = await Promise.all(
-    deliveryDates.map((date) =>
-      Promise.all(
-        slots.map(async (slot: MealSlot) => ({
-          slot,
-          date,
-          item: await defaultMenuItemFor(customer.goal as Goal, customer.dietType as DietType, customer.allergens, slot),
-        }))
+    deliveryDates.map(async (date) => {
+      const isoDate = date.toISOString().slice(0, 10)
+      const customItemIds = customDayByDate.get(isoDate)
+
+      return Promise.all(
+        slots.map(async (slot: MealSlot, i: number) => {
+          const customItemId = customItemIds?.[i]
+          const customItem = customItemId ? menuItemsById.get(customItemId) : undefined
+          if (customItemId && (!customItem || customItem.slot !== slot)) {
+            throw Object.assign(new Error(`Invalid menu selection for ${isoDate} (${slot})`), { status: 400 })
+          }
+          return {
+            slot,
+            date,
+            item: customItem ?? (await defaultMenuItemFor(customer.goal as Goal, customer.dietType as DietType, customer.allergens, slot)),
+          }
+        })
       )
-    )
+    })
   )
 
   const subscription = await prisma.subscription.create({
@@ -172,5 +194,15 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     (sum, order) => sum + order.items.reduce((s, i) => s + Number(i.menuItem.price), 0),
     0
   )
-  res.status(201).json({ subscriptionId: subscription.id, total })
+
+  // ponytail: renewal has no card-entry UI (it charges "the card on file"), and there's no
+  // saved-payment-method/SetupIntent support to actually charge one — so renewal always
+  // auto-activates like dev-mode checkout, real or not. Add Stripe saved-card charging here
+  // if renewal needs to be a real payment.
+  await prisma.payment.create({
+    data: { customerId: req.customerId!, subscriptionId: subscription.id, amount: total, status: "succeeded", paidAt: new Date() },
+  })
+  await prisma.subscription.update({ where: { id: subscription.id }, data: { status: "ACTIVE" } })
+
+  res.status(201).json({ subscriptionId: subscription.id, total, status: "ACTIVE" })
 })

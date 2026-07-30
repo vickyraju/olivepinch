@@ -24,6 +24,11 @@ const provisionalSchema = z.object({
 customersRouter.post("/provisional", validateBody(provisionalSchema), async (req, res) => {
   const body = req.body as z.infer<typeof provisionalSchema>
 
+  const existing = await prisma.customer.findUnique({ where: { email: body.email }, select: { accountStatus: true } })
+  if (existing && existing.accountStatus === "ACTIVE") {
+    return res.status(409).json({ error: "An account with this email already exists — log in instead." })
+  }
+
   const customer = await prisma.customer.upsert({
     where: { email: body.email },
     update: {
