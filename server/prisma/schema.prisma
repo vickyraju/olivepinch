@@ -208,4 +208,16 @@ model AdminUser {
   passwordHash String
   name         String
   createdAt    DateTime @default(now())
+
+  auditLogs    AdminAuditLog[]
+}
+
+model AdminAuditLog {
+  id         String    @id @default(cuid())
+  adminId    String
+  admin      AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  action     String
+  customerId String?
+  detail     String?
+  createdAt  DateTime  @default(now())
 }
