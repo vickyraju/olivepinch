@@ -2,11 +2,12 @@ import { Link, Outlet, useLocation } from "react-router-dom"
 import { SubscribeProvider } from "@/lib/subscribe-context"
 import { ProgressStepper } from "@/components/ui/progress-stepper"
 import { Logo } from "@/components/ui/logo"
-import { PHASES, phaseIndex } from "./steps"
+import { PHASES, phaseIndex, stepIndexInPhase } from "./steps"
 
 function SubscribeLayoutInner() {
   const location = useLocation()
-  const current = phaseIndex(location.pathname)
+  const currentPhase = phaseIndex(location.pathname)
+  const currentStep = stepIndexInPhase(location.pathname)
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -16,7 +17,7 @@ function SubscribeLayoutInner() {
             <Logo className="text-lg" />
           </Link>
           <div className="justify-self-end sm:justify-self-center">
-            <ProgressStepper phases={PHASES} current={current} />
+            <ProgressStepper phases={PHASES} currentPhase={currentPhase} currentStep={currentStep} />
           </div>
           <div className="hidden sm:block" aria-hidden />
         </div>
