@@ -90,6 +90,7 @@ interface DashboardContextValue {
   addHealthLog: (log: Omit<HealthLog, "id" | "date">) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   renew: (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => Promise<void>
+  confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
   deleteAccount: () => Promise<void>
   endDate: string
@@ -128,6 +129,11 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
     [customer.subscription, refetch]
   )
 
+  const confirmRenewal = useCallback(async () => {
+    await api.post("/payments/confirm", { subscriptionId: customer.subscription.id })
+    setCustomer(await refetch())
+  }, [customer.subscription.id, refetch])
+
   const renew = useCallback(
     async (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => {
       const { subscriptionId } = await api.post<{ subscriptionId: string }>(`/subscriptions/${customer.subscription.id}/renew`, {
@@ -136,11 +142,22 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
         dietType: DIET_TO_ENUM[dietType],
         allergens,
       })
-      // Same intent → confirm chain initial checkout uses — the only place that decides
-      // real Stripe vs. dev-mode auto-succeed, so renewal reuses it rather than faking success.
-      await api.post("/payments/intent", { subscriptionId })
-      await api.post("/payments/confirm", { subscriptionId })
-      setCustomer(await refetch())
+      // Same intent endpoint initial checkout uses — the only place that decides real
+      // Worldpay vs. dev-mode auto-succeed, so renewal reuses it rather than faking success.
+      // Redirects back to this same page rather than the funnel's payment-return page.
+      const intent = await api.post<{ devMode?: boolean; redirectUrl?: string }>("/payments/intent", {
+        subscriptionId,
+        returnPath: "/dashboard/subscription?renewalPending=1",
+      })
+
+      if (intent.devMode) {
+        await api.post("/payments/confirm", { subscriptionId })
+        setCustomer(await refetch())
+        return
+      }
+
+      // Leaves the site — never resolves; the page navigates away before this matters.
+      window.location.href = intent.redirectUrl!
     },
     [customer.subscription.id, refetch]
   )
@@ -159,8 +176,8 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   const pausesUsed = pausesUsedThisMonth(customer.subscription.pausedDates)
 
   const value = useMemo(
-    () => ({ customer, addHealthLog, togglePause, renew, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
-    [customer, addHealthLog, togglePause, renew, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
+    () => ({ customer, addHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
+    [customer, addHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
   )
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>

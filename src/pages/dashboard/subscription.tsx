@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { CheckCircle2, AlertTriangle } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { GOALS, DIET_TYPES, ALLERGENS, type Goal, type DietType } from "@/data/menu"
@@ -12,7 +13,7 @@ import { cn } from "@/lib/utils"
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
 
 function Subscription() {
-  const { customer, endDate, renew } = useDashboard()
+  const { customer, endDate, renew, confirmRenewal } = useDashboard()
   const sub = customer.subscription
   const [duration, setDuration] = useState<7 | 14 | 28>(sub.planDuration)
   const [goal, setGoal] = useState<Goal>(sub.goal)
@@ -21,8 +22,27 @@ function Subscription() {
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
   const [error, setError] = useState("")
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const isExpired = sub.status === "expired"
+
+  // Worldpay redirects back here (not a separate return page — this form already lives
+  // where the renewal started) after the customer finishes on the hosted payment page.
+  useEffect(() => {
+    if (!searchParams.get("renewalPending")) return
+    setRenewing(true)
+    confirmRenewal()
+      .then(() => {
+        setConfirmed(true)
+        setTimeout(() => setConfirmed(false), 4000)
+      })
+      .catch(() => setError("Couldn't renew your subscription — try again."))
+      .finally(() => {
+        setRenewing(false)
+        setSearchParams({}, { replace: true })
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleRenew(e: React.FormEvent) {
     e.preventDefault()
@@ -32,9 +52,9 @@ function Subscription() {
       await renew(duration, goal, dietType, allergens)
       setConfirmed(true)
       setTimeout(() => setConfirmed(false), 4000)
+      setRenewing(false)
     } catch {
       setError("Couldn't renew your subscription — try again.")
-    } finally {
       setRenewing(false)
     }
   }

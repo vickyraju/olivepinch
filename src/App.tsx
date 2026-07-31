@@ -16,6 +16,7 @@ import Preferences from '@/pages/subscribe/preferences'
 import Meals from '@/pages/subscribe/meals'
 import Menu from '@/pages/subscribe/menu'
 import Payment from '@/pages/subscribe/payment'
+import PaymentReturn from '@/pages/subscribe/payment-return'
 import Account from '@/pages/subscribe/account'
 import DashboardLayout from '@/pages/dashboard/layout'
 import DashboardProfile from '@/pages/dashboard/profile'
@@ -43,6 +44,7 @@ function App() {
         <Route path="meals" element={<Meals />} />
         <Route path="menu" element={<Menu />} />
         <Route path="payment" element={<Payment />} />
+        <Route path="payment/return" element={<PaymentReturn />} />
         <Route path="account" element={<Account />} />
       </Route>
       <Route element={<ProtectedRoute />}>
