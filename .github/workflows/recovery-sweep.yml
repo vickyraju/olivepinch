@@ -1,0 +1,16 @@
+name: FR-C26 recovery sweep
+
+on:
+  schedule:
+    # Daily at 08:13 UTC — off the hour to avoid the top-of-hour scheduling pile-up.
+    - cron: "13 8 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call recovery-sweep endpoint
+        run: |
+          curl -sf -X POST "https://olivepinch-backend.onrender.com/api/internal/recovery-sweep" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
