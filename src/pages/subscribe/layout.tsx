@@ -11,16 +11,14 @@ function SubscribeLayoutInner() {
   return (
     <div className="min-h-dvh flex flex-col">
       <header className="border-b border-border bg-surface">
-        <div className="relative mx-auto max-w-7xl px-5 sm:px-8 py-4 flex items-center justify-between gap-4">
-          <Link to="/" className="shrink-0">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 py-4 grid grid-cols-[auto_1fr] sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
+          <Link to="/" className="shrink-0 justify-self-start">
             <Logo className="text-lg" />
           </Link>
-          <div className="hidden sm:block sm:absolute sm:left-1/2 sm:-translate-x-1/2">
+          <div className="justify-self-end sm:justify-self-center">
             <ProgressStepper phases={PHASES} current={current} />
           </div>
-          <div className="sm:hidden">
-            <ProgressStepper phases={PHASES} current={current} />
-          </div>
+          <div className="hidden sm:block" aria-hidden />
         </div>
       </header>
       <main className="flex-1 bg-cream">
