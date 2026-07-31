@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: "About Us", to: "/about" },
   { label: "Diet Plans", to: "/diet-plans" },
   { label: "Contact Us", to: "/contact" },
+  { label: "Login", to: "/login" },
 ]
 
 function SiteHeader() {
