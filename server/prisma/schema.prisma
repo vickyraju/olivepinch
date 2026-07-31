@@ -53,6 +53,7 @@ model Customer {
   id              String        @id @default(cuid())
   fullName        String
   email           String        @unique
+  supabaseUserId  String?       @unique
   passwordHash    String?
   gender          String?
   age             Int?

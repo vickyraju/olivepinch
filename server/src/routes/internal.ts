@@ -1,13 +1,14 @@
 import { Router } from "express"
 import { prisma } from "../lib/prisma.js"
-import { signToken } from "../lib/auth.js"
 import { sendEmail } from "../lib/email.js"
 
 export const internalRouter = Router()
 
-// FR-C26: customers who paid but never finished OTP/password verification. Swept
-// periodically (see vercel.json's cron entry) rather than sent immediately at payment
-// time, since the customer may still come back and finish signup on their own.
+// FR-C26: customers who paid but never finished identity verification. Swept periodically
+// (see vercel.json's cron entry) rather than sent immediately at payment time, since the
+// customer may still come back and finish on their own. No signed token needed here —
+// Supabase's own OTP is what actually proves identity when they get to /login, this link
+// just gets them there with the email prefilled.
 export async function runRecoverySweep() {
   const candidates = await prisma.customer.findMany({
     where: {
@@ -18,8 +19,7 @@ export async function runRecoverySweep() {
   })
 
   for (const customer of candidates) {
-    const token = signToken(`${customer.id}:signup`)
-    const link = `${process.env.APP_URL ?? "http://localhost:5173"}/complete-account?token=${token}`
+    const link = `${process.env.APP_URL ?? "http://localhost:5173"}/login?email=${encodeURIComponent(customer.email)}`
     await sendEmail(
       customer.email,
       "Finish setting up your OlivePinch account",

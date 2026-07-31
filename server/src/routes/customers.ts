@@ -2,11 +2,35 @@ import { Router } from "express"
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
-import { requireAuth } from "../middleware/auth.js"
+import { requireAuth, verifySupabaseUser } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
 
 export const customersRouter = Router()
+
+// Called right after a Supabase sign-in (OTP or OAuth) succeeds, whether that's finishing
+// signup or a returning login — both cases just need "find the Customer for this verified
+// email and attach this Supabase user id to it". Doesn't use requireAuth: there's no linked
+// Customer to resolve to yet, that's exactly what this endpoint creates.
+customersRouter.post("/link-account", async (req, res) => {
+  const supaUser = await verifySupabaseUser(req.headers.authorization)
+  const customer = await prisma.customer.findUnique({ where: { email: supaUser.email } })
+  if (!customer) {
+    return res.status(404).json({ error: "No OlivePinch account found for this email — start your plan first." })
+  }
+  if (!customer.supabaseUserId) {
+    await prisma.customer.update({
+      where: { id: customer.id },
+      data: {
+        supabaseUserId: supaUser.id,
+        ...(customer.accountStatus === "PROVISIONAL" ? { accountStatus: "ACTIVE" as const } : {}),
+      },
+    })
+  }
+  const linked = await prisma.customer.findUniqueOrThrow({ where: { id: customer.id } })
+  const { passwordHash: _passwordHash, ...safe } = linked
+  res.json(safe)
+})
 
 const provisionalSchema = z.object({
   fullName: z.string().min(1),
@@ -132,6 +156,7 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
       data: {
         fullName: "Deleted customer",
         email: `deleted-${customerId}@olivepinch.invalid`,
+        supabaseUserId: null,
         passwordHash: null,
         gender: null,
         age: null,

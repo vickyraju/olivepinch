@@ -3,7 +3,6 @@ import cors from "cors"
 import rateLimit from "express-rate-limit"
 import { postcodeRouter } from "./routes/postcode.js"
 import { customersRouter } from "./routes/customers.js"
-import { authRouter } from "./routes/auth.js"
 import { healthLogsRouter } from "./routes/health-logs.js"
 import { subscriptionsRouter } from "./routes/subscriptions.js"
 import { paymentsRouter } from "./routes/payments.js"
@@ -24,14 +23,12 @@ export function createApp() {
   app.use("/api/payments/webhook", express.raw({ type: "application/json" }))
   app.use(express.json())
 
-  // Generic ceiling on top of the tighter OTP-specific limiter in routes/auth.ts
   app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 120 }))
 
   app.get("/api/health", (_req, res) => res.json({ ok: true }))
 
   app.use("/api/postcode", postcodeRouter)
   app.use("/api/customers", customersRouter)
-  app.use("/api/auth", authRouter)
   app.use("/api/health-logs", healthLogsRouter)
   app.use("/api/subscriptions", subscriptionsRouter)
   app.use("/api/payments", paymentsRouter)

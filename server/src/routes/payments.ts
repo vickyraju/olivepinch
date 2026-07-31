@@ -3,7 +3,6 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { worldpayConfig, createHostedPayment, queryPaymentStatus } from "../lib/worldpay.js"
 import { validateBody } from "../middleware/validate.js"
-import { issueOtp } from "../lib/otp.js"
 
 export const paymentsRouter = Router()
 
@@ -60,20 +59,13 @@ paymentsRouter.post(
 )
 
 async function activateSubscription(subscriptionId: string) {
-  const subscription = await prisma.subscription.update({
+  // Identity verification (email OTP / Google / Apple, via Supabase) is a separate step the
+  // frontend drives directly against Supabase — payment succeeding doesn't trigger it here.
+  return prisma.subscription.update({
     where: { id: subscriptionId },
     data: { status: "ACTIVE" },
     include: { customer: true },
   })
-
-  // FR-C16: payment success triggers the signup OTP. FR-C26's "complete your account"
-  // recovery link is for customers who *don't* finish signup — that needs a deferred
-  // sweep (e.g. a cron job over PROVISIONAL customers with a paid subscription), not
-  // an immediate send here. Deferred: no scheduler wired up in this pass.
-  if (subscription.customer.accountStatus === "PROVISIONAL") {
-    await issueOtp(subscription.customerId, "signup", subscription.customer.email)
-  }
-  return subscription
 }
 
 // Dev-mode auto-succeeds. With Worldpay configured, resolves the outcome server-side
