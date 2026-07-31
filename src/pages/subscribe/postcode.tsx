@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { MapPin, CheckCircle2, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -130,6 +130,10 @@ function Postcode() {
           </div>
         )}
       </form>
+
+      <p className="mt-6 text-center text-sm text-ink-muted">
+        Already subscribed? <Link to="/login" className="text-olive-600 font-medium underline">Log in</Link>
+      </p>
 
       {checked === "valid" && (
         <div className="mt-8 flex justify-end">
