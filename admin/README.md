@@ -9,14 +9,14 @@ Vite + React + TypeScript + Tailwind v4, plain `fetch` against the OlivePinch ba
 ## Setup
 
 ```bash
-cp .env.example .env   # VITE_API_URL defaults to http://localhost:4000/api/admin
+cp .env.example .env   # VITE_API_URL defaults to the deployed backend
 npm install
 npm run dev              # http://localhost:5174
 ```
 
-Requires the `server/` API running (see `../server/README.md`) with `CORS_ORIGIN` including `http://localhost:5174`.
+Points at the deployed backend (https://olivepinch-backend.onrender.com/api/admin) by default — talking to the real Supabase-backed database, no local backend or Postgres needed to develop the panel. The backend itself lives on the `backend` branch of this repo if you need to run it locally instead (see its README there); if you do, set `VITE_API_URL=http://localhost:4000/api/admin` in `.env` and make sure the local backend's `CORS_ORIGIN` includes `http://localhost:5174`.
 
-**Default admin login** (from `server/prisma/seed.ts`): `admin@olivepinch.co.uk` / `ChangeMe123!` — change this before any real deployment.
+**Default admin login** (seeded into the database): `admin@olivepinch.co.uk` / `ChangeMe123!` — change this before any real deployment.
 
 ## Pages
 
