@@ -18,6 +18,12 @@ customersRouter.post("/link-account", async (req, res) => {
   if (!customer) {
     return res.status(404).json({ error: "No OlivePinch account found for this email — start your plan first." })
   }
+  // Already linked to a *different* Supabase user than the one making this call — never
+  // fall through and hand back someone else's profile just because the emails happen to
+  // match right now (e.g. after an email change on either side). Refuse instead of guessing.
+  if (customer.supabaseUserId && customer.supabaseUserId !== supaUser.id) {
+    return res.status(409).json({ error: "This email is already linked to a different account." })
+  }
   if (!customer.supabaseUserId) {
     await prisma.customer.update({
       where: { id: customer.id },
