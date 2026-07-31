@@ -47,7 +47,7 @@ function Goal() {
       </div>
 
       <StepNav
-        backTo="/subscribe/profile"
+        backTo="/subscribe/account-setup"
         continueDisabled={!state.goal}
         onContinue={() => navigate("/subscribe/preferences")}
       />

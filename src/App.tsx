@@ -11,6 +11,7 @@ import SubscribeLayout from '@/pages/subscribe/layout'
 import Postcode from '@/pages/subscribe/postcode'
 import Plan from '@/pages/subscribe/plan'
 import SubscribeProfile from '@/pages/subscribe/profile'
+import AccountSetup from '@/pages/subscribe/account-setup'
 import Goal from '@/pages/subscribe/goal'
 import Preferences from '@/pages/subscribe/preferences'
 import Meals from '@/pages/subscribe/meals'
@@ -39,6 +40,7 @@ function App() {
         <Route index element={<Postcode />} />
         <Route path="plan" element={<Plan />} />
         <Route path="profile" element={<SubscribeProfile />} />
+        <Route path="account-setup" element={<AccountSetup />} />
         <Route path="goal" element={<Goal />} />
         <Route path="preferences" element={<Preferences />} />
         <Route path="meals" element={<Meals />} />

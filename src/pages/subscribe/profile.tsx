@@ -3,13 +3,11 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { FieldError } from "@/components/ui/field-error"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { useSubscribe, type Gender } from "@/lib/subscribe-context"
 import { calculateBmi, bmiCategory, BMI_CATEGORY_COLOR } from "@/lib/bmi"
-import { api, ApiError } from "@/lib/api"
 import { StepNav } from "./step-nav"
 import { useState } from "react"
 
@@ -19,8 +17,6 @@ function Profile() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
   const [healthConsent, setHealthConsent] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState("")
   const p = state.profile
 
   const height = parseFloat(p.heightCm)
@@ -31,39 +27,15 @@ function Profile() {
 
   const canContinue =
     p.fullName.trim().length > 1 &&
-    /\S+@\S+\.\S+/.test(p.email) &&
     p.gender !== "" &&
     p.age !== "" &&
     hasHealthData &&
     healthConsent
 
-  async function handleContinue() {
-    setError("")
-    setSaving(true)
-    try {
-      const res = await api.post<{ customerId: string }>("/customers/provisional", {
-        fullName: p.fullName.trim(),
-        email: p.email.trim(),
-        gender: p.gender || undefined,
-        age: Number(p.age),
-        heightCm: Number(p.heightCm),
-        weightKg: Number(p.weightKg),
-        healthConsent: true,
-        marketingOptIn: false,
-      })
-      update({ customerId: res.customerId })
-      navigate("/subscribe/goal")
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Couldn't save your profile — try again.")
-    } finally {
-      setSaving(false)
-    }
-  }
-
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Tell us about you</h1>
-      <p className="text-ink-muted mb-8">We'll use this to build your account and calculate your BMI.</p>
+      <p className="text-ink-muted mb-8">We'll use this to calculate your BMI and recommend meals for your goal.</p>
 
       <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft space-y-5">
         <div>
@@ -74,18 +46,6 @@ function Profile() {
             value={p.fullName}
             onChange={(e) => update({ profile: { ...p, fullName: e.target.value } })}
           />
-        </div>
-
-        <div>
-          <Label htmlFor="email">Email address</Label>
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            value={p.email}
-            onChange={(e) => update({ profile: { ...p, email: e.target.value } })}
-          />
-          <p className="mt-1.5 text-xs text-ink-muted">This becomes your login once your account is created.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -167,12 +127,10 @@ function Profile() {
         )}
       </div>
 
-      <FieldError>{error}</FieldError>
       <StepNav
         backTo="/subscribe/plan"
-        continueDisabled={!canContinue || saving}
-        continueLabel={saving ? "Saving…" : "Continue"}
-        onContinue={handleContinue}
+        continueDisabled={!canContinue}
+        onContinue={() => navigate("/subscribe/account-setup")}
       />
     </div>
   )
