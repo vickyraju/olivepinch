@@ -15,15 +15,7 @@ function SubscribeLayoutInner() {
           <Link to="/" className="shrink-0">
             <Logo className="text-lg" />
           </Link>
-          <div className="flex-1 min-w-0">
-            <ProgressStepper steps={FUNNEL_STEPS} current={current} />
-          </div>
-          <Link
-            to="/login"
-            className="shrink-0 font-body text-sm font-normal text-ink-muted hover:text-olive-600 transition-colors"
-          >
-            Log in
-          </Link>
+          <ProgressStepper steps={FUNNEL_STEPS} current={current} />
         </div>
       </header>
       <main className="flex-1 bg-cream">
