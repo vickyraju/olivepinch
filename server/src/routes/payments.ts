@@ -21,9 +21,11 @@ async function subscriptionTotal(subscriptionId: string) {
 // real Worldpay Hosted Payment Pages flow.
 paymentsRouter.post(
   "/intent",
-  validateBody(z.object({ subscriptionId: z.string() })),
+  // returnPath must be a relative path (never a client-supplied absolute URL) — it feeds
+  // straight into the Worldpay resultUrl, so an unrestricted value would be an open redirect.
+  validateBody(z.object({ subscriptionId: z.string(), returnPath: z.string().startsWith("/").optional() })),
   async (req, res) => {
-    const { subscriptionId } = req.body as { subscriptionId: string }
+    const { subscriptionId, returnPath } = req.body as { subscriptionId: string; returnPath?: string }
     const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
     const total = await subscriptionTotal(subscriptionId)
 
@@ -31,7 +33,8 @@ paymentsRouter.post(
       return res.json({ devMode: true, subscriptionId, amount: total })
     }
 
-    const resultUrl = `${process.env.APP_URL ?? "http://localhost:5173"}/subscribe/payment/return?subscriptionId=${subscriptionId}`
+    const path = returnPath ?? `/subscribe/payment/return?subscriptionId=${subscriptionId}`
+    const resultUrl = `${process.env.APP_URL ?? "http://localhost:5173"}${path}`
     const { redirectUrl, statusQueryUrl } = await createHostedPayment({
       transactionReference: subscriptionId,
       amountMinorUnits: Math.round(total * 100),
