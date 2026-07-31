@@ -196,7 +196,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
   )
 
   // Renewal goes through the same /payments/intent + /payments/confirm chain as initial
-  // checkout (see payment.tsx) — that's the only place Stripe-vs-dev-mode is decided, so
-  // renewal must not shortcut it with its own auto-succeed logic.
+  // checkout (see payment.tsx) — that's the only place real-Worldpay-vs-dev-mode is
+  // decided, so renewal must not shortcut it with its own auto-succeed logic.
   res.status(201).json({ subscriptionId: subscription.id, total, status: subscription.status })
 })
