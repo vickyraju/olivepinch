@@ -15,15 +15,19 @@ async function subscriptionTotal(subscriptionId: string) {
   return orders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + Number(i.menuItem.price), 0), 0)
 }
 
+// Only two return destinations ever legitimately exist (the funnel's default, computed
+// server-side below, and the dashboard renewal case) — allowlisting the exact string
+// closes the whole open-redirect bug class (//evil.com, /\evil.com, etc. all pass a
+// naive startsWith("/") check) rather than trying to out-pattern-match every bypass.
+const ALLOWED_RETURN_PATHS = ["/dashboard/subscription?renewalPending=1"] as const
+
 // FR-C13/FR-C14: total is recomputed server-side (never trust a client-sent amount).
 // Without WORLDPAY_USERNAME/PASSWORD/ENTITY configured, falls back to a dev-mode
 // intent so checkout stays testable — swap for real credentials to exercise the
 // real Worldpay Hosted Payment Pages flow.
 paymentsRouter.post(
   "/intent",
-  // returnPath must be a relative path (never a client-supplied absolute URL) — it feeds
-  // straight into the Worldpay resultUrl, so an unrestricted value would be an open redirect.
-  validateBody(z.object({ subscriptionId: z.string(), returnPath: z.string().startsWith("/").optional() })),
+  validateBody(z.object({ subscriptionId: z.string(), returnPath: z.enum(ALLOWED_RETURN_PATHS).optional() })),
   async (req, res) => {
     const { subscriptionId, returnPath } = req.body as { subscriptionId: string; returnPath?: string }
     const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
