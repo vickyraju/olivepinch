@@ -1,11 +1,9 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { Lock } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { Lock, Mail } from "lucide-react"
 import { useAuth } from "@/lib/auth"
-import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { FieldError } from "@/components/ui/field-error"
 import { Logo } from "@/components/ui/logo"
@@ -31,29 +29,58 @@ function AppleIcon() {
 }
 
 function Login() {
-  const { login } = useAuth()
+  const { isAuthenticated, authError, sendOtp, verifyOtp, signInWithGoogle, signInWithApple } = useAuth()
   const navigate = useNavigate()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [searchParams] = useSearchParams()
+
+  const [stage, setStage] = useState<"email" | "otp">("email")
+  const [email, setEmail] = useState(searchParams.get("email") ?? "")
+  const [code, setCode] = useState("")
   const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [socialNotice, setSocialNotice] = useState("")
+  const [sending, setSending] = useState(false)
+  const [verifying, setVerifying] = useState(false)
 
-  function handleSocial(provider: string) {
-    setSocialNotice(`${provider} sign-in isn't set up yet — use your email and password below.`)
-  }
+  useEffect(() => {
+    if (isAuthenticated) navigate("/dashboard")
+  }, [isAuthenticated, navigate])
 
-  async function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    if (authError) setError(authError)
+  }, [authError])
+
+  async function handleSendCode(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    setLoading(true)
+    setSending(true)
     try {
-      await login(email, password)
-      navigate("/dashboard")
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.")
+      await sendOtp(email)
+      setStage("otp")
+    } catch {
+      setError("Couldn't send a code to that address — check it and try again.")
     } finally {
-      setLoading(false)
+      setSending(false)
+    }
+  }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    setVerifying(true)
+    try {
+      await verifyOtp(email, code)
+      // isAuthenticated flips once link-account + profile load resolve — the effect above navigates.
+    } catch {
+      setError("That code isn't right — check your email and try again.")
+      setVerifying(false)
+    }
+  }
+
+  async function handleSocial(signIn: () => Promise<void>, label: string) {
+    setError("")
+    try {
+      await signIn()
+    } catch {
+      setError(`Couldn't start ${label} sign-in — try again.`)
     }
   }
 
@@ -66,23 +93,55 @@ function Login() {
           </Link>
 
           <h1 className="text-3xl sm:text-4xl text-ink mb-2">Welcome back</h1>
-          <p className="text-ink-muted mb-8">Log in to manage your deliveries, pause a week, or renew your plan.</p>
+          <p className="text-ink-muted mb-8">
+            {stage === "email"
+              ? "Log in to manage your deliveries, pause a week, or renew your plan."
+              : <>We've sent a 6-digit code to <strong className="text-ink">{email}</strong>.</>}
+          </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <PasswordInput id="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-            </div>
-            <FieldError>{error}</FieldError>
-            <Button type="submit" variant="primary" size="lg" className="w-full" disabled={loading}>
-              <Lock className="h-4 w-4" />
-              {loading ? "Signing in…" : "Sign in"}
-            </Button>
-          </form>
+          {stage === "email" && (
+            <form onSubmit={handleSendCode} className="space-y-4">
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <FieldError>{error}</FieldError>
+              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending}>
+                <Mail className="h-4 w-4" />
+                {sending ? "Sending code…" : "Send code"}
+              </Button>
+            </form>
+          )}
+
+          {stage === "otp" && (
+            <form onSubmit={handleVerify} className="space-y-4">
+              <div>
+                <Label htmlFor="code">6-digit code</Label>
+                <Input
+                  id="code"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="123456"
+                  autoComplete="one-time-code"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  className="tracking-[0.5em] text-center text-lg"
+                />
+              </div>
+              <FieldError>{error}</FieldError>
+              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={verifying || code.length !== 6}>
+                <Lock className="h-4 w-4" />
+                {verifying ? "Verifying…" : "Verify code"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => { setStage("email"); setCode(""); setError("") }}
+                className="w-full text-center text-sm text-ink-muted hover:text-ink cursor-pointer"
+              >
+                Use a different email
+              </button>
+            </form>
+          )}
 
           <p className="mt-6 text-center text-sm text-ink-muted">
             New to OlivePinch? <Link to="/subscribe" className="text-olive-600 font-medium underline">Check your postcode</Link>
@@ -100,7 +159,7 @@ function Login() {
               variant="ghost"
               size="lg"
               className="w-full border border-border text-ink hover:bg-cream-100"
-              onClick={() => handleSocial("Google")}
+              onClick={() => handleSocial(signInWithGoogle, "Google")}
             >
               <GoogleIcon /> Continue with Google
             </Button>
@@ -109,15 +168,11 @@ function Login() {
               variant="ghost"
               size="lg"
               className="w-full border border-border text-ink hover:bg-cream-100"
-              onClick={() => handleSocial("Apple")}
+              onClick={() => handleSocial(signInWithApple, "Apple")}
             >
               <AppleIcon /> Continue with Apple
             </Button>
           </div>
-
-          {socialNotice && (
-            <p role="status" className="mt-4 text-center text-sm text-ink-muted">{socialNotice}</p>
-          )}
         </div>
       </div>
 

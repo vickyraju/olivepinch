@@ -1,5 +1,6 @@
+import { supabase } from "./supabase"
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api"
-const TOKEN_KEY = "olivepinch_customer_token"
 
 export class ApiError extends Error {
   status: number
@@ -10,16 +11,9 @@ export class ApiError extends Error {
   }
 }
 
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
-}
-
-export function setToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token)
-}
-
-export function clearToken(): void {
-  localStorage.removeItem(TOKEN_KEY)
+async function authHeader(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session ? { Authorization: `Bearer ${session.access_token}` } : {}
 }
 
 interface RequestOptions {
@@ -28,9 +22,7 @@ interface RequestOptions {
 }
 
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json" }
-  const token = getToken()
-  if (token) headers.Authorization = `Bearer ${token}`
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...(await authHeader()) }
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method: opts.method ?? "GET",
@@ -56,10 +48,7 @@ export const api = {
 
 /** For endpoints that need the auth header but return a non-JSON attachment (e.g. GDPR export). */
 export async function fetchWithAuth(path: string): Promise<Response> {
-  const token = getToken()
-  const headers: Record<string, string> = {}
-  if (token) headers.Authorization = `Bearer ${token}`
-  const res = await fetch(`${BASE_URL}${path}`, { headers })
+  const res = await fetch(`${BASE_URL}${path}`, { headers: await authHeader() })
   if (!res.ok) throw new ApiError(res.status, `Request failed with status ${res.status}`)
   return res
 }

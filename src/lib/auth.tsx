@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
-import { api, clearToken, getToken, setToken } from "./api"
+import { supabase } from "./supabase"
+import { api, ApiError } from "./api"
 
 export interface CustomerActor {
   id: string
@@ -11,10 +12,14 @@ interface AuthContextValue {
   isLoading: boolean
   isAuthenticated: boolean
   customer: CustomerActor | null
-  login: (email: string, password: string) => Promise<void>
-  /** Store a token already issued elsewhere (e.g. just after password creation) and load the profile. */
-  setSession: (token: string) => Promise<void>
-  logout: () => void
+  /** Set when a sign-in succeeded at the Supabase level but linking to an OlivePinch
+   * account failed (e.g. no account exists yet for this email) — surface it, don't hang. */
+  authError: string | null
+  sendOtp: (email: string) => Promise<void>
+  verifyOtp: (email: string, code: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
+  signInWithApple: () => Promise<void>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -22,41 +27,59 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [customer, setCustomer] = useState<CustomerActor | null>(null)
-
-  const refreshMe = useCallback(async () => {
-    try {
-      setCustomer(await api.get<CustomerActor>("/customers/me"))
-    } catch {
-      setCustomer(null)
-      clearToken()
-    }
-  }, [])
+  const [authError, setAuthError] = useState<string | null>(null)
 
   useEffect(() => {
-    ;(async () => {
-      if (getToken()) await refreshMe()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!session) {
+        setCustomer(null)
+        setIsLoading(false)
+        return
+      }
+      setAuthError(null)
+      try {
+        // Idempotent — finds-or-links the Customer row for this verified email, whether
+        // this is finishing signup or a returning login (OTP or OAuth, same call either way).
+        if (event === "SIGNED_IN") await api.post("/customers/link-account")
+        setCustomer(await api.get<CustomerActor>("/customers/me"))
+      } catch (err) {
+        setCustomer(null)
+        setAuthError(err instanceof ApiError ? err.message : "Couldn't sign you in — try again.")
+        await supabase.auth.signOut() // don't leave a Supabase session with no linked OlivePinch account
+      }
       setIsLoading(false)
-    })()
-  }, [refreshMe])
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await api.post<{ token: string }>("/auth/login", { email, password })
-    setToken(res.token)
-    await refreshMe()
-  }, [refreshMe])
+  const sendOtp = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
+    if (error) throw error
+  }, [])
 
-  const setSession = useCallback(async (token: string) => {
-    setToken(token)
-    await refreshMe()
-  }, [refreshMe])
+  const verifyOtp = useCallback(async (email: string, code: string) => {
+    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" })
+    if (error) throw error
+    // onAuthStateChange's SIGNED_IN handler above does the link-account + profile load.
+  }, [])
 
-  const logout = useCallback(() => {
-    clearToken()
+  const signInWithGoogle = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/dashboard` } })
+    if (error) throw error
+  }, [])
+
+  const signInWithApple = useCallback(async () => {
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "apple", options: { redirectTo: `${window.location.origin}/dashboard` } })
+    if (error) throw error
+  }, [])
+
+  const logout = useCallback(async () => {
+    await supabase.auth.signOut()
     setCustomer(null)
   }, [])
 
   return (
-    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, login, setSession, logout }}>
+    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, authError, sendOtp, verifyOtp, signInWithGoogle, signInWithApple, logout }}>
       {children}
     </AuthContext.Provider>
   )

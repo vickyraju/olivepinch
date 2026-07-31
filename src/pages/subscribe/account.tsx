@@ -1,9 +1,8 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { CheckCircle2, Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { CheckCircle2, Mail, Lock } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { useAuth } from "@/lib/auth"
-import { api, ApiError } from "@/lib/api"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -11,64 +10,46 @@ import { FieldError } from "@/components/ui/field-error"
 
 function Account() {
   const { state, reset } = useSubscribe()
-  const { setSession } = useAuth()
+  const { isAuthenticated, authError, sendOtp, verifyOtp } = useAuth()
   const navigate = useNavigate()
   const email = state.profile.email || "your email"
 
-  const [stage, setStage] = useState<"otp" | "password" | "done">("otp")
+  const [stage, setStage] = useState<"sending" | "otp" | "verifying" | "done">("sending")
   const [otp, setOtp] = useState("")
-  const [otpError, setOtpError] = useState("")
-  const [otpSubmitting, setOtpSubmitting] = useState(false)
-  const [verificationToken, setVerificationToken] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirm, setConfirm] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [pwError, setPwError] = useState("")
-  const [pwSubmitting, setPwSubmitting] = useState(false)
+  const [error, setError] = useState("")
 
-  async function verifyOtp(e: React.FormEvent) {
-    e.preventDefault()
-    setOtpError("")
-    setOtpSubmitting(true)
-    try {
-      const res = await api.post<{ verificationToken: string }>("/auth/otp/verify", {
-        customerId: state.customerId,
-        code: otp,
-        purpose: "signup",
+  useEffect(() => {
+    sendOtp(email)
+      .then(() => setStage("otp"))
+      .catch(() => {
+        setError("Couldn't send your verification code — try again.")
+        setStage("otp")
       })
-      setVerificationToken(res.verificationToken)
-      setStage("password")
-    } catch (err) {
-      setOtpError(err instanceof ApiError ? err.message : "That code isn't right — check your email and try again.")
-    } finally {
-      setOtpSubmitting(false)
-    }
-  }
+    // Only ever send once per visit to this page, regardless of email prop identity churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  async function createPassword(e: React.FormEvent) {
+  useEffect(() => {
+    if (isAuthenticated && stage === "verifying") setStage("done")
+  }, [isAuthenticated, stage])
+
+  useEffect(() => {
+    if (authError) {
+      setError(authError)
+      setStage("otp")
+    }
+  }, [authError])
+
+  async function handleVerify(e: React.FormEvent) {
     e.preventDefault()
-    if (password.length < 8) {
-      setPwError("Password must be at least 8 characters.")
-      return
-    }
-    if (password !== confirm) {
-      setPwError("Passwords don't match.")
-      return
-    }
-    setPwError("")
-    setPwSubmitting(true)
+    setError("")
+    setStage("verifying")
     try {
-      const res = await api.post<{ token: string }>("/auth/password", {
-        customerId: state.customerId,
-        password,
-        verificationToken,
-      })
-      await setSession(res.token)
-      setStage("done")
-    } catch (err) {
-      setPwError(err instanceof ApiError ? err.message : "Couldn't create your account — try again.")
-    } finally {
-      setPwSubmitting(false)
+      await verifyOtp(email, otp)
+      // isAuthenticated flips once link-account + profile load resolve — the effect above advances to "done".
+    } catch {
+      setError("That code isn't right — check your email and try again.")
+      setStage("otp")
     }
   }
 
@@ -76,78 +57,39 @@ function Account() {
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-olive-50">
-          {stage === "otp" && <Mail className="h-6 w-6 text-olive-600" />}
-          {stage === "password" && <Lock className="h-6 w-6 text-olive-600" />}
+          {(stage === "sending" || stage === "otp" || stage === "verifying") && <Mail className="h-6 w-6 text-olive-600" />}
           {stage === "done" && <CheckCircle2 className="h-6 w-6 text-olive-600" />}
         </div>
         <h1 className="text-3xl text-ink">
-          {stage === "otp" && "Verify your email"}
-          {stage === "password" && "Create a password"}
+          {stage === "sending" && "Sending your code…"}
+          {(stage === "otp" || stage === "verifying") && "Verify your email"}
           {stage === "done" && "You're all set"}
         </h1>
         <p className="mt-3 text-ink-muted">
-          {stage === "otp" && <>Payment successful. We've sent a 6-digit code to <strong className="text-ink">{email}</strong>.</>}
-          {stage === "password" && "Set a password so you can log in with your email next time."}
+          {stage === "sending" && "Payment successful — just a moment."}
+          {(stage === "otp" || stage === "verifying") && <>We've sent a 6-digit code to <strong className="text-ink">{email}</strong>.</>}
           {stage === "done" && "Your OlivePinch account and subscription are ready."}
         </p>
       </div>
 
-      {stage === "otp" && (
-        <form onSubmit={verifyOtp} className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
+      {(stage === "otp" || stage === "verifying") && (
+        <form onSubmit={handleVerify} className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
           <Label htmlFor="otp">6-digit code</Label>
           <Input
             id="otp"
             inputMode="numeric"
             maxLength={6}
             placeholder="123456"
+            autoComplete="one-time-code"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
             className="tracking-[0.5em] text-center text-lg"
           />
-          <FieldError>{otpError}</FieldError>
+          <FieldError>{error}</FieldError>
           <p className="mt-2 text-xs text-ink-muted">Dev mode: check the server console for your code if email isn't configured.</p>
-          <Button type="submit" variant="accent" size="lg" className="w-full mt-5" disabled={otpSubmitting}>
-            {otpSubmitting ? "Verifying…" : "Verify code"}
-          </Button>
-        </form>
-      )}
-
-      {stage === "password" && (
-        <form onSubmit={createPassword} className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft space-y-5">
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="pr-11"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-0 top-0 h-12 w-11 flex items-center justify-center text-ink-muted cursor-pointer"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="confirm">Confirm password</Label>
-            <Input
-              id="confirm"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-            />
-          </div>
-          <FieldError>{pwError}</FieldError>
-          <Button type="submit" variant="accent" size="lg" className="w-full" disabled={pwSubmitting}>
-            {pwSubmitting ? "Creating account…" : "Create account"}
+          <Button type="submit" variant="accent" size="lg" className="w-full mt-5" disabled={stage === "verifying" || otp.length !== 6}>
+            <Lock className="h-4 w-4" />
+            {stage === "verifying" ? "Verifying…" : "Verify code"}
           </Button>
         </form>
       )}
@@ -155,7 +97,7 @@ function Account() {
       {stage === "done" && (
         <div className="rounded-2xl bg-surface border border-border p-8 shadow-soft text-center">
           <p className="text-sm text-ink-muted mb-6">
-            Log in any time with <strong className="text-ink">{email}</strong> and your new password.
+            Log in any time with <strong className="text-ink">{email}</strong> — we'll email you a fresh code, no password needed.
           </p>
           <Button
             variant="accent"

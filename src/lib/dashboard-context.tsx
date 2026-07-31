@@ -169,7 +169,7 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
 
   const deleteAccount = useCallback(async () => {
     await api.del("/customers/me")
-    logout()
+    await logout()
   }, [logout])
 
   const endDate = computeEndDate(customer.subscription.startDate, customer.subscription.planDuration, customer.subscription.pausedDates)
