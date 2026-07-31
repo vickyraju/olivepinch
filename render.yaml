@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: olivepinch-api
+    name: olivepinch-backend
     runtime: node
     rootDir: server
-    plan: starter
+    plan: free
     region: frankfurt
-    buildCommand: npm install && npx prisma generate && npm run build
+    buildCommand: npm install --include=dev && npx prisma migrate deploy && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
