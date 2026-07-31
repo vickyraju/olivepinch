@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: olivepinch-api
+    runtime: node
+    rootDir: server
+    plan: starter
+    region: frankfurt
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: CRON_SECRET
+        sync: false
