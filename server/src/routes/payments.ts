@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
-import { stripe } from "../lib/stripe.js"
+import { worldpayConfig, createHostedPayment, queryPaymentStatus } from "../lib/worldpay.js"
 import { validateBody } from "../middleware/validate.js"
 import { issueOtp } from "../lib/otp.js"
 
@@ -16,8 +16,9 @@ async function subscriptionTotal(subscriptionId: string) {
 }
 
 // FR-C13/FR-C14: total is recomputed server-side (never trust a client-sent amount).
-// Without STRIPE_SECRET_KEY configured, falls back to a dev-mode intent so checkout
-// stays testable — swap for a real key to exercise the real Stripe flow.
+// Without WORLDPAY_USERNAME/PASSWORD/ENTITY configured, falls back to a dev-mode
+// intent so checkout stays testable — swap for real credentials to exercise the
+// real Worldpay Hosted Payment Pages flow.
 paymentsRouter.post(
   "/intent",
   validateBody(z.object({ subscriptionId: z.string() })),
@@ -26,14 +27,17 @@ paymentsRouter.post(
     const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
     const total = await subscriptionTotal(subscriptionId)
 
-    if (!stripe) {
+    if (!worldpayConfig) {
       return res.json({ devMode: true, subscriptionId, amount: total })
     }
 
-    const intent = await stripe.paymentIntents.create({
-      amount: Math.round(total * 100),
-      currency: "gbp",
-      metadata: { subscriptionId, customerId: subscription.customerId },
+    const resultUrl = `${process.env.APP_URL ?? "http://localhost:5173"}/subscribe/payment/return?subscriptionId=${subscriptionId}`
+    const { redirectUrl, statusQueryUrl } = await createHostedPayment({
+      transactionReference: subscriptionId,
+      amountMinorUnits: Math.round(total * 100),
+      currency: "GBP",
+      narrativeLine1: "OlivePinch",
+      resultUrl,
     })
     await prisma.payment.create({
       data: {
@@ -41,10 +45,10 @@ paymentsRouter.post(
         subscriptionId,
         amount: total,
         status: "pending",
-        providerRef: intent.id,
+        providerRef: statusQueryUrl,
       },
     })
-    res.json({ clientSecret: intent.client_secret, amount: total })
+    res.json({ redirectUrl, amount: total })
   }
 )
 
@@ -65,22 +69,29 @@ async function activateSubscription(subscriptionId: string) {
   return subscription
 }
 
-// Dev-mode / client-confirmed path — for a production Stripe key, prefer the webhook below.
+// Dev-mode auto-succeeds. With Worldpay configured, resolves the outcome server-side
+// via the status-query URL saved on the pending Payment row — never trusts a
+// client-supplied "it succeeded" flag.
 paymentsRouter.post(
   "/confirm",
-  validateBody(z.object({ subscriptionId: z.string(), paymentIntentId: z.string().optional() })),
+  validateBody(z.object({ subscriptionId: z.string() })),
   async (req, res) => {
-    const { subscriptionId, paymentIntentId } = req.body as { subscriptionId: string; paymentIntentId?: string }
+    const { subscriptionId } = req.body as { subscriptionId: string }
 
-    if (stripe && paymentIntentId) {
-      const intent = await stripe.paymentIntents.retrieve(paymentIntentId)
-      if (intent.status !== "succeeded") {
-        return res.status(402).json({ error: "Payment has not succeeded yet" })
-      }
-      await prisma.payment.updateMany({
-        where: { providerRef: paymentIntentId },
-        data: { status: "succeeded", paidAt: new Date() },
+    if (worldpayConfig) {
+      const pending = await prisma.payment.findFirst({
+        where: { subscriptionId, status: "pending" },
+        orderBy: { createdAt: "desc" },
       })
+      if (!pending?.providerRef) {
+        return res.status(402).json({ error: "No pending payment found for this subscription" })
+      }
+      const { succeeded } = await queryPaymentStatus(pending.providerRef)
+      if (!succeeded) {
+        await prisma.payment.update({ where: { id: pending.id }, data: { status: "failed" } })
+        return res.status(402).json({ error: "Payment has not succeeded" })
+      }
+      await prisma.payment.update({ where: { id: pending.id }, data: { status: "succeeded", paidAt: new Date() } })
     } else {
       const total = await subscriptionTotal(subscriptionId)
       const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
@@ -94,24 +105,9 @@ paymentsRouter.post(
   }
 )
 
-// Production path: Stripe calls this directly. Requires STRIPE_WEBHOOK_SECRET and a public URL.
-paymentsRouter.post("/webhook", async (req, res) => {
-  if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
-    return res.status(501).json({ error: "Stripe webhook not configured" })
-  }
-  const signature = req.headers["stripe-signature"]
-  let event
-  try {
-    event = stripe.webhooks.constructEvent(req.body, signature as string, process.env.STRIPE_WEBHOOK_SECRET)
-  } catch (err) {
-    return res.status(400).json({ error: `Webhook signature verification failed: ${err}` })
-  }
-
-  if (event.type === "payment_intent.succeeded") {
-    const intent = event.data.object as { id: string; metadata: { subscriptionId?: string } }
-    await prisma.payment.updateMany({ where: { providerRef: intent.id }, data: { status: "succeeded", paidAt: new Date() } })
-    if (intent.metadata.subscriptionId) await activateSubscription(intent.metadata.subscriptionId)
-  }
-
-  res.json({ received: true })
+// Optional belt-and-braces on top of /confirm's status-query path — Worldpay webhooks
+// need separate webhook-URL configuration from a Worldpay Implementation Manager, same
+// non-self-serve gate as credentials, so this stays a stub until that config exists.
+paymentsRouter.post("/webhook", async (_req, res) => {
+  res.status(501).json({ error: "Worldpay webhook not configured" })
 })

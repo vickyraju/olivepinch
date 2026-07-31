@@ -19,8 +19,8 @@ export function createApp() {
   const allowedOrigins = (process.env.CORS_ORIGIN ?? "*").split(",").map((o) => o.trim())
   app.use(cors({ origin: allowedOrigins.includes("*") ? "*" : allowedOrigins }))
 
-  // Stripe webhook needs the raw body for signature verification — must be registered
-  // before the global JSON body parser below.
+  // Webhook signature verification needs raw body — keep this ahead of the global
+  // JSON parser regardless of provider (currently a stub; see routes/payments.ts).
   app.use("/api/payments/webhook", express.raw({ type: "application/json" }))
   app.use(express.json())
 

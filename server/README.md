@@ -9,7 +9,7 @@ Deployed at https://olivepinch-backend.onrender.com (Render, `eu-west-2`, free p
 - **Runtime**: Node.js, TypeScript, Express 5
 - **DB**: PostgreSQL via Prisma ORM (Supabase in production)
 - **Auth**: JWT (30-day customer token / 12-hour admin token) + bcrypt password hashing + email OTP
-- **Payments**: Stripe (Payment Intents) — falls back to a dev-mode auto-succeed path if `STRIPE_SECRET_KEY` is unset (still unset in production; real payments aren't live yet)
+- **Payments**: Worldpay (Access, Hosted Payment Pages) — falls back to a dev-mode auto-succeed path if `WORLDPAY_USERNAME`/`WORLDPAY_PASSWORD`/`WORLDPAY_ENTITY` are unset (still unset in production; real payments aren't live yet)
 - **Email**: Resend API if `RESEND_API_KEY` is set, otherwise logs to console (still unset in production; OTPs/recovery emails aren't actually delivered yet)
 - **Validation**: Zod on every request body
 
@@ -27,7 +27,7 @@ Requires a running PostgreSQL instance. Locally, either:
 - `brew install postgresql@14 && brew services start postgresql@14`, then `createdb olivepinch`, or
 - any hosted Postgres (Neon, Supabase, Vercel Postgres) — paste its connection string into `DATABASE_URL`.
 
-Stripe and email are **optional** for local dev — leave the keys blank and:
+Worldpay and email are **optional** for local dev — leave the keys blank and:
 - payments auto-succeed via `/payments/confirm` without a real card
 - OTP codes are printed to the server console instead of emailed
 
@@ -35,7 +35,7 @@ Stripe and email are **optional** for local dev — leave the keys blank and:
 
 ## Deploying
 
-`render.yaml` at the repo root defines the Render Blueprint. Build command runs `prisma migrate deploy` automatically, so pushing to `backend` both ships code and applies any new migrations. Required env vars (set in Render's dashboard, not committed): `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `APP_URL`, `CRON_SECRET`; optional: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `EMAIL_FROM`.
+`render.yaml` at the repo root defines the Render Blueprint. Build command runs `prisma migrate deploy` automatically, so pushing to `backend` both ships code and applies any new migrations. Required env vars (set in Render's dashboard, not committed): `DATABASE_URL`, `JWT_SECRET`, `CORS_ORIGIN`, `APP_URL`, `CRON_SECRET`; optional: `WORLDPAY_USERNAME`, `WORLDPAY_PASSWORD`, `WORLDPAY_ENTITY`, `WORLDPAY_API_URL`, `RESEND_API_KEY`, `EMAIL_FROM`.
 
 ## API surface
 
@@ -55,7 +55,7 @@ Every write endpoint recomputes price/BMI/pause-eligibility server-side — the 
 ## What's genuinely still deferred
 
 - **SMS notifications** (Twilio) — the frontend never collects a phone number, so only email is wired. Add a phone field + Twilio client if SMS becomes a requirement.
-- **Real Stripe/Resend/Twilio credentials** — need actual accounts/API keys only the project owner can provide. Until then, payments auto-succeed and OTPs/emails log to console instead of sending for real.
-- **Worldpay** — evaluated as the payment gateway of choice instead of Stripe, but their Access API requires sandbox credentials issued by a Worldpay Implementation Manager (not self-serve). On hold until those exist.
+- **Real Worldpay/Resend/Twilio credentials** — code is fully wired (payments auto-succeed today in dev-mode); needs sandbox credentials from a Worldpay Implementation Manager to go live, which isn't self-serve. One spot flagged with a `TODO` in `lib/worldpay.ts` — the exact status-query response field/values — needs confirming against live docs once those credentials exist, since it can't be verified without a real sandbox payment.
+- **Worldpay webhook** — `/api/payments/webhook` is a stub (`501`); real webhook configuration also goes through the Implementation Manager. `/payments/confirm`'s server-side status query is the primary confirmation path and doesn't depend on this.
 
 Everything else that used to be listed here as deferred (frontend wiring, admin audit trail, admin invite flow, customer pagination) has been built — see the API surface table above.
