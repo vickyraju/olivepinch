@@ -1,32 +1,15 @@
-# React + TypeScript + Vite
+# OlivePinch
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Meal subscription delivery app — Birmingham, UK pilot.
 
-Currently, two official plugins are available:
+This repo is split by branch rather than by directory — each piece deploys and evolves independently:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Branch | What it is | Deployed at |
+|---|---|---|
+| [`backend`](../../tree/backend) | Express + Prisma + PostgreSQL API | https://olivepinch-backend.onrender.com |
+| [`ui-change`](../../tree/ui-change) | Customer web app — marketing site, subscribe funnel, post-login dashboard | https://olivepinch.vercel.app |
+| [`admin-panel`](../../tree/admin-panel) | Internal ops panel — menu, zones, customer support, orders, revenue | https://admin-panel-gules-seven-61.vercel.app |
 
-## React Compiler
+`main` (this branch) predates that split and isn't deployed anywhere — check out one of the branches above for current code, setup instructions, and status. Each branch's own README covers its local dev setup and what's still deferred.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Database: Supabase Postgres (`eu-west-2`, matching the backend's Render region).
