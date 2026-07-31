@@ -18,8 +18,8 @@ function ProgressStepper({ phases, current }: { phases: Phase[]; current: number
   })
 
   return (
-    <nav aria-label="Progress" className="w-full overflow-x-auto">
-      <ol className="flex items-center gap-2 sm:gap-4 min-w-max px-1 py-2">
+    <nav aria-label="Progress" className="w-full overflow-x-auto flex justify-center">
+      <ol className="flex items-center gap-2 sm:gap-4 px-1 py-2">
         {phases.map((phase, phaseIdx) => {
           const phaseIsDone = currentPhaseIndex > phaseIdx
           const phaseIsCurrent = currentPhaseIndex === phaseIdx
@@ -33,7 +33,7 @@ function ProgressStepper({ phases, current }: { phases: Phase[]; current: number
                   className={cn(
                     "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",
                     phaseState === "done" && "bg-olive-600 text-white",
-                    phaseState === "current" && "bg-coral-500 text-white",
+                    phaseState === "current" && "bg-olive-600 text-white",
                     phaseState === "upcoming" && "bg-cream-100 text-ink-muted"
                   )}
                 >
