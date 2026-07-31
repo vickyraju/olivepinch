@@ -37,16 +37,6 @@ function Contact() {
                 </li>
               ))}
             </ul>
-
-            <div className="rounded-2xl bg-cream-100 border border-border p-6">
-              <h2 className="text-base font-semibold text-ink mb-2">Already subscribed?</h2>
-              <p className="text-sm text-ink-muted mb-4">
-                Pausing, renewing, or changing a delivery is fastest from your dashboard.
-              </p>
-              <Button asChild variant="outline" size="sm">
-                <a href="/dashboard">Go to dashboard</a>
-              </Button>
-            </div>
           </div>
 
           <div className="rounded-2xl bg-surface border border-border p-8 shadow-soft">

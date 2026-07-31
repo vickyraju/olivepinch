@@ -150,7 +150,7 @@ function PriceEstimator() {
         <span className="font-display text-2xl font-bold text-ink">{formatGBP(estimate)}</span>
       </div>
 
-      <Button asChild variant="accent" size="lg" className="w-full mt-5">
+      <Button asChild variant="primary" size="lg" className="w-full mt-5">
         <Link to="/subscribe">Get exact pricing <ArrowRight className="h-4 w-4" /></Link>
       </Button>
     </Card>

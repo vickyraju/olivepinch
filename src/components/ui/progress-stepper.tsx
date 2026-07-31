@@ -1,45 +1,60 @@
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-export interface Step {
-  label: string
+export interface Phase {
+  name: string
+  steps: { label: string }[]
 }
 
-function ProgressStepper({ steps, current }: { steps: Step[]; current: number }) {
+function ProgressStepper({ phases, current }: { phases: Phase[]; current: number }) {
+  let stepsSoFar = 0
+  const currentPhaseIndex = phases.findIndex((p) => {
+    const nextStepsSoFar = stepsSoFar + p.steps.length
+    if (current < nextStepsSoFar) {
+      return true
+    }
+    stepsSoFar = nextStepsSoFar
+    return false
+  })
+
   return (
     <nav aria-label="Progress" className="w-full overflow-x-auto">
-      <ol className="flex items-center gap-1.5 min-w-max px-1 py-2">
-        {steps.map((step, i) => {
-          const state = i < current ? "done" : i === current ? "current" : "upcoming"
+      <ol className="flex items-center gap-2 sm:gap-4 min-w-max px-1 py-2">
+        {phases.map((phase, phaseIdx) => {
+          const phaseIsDone = currentPhaseIndex > phaseIdx
+          const phaseIsCurrent = currentPhaseIndex === phaseIdx
+          const phaseState = phaseIsDone ? "done" : phaseIsCurrent ? "current" : "upcoming"
+
           return (
-            <li key={step.label} className="flex items-center gap-1.5">
-              <div className="flex items-center gap-2">
+            <li key={phase.name} className="flex items-center gap-2 sm:gap-4">
+              <div className="flex flex-col items-center gap-1">
                 <span
-                  aria-current={state === "current" ? "step" : undefined}
+                  aria-current={phaseState === "current" ? "step" : undefined}
                   className={cn(
-                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors",
-                    state === "done" && "bg-olive-600 text-white",
-                    state === "current" && "bg-coral-500 text-white",
-                    state === "upcoming" && "bg-cream-100 text-ink-muted"
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",
+                    phaseState === "done" && "bg-olive-600 text-white",
+                    phaseState === "current" && "bg-coral-500 text-white",
+                    phaseState === "upcoming" && "bg-cream-100 text-ink-muted"
                   )}
                 >
-                  {state === "done" ? <Check className="h-4 w-4" /> : i + 1}
+                  {phaseState === "done" ? <Check className="h-5 w-5" /> : phaseIdx + 1}
                 </span>
                 <span
                   className={cn(
-                    "text-sm font-medium whitespace-nowrap hidden sm:inline",
-                    state === "upcoming" ? "text-ink-muted" : "text-ink"
+                    "text-sm font-semibold whitespace-nowrap hidden sm:inline",
+                    phaseState === "upcoming" ? "text-ink-muted" : "text-ink"
                   )}
                 >
-                  {step.label}
+                  {phase.name}
                 </span>
               </div>
-              {i < steps.length - 1 && (
+              {phaseIdx < phases.length - 1 && (
                 <span
                   aria-hidden
                   className={cn(
-                    "h-px w-6 sm:w-10 shrink-0",
-                    state === "done" ? "bg-olive-600" : "bg-border"
+                    "h-px shrink-0",
+                    phaseIsDone ? "bg-olive-600" : "bg-cream-100",
+                    "w-4 sm:w-6"
                   )}
                 />
               )}
