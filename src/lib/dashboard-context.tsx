@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, useMemo, useState, useEffect, type ReactNode } from "react"
 import type { DietType, Goal } from "@/data/menu"
-import { computeEndDate, pausesUsedThisMonth, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
+import { computeEndDate, pausesUsedThisMonth, toDateKey, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
 import { goalFromEnum, dietFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
@@ -59,7 +59,7 @@ interface RawSubscription {
  * sane display status from the delivery date once nothing has explicitly overridden it. */
 function displayStatusFor(deliveryDateIso: string, backendStatus: string): OrderStatus {
   if (backendStatus !== "SCHEDULED") return orderStatusFromEnum(backendStatus)
-  const today = new Date().toISOString().slice(0, 10)
+  const today = toDateKey(new Date())
   if (deliveryDateIso < today) return "Delivered"
   if (deliveryDateIso === today) return "Out for Delivery"
   return "Scheduled"

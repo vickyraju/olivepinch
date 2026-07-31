@@ -12,9 +12,9 @@ export function bmiCategory(bmi: number): BmiCategory {
   return "Obese"
 }
 
-export const BMI_CATEGORY_COLOR: Record<BmiCategory, "olive" | "coral" | "neutral"> = {
-  Underweight: "coral",
+export const BMI_CATEGORY_COLOR: Record<BmiCategory, "olive" | "warning" | "destructive"> = {
+  Underweight: "warning",
   Normal: "olive",
-  Overweight: "coral",
-  Obese: "coral",
+  Overweight: "destructive",
+  Obese: "destructive",
 }

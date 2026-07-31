@@ -11,6 +11,8 @@ const badgeVariants = cva(
         coral: "bg-coral-50 text-coral-600",
         neutral: "bg-cream-100 text-ink-muted",
         outline: "border border-border text-ink-muted bg-transparent",
+        destructive: "bg-destructive/10 text-destructive",
+        warning: "bg-warning/10 text-warning",
       },
     },
     defaultVariants: { variant: "neutral" },

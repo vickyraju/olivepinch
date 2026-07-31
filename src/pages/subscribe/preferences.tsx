@@ -59,7 +59,7 @@ function Preferences() {
                 aria-pressed={active}
                 onClick={() => update({ dietType: diet })}
                 className={cn(
-                  "rounded-xl border-2 py-4 text-sm font-semibold transition-colors cursor-pointer",
+                  "rounded-xl border-2 py-4 text-base font-semibold transition-colors cursor-pointer",
                   active ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
                 )}
               >

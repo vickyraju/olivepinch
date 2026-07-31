@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { Calendar } from "@/components/ui/calendar"
 import { useSubscribe, type PlanDuration } from "@/lib/subscribe-context"
+import { toDateKey, fromDateKey } from "@/lib/subscription"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
@@ -54,8 +55,8 @@ function Plan() {
       </p>
       <Calendar
         minDate={min}
-        selected={state.startDate ? new Date(state.startDate) : null}
-        onSelect={(date) => update({ startDate: date.toISOString().slice(0, 10) })}
+        selected={state.startDate ? fromDateKey(state.startDate) : null}
+        onSelect={(date) => update({ startDate: toDateKey(date) })}
       />
 
       <StepNav

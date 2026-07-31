@@ -39,8 +39,8 @@ function Goal() {
               <div className={cn("flex h-11 w-11 items-center justify-center rounded-full mb-4", active ? "bg-olive-600" : "bg-cream-100")}>
                 <Icon className={cn("h-5 w-5", active ? "text-white" : "text-olive-600")} strokeWidth={1.75} />
               </div>
-              <h3 className="text-lg text-ink mb-1">{goal.id}</h3>
-              <p className="text-sm text-ink-muted">{goal.description}</p>
+              <h3 className="text-xl font-semibold text-ink mb-1">{goal.id}</h3>
+              <p className="text-base text-ink-muted">{goal.description}</p>
             </button>
           )
         })}

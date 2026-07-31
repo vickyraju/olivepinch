@@ -116,6 +116,29 @@ function Profile() {
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="height">Height (cm)</Label>
+            <Input
+              id="height"
+              type="number"
+              inputMode="decimal"
+              value={p.heightCm}
+              onChange={(e) => update({ profile: { ...p, heightCm: e.target.value } })}
+            />
+          </div>
+          <div>
+            <Label htmlFor="weight">Weight (kg)</Label>
+            <Input
+              id="weight"
+              type="number"
+              inputMode="decimal"
+              value={p.weightKg}
+              onChange={(e) => update({ profile: { ...p, weightKg: e.target.value } })}
+            />
+          </div>
+        </div>
+
         <div className="rounded-lg border border-border bg-cream-100 p-4">
           <div className="flex gap-3">
             <Checkbox
@@ -130,31 +153,6 @@ function Profile() {
               health data under UK GDPR — see our{" "}
               <a href="#" className="text-olive-600 underline">Privacy Policy</a>.
             </Label>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="height">Height (cm)</Label>
-            <Input
-              id="height"
-              type="number"
-              inputMode="decimal"
-              disabled={!healthConsent}
-              value={p.heightCm}
-              onChange={(e) => update({ profile: { ...p, heightCm: e.target.value } })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="weight">Weight (kg)</Label>
-            <Input
-              id="weight"
-              type="number"
-              inputMode="decimal"
-              disabled={!healthConsent}
-              value={p.weightKg}
-              onChange={(e) => update({ profile: { ...p, weightKg: e.target.value } })}
-            />
           </div>
         </div>
 

@@ -5,14 +5,29 @@ export interface OrderDay {
   status: OrderStatus
 }
 
+// toISOString() converts to UTC before formatting, which silently shifts the date for
+// any timezone ahead of UTC (e.g. IST) — always read/write date keys via local calendar
+// components instead, so a date never crosses a day boundary just from serializing it.
+export function toDateKey(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
+export function fromDateKey(key: string): Date {
+  const [y, m, d] = key.split("-").map(Number)
+  return new Date(y, m - 1, d)
+}
+
 function addDays(iso: string, days: number): string {
-  const d = new Date(iso)
+  const d = fromDateKey(iso)
   d.setDate(d.getDate() + days)
-  return d.toISOString().slice(0, 10)
+  return toDateKey(d)
 }
 
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10)
+  return toDateKey(new Date())
 }
 
 export function computeEndDate(startDate: string, planDuration: number, pausedDates: string[]): string {
@@ -40,7 +55,7 @@ export function buildOrderDays(startDate: string, planDuration: number, pausedDa
 export function pausesUsedThisMonth(pausedDates: string[]): number {
   const now = new Date()
   return pausedDates.filter((d) => {
-    const date = new Date(d)
+    const date = fromDateKey(d)
     return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth()
   }).length
 }

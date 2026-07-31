@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import type { DietType, Goal, MealSlot } from "@/data/menu"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuFor } from "@/data/menu"
+import { toDateKey, fromDateKey } from "@/lib/subscription"
 
 export type PlanDuration = 7 | 14 | 28
 export type MealsPerDay = 1 | 2 | 3
@@ -100,12 +101,12 @@ export function SubscribeProvider({ children }: { children: ReactNode }) {
     setState((s) => {
       if (!s.goal || !s.dietType || !s.startDate) return s
       const slots = SLOTS_BY_MEALS_PER_DAY[s.mealsPerDay]
-      const start = new Date(s.startDate)
+      const start = fromDateKey(s.startDate)
       const dayMenus: DayMenu[] = Array.from({ length: s.planDuration }, (_, i) => {
         const date = new Date(start)
         date.setDate(start.getDate() + i)
         return {
-          date: date.toISOString().slice(0, 10),
+          date: toDateKey(date),
           items: slots.map((slot: MealSlot) => defaultMenuFor(s.goal!, s.dietType!, s.allergens, slot).id),
         }
       })
