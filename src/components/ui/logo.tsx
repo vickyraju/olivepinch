@@ -6,7 +6,7 @@ function Logo({ className }: { className?: string }) {
       className={cn("italic font-bold", className)}
       style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#1b2a0c" }}
     >
-      Olive Pinch
+      OlivePinch
     </span>
   )
 }
