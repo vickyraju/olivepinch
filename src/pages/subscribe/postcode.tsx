@@ -33,6 +33,7 @@ function Postcode() {
       setChecked(res.valid ? "valid" : "invalid")
       if (res.valid) {
         update({ postcode: formatPostcode(postcode), postcodeConfirmed: true })
+        setTimeout(() => navigate("/subscribe/plan"), 900)
       }
     } catch {
       setError("Couldn't check that postcode — try again.")
@@ -98,9 +99,9 @@ function Postcode() {
             <div className="flex items-start gap-3">
               <XCircle className="h-5 w-5 text-coral-600 shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-coral-600">Service Unavailable</p>
+                <p className="font-semibold text-coral-600">We don't deliver to {formatPostcode(postcode)} yet</p>
                 <p className="text-sm text-ink-muted mt-0.5">
-                  OlivePinch isn't in your area yet. Leave your email and we'll let you know the moment we launch near you.
+                  We're only piloting in Birmingham right now. Leave your email and we'll let you know the moment we launch in your area.
                 </p>
               </div>
             </div>
@@ -134,14 +135,6 @@ function Postcode() {
       <p className="mt-6 text-center text-sm text-ink-muted">
         Already subscribed? <Link to="/login" className="text-olive-600 font-medium underline">Log in</Link>
       </p>
-
-      {checked === "valid" && (
-        <div className="mt-8 flex justify-end">
-          <Button variant="accent" size="lg" onClick={() => navigate("/subscribe/plan")}>
-            Continue
-          </Button>
-        </div>
-      )}
     </div>
   )
 }
