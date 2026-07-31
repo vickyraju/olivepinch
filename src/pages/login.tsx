@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth"
 import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import { FieldError } from "@/components/ui/field-error"
 import { Logo } from "@/components/ui/logo"
@@ -50,7 +51,7 @@ function Login() {
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <PasswordInput id="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <FieldError>{error}</FieldError>
             <Button type="submit" variant="primary" size="lg" className="w-full" disabled={loading}>
