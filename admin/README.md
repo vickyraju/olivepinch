@@ -4,7 +4,7 @@ Internal ops tool for the OlivePinch pilot — menu, zones, customer support, or
 
 ## Stack
 
-Vite + React + TypeScript + Tailwind v4, React Query for data fetching, `fetch` against the OlivePinch backend (no Supabase — auth is our own JWT). Material Symbols Outlined + Inter (Google Fonts), matching Alhaji's icon/type system exactly rather than OlivePinch's own Outfit/Work Sans + Lucide brand. Separate Vite project from both the customer app and the API server, matching the PRD's system-components split (§4).
+Vite + React + TypeScript + Tailwind v4, plain `fetch` against the OlivePinch backend (no React Query, no Supabase — auth is our own JWT). Material Symbols Outlined + Inter (Google Fonts), matching Alhaji's icon/type system exactly rather than OlivePinch's own Outfit/Work Sans + Lucide brand. Separate Vite project from both the customer app and the API server, matching the PRD's system-components split (§4).
 
 ## Setup
 
