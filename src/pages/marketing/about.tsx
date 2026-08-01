@@ -83,7 +83,7 @@ function About() {
             <p className="mt-3 text-olive-100 max-w-md mx-auto">
               Enter your postcode to check coverage and start building your plan.
             </p>
-            <Button asChild variant="accent" size="lg" className="mt-8">
+            <Button asChild variant="surface" size="lg" className="mt-8">
               <Link to="/subscribe">Check your postcode</Link>
             </Button>
           </div>
