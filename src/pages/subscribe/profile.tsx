@@ -128,7 +128,7 @@ function Profile() {
       </div>
 
       <StepNav
-        backTo="/subscribe/plan"
+        backTo="/subscribe/menu"
         continueDisabled={!canContinue}
         onContinue={() => navigate("/subscribe/account-setup")}
       />

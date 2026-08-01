@@ -132,7 +132,7 @@ function Payment() {
       </div>
 
       <div className="mt-10">
-        <Button type="button" variant="ghost" onClick={() => navigate("/subscribe/menu")} disabled={status === "processing"}>
+        <Button type="button" variant="ghost" onClick={() => navigate("/subscribe/account-setup")} disabled={status === "processing"}>
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
       </div>

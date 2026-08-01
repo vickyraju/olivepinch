@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe } from "@/lib/subscribe-context"
+import { GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
 import { api, ApiError } from "@/lib/api"
 import { StepNav } from "./step-nav"
 
@@ -18,6 +19,7 @@ function AccountSetup() {
   const canContinue = /\S+@\S+\.\S+/.test(email)
 
   async function handleContinue() {
+    if (!state.goal || !state.dietType) return
     setError("")
     setSaving(true)
     try {
@@ -32,8 +34,16 @@ function AccountSetup() {
         healthConsent: true,
         marketingOptIn: false,
       })
+      // Goal/diet/allergens were picked several steps ago in "Choose" but couldn't be saved
+      // until now — that PATCH is customer-scoped, and this is the first point a customerId exists.
+      await api.patch(`/customers/${res.customerId}/preferences`, {
+        goal: GOAL_TO_ENUM[state.goal],
+        dietType: DIET_TO_ENUM[state.dietType],
+        allergens: state.allergens,
+        postcode: state.postcode,
+      })
       update({ profile: { ...p, email: email.trim() }, customerId: res.customerId })
-      navigate("/subscribe/goal")
+      navigate("/subscribe/payment")
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't save your details — try again.")
     } finally {

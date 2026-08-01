@@ -119,7 +119,7 @@ function Menu() {
         </Accordion>
       )}
 
-      <StepNav backTo="/subscribe/meals" onContinue={() => navigate("/subscribe/payment")} />
+      <StepNav backTo="/subscribe/plan" onContinue={() => navigate("/subscribe/profile")} />
     </div>
   )
 }

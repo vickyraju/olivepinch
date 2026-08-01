@@ -13,25 +13,25 @@ export const PHASES: Phase[] = [
     name: "Choose",
     steps: [
       { path: "/subscribe", label: "Postcode" },
+      { path: "/subscribe/goal", label: "Goal" },
+      { path: "/subscribe/preferences", label: "Preferences" },
+      { path: "/subscribe/meals", label: "Meals/Day" },
       { path: "/subscribe/plan", label: "Plan" },
-      { path: "/subscribe/profile", label: "Profile" },
-      { path: "/subscribe/account-setup", label: "Account" },
+      { path: "/subscribe/menu", label: "Menu" },
     ],
   },
   {
     name: "Review",
     steps: [
-      { path: "/subscribe/goal", label: "Goal" },
-      { path: "/subscribe/preferences", label: "Preferences" },
-      { path: "/subscribe/meals", label: "Meals/Day" },
+      { path: "/subscribe/profile", label: "Profile" },
+      { path: "/subscribe/account-setup", label: "Account" },
     ],
   },
   {
     name: "Confirm",
     steps: [
-      { path: "/subscribe/menu", label: "Menu" },
       { path: "/subscribe/payment", label: "Payment" },
-      { path: "/subscribe/account", label: "Account" },
+      { path: "/subscribe/account", label: "Verify" },
     ],
   },
 ]

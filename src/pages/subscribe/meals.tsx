@@ -40,7 +40,7 @@ function Meals() {
         })}
       </div>
 
-      <StepNav backTo="/subscribe/preferences" onContinue={() => navigate("/subscribe/menu")} />
+      <StepNav backTo="/subscribe/preferences" onContinue={() => navigate("/subscribe/plan")} />
     </div>
   )
 }

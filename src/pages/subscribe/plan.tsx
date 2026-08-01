@@ -60,9 +60,9 @@ function Plan() {
       />
 
       <StepNav
-        backTo="/subscribe"
+        backTo="/subscribe/meals"
         continueDisabled={!state.startDate}
-        onContinue={() => navigate("/subscribe/profile")}
+        onContinue={() => navigate("/subscribe/menu")}
       />
     </div>
   )
