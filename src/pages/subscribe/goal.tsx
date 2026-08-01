@@ -30,7 +30,10 @@ function Goal() {
               key={goal.id}
               type="button"
               aria-pressed={active}
-              onClick={() => update({ goal: goal.id })}
+              onClick={() => {
+                update({ goal: goal.id })
+                setTimeout(() => navigate("/subscribe/preferences"), 200)
+              }}
               className={cn(
                 "text-left rounded-2xl border-2 p-6 transition-colors cursor-pointer",
                 active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
@@ -46,11 +49,7 @@ function Goal() {
         })}
       </div>
 
-      <StepNav
-        backTo="/subscribe"
-        continueDisabled={!state.goal}
-        onContinue={() => navigate("/subscribe/preferences")}
-      />
+      <StepNav backTo="/subscribe" hideContinue />
     </div>
   )
 }

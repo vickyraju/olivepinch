@@ -7,11 +7,14 @@ function StepNav({
   onContinue,
   continueLabel = "Continue",
   continueDisabled = false,
+  hideContinue = false,
 }: {
   backTo?: string
-  onContinue: () => void
+  onContinue?: () => void
   continueLabel?: string
   continueDisabled?: boolean
+  /** Step auto-advances on selection (see postcode/goal/meals) — no separate Continue tap needed. */
+  hideContinue?: boolean
 }) {
   const navigate = useNavigate()
   return (
@@ -23,9 +26,11 @@ function StepNav({
       ) : (
         <span />
       )}
-      <Button type="button" variant="accent" size="lg" onClick={onContinue} disabled={continueDisabled}>
-        {continueLabel}
-      </Button>
+      {!hideContinue && (
+        <Button type="button" variant="accent" size="lg" onClick={onContinue} disabled={continueDisabled}>
+          {continueLabel}
+        </Button>
+      )}
     </div>
   )
 }

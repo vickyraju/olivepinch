@@ -26,7 +26,10 @@ function Meals() {
               key={opt.value}
               type="button"
               aria-pressed={active}
-              onClick={() => update({ mealsPerDay: opt.value })}
+              onClick={() => {
+                update({ mealsPerDay: opt.value })
+                setTimeout(() => navigate("/subscribe/plan"), 200)
+              }}
               className={cn(
                 "rounded-2xl border-2 p-6 text-left transition-colors cursor-pointer",
                 active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
@@ -40,7 +43,7 @@ function Meals() {
         })}
       </div>
 
-      <StepNav backTo="/subscribe/preferences" onContinue={() => navigate("/subscribe/plan")} />
+      <StepNav backTo="/subscribe/preferences" hideContinue />
     </div>
   )
 }
