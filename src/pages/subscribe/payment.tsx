@@ -4,17 +4,14 @@ import { AlertCircle, ArrowLeft, Lock, ShieldCheck } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { priceForDayMenus, formatGBP } from "@/lib/pricing"
 import { api, ApiError } from "@/lib/api"
-import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { FieldError } from "@/components/ui/field-error"
+import { OrderSummary } from "./order-summary"
 
 function Payment() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const [address, setAddress] = useState(state.deliveryAddress)
   const [status, setStatus] = useState<"idle" | "processing" | "failed">("idle")
-  const [error, setError] = useState("")
   const [declineMessage, setDeclineMessage] = useState("")
 
   const total = priceForDayMenus(state.dayMenus)
@@ -28,15 +25,15 @@ function Payment() {
     }
   }, [searchParams])
 
-  async function handlePay(e: React.FormEvent) {
-    e.preventDefault()
-    if (!address.trim()) {
-      setError("Enter your delivery address.")
-      return
-    }
-    setError("")
-    update({ deliveryAddress: address, paymentAttempted: true })
+  // Delivery address is collected on the previous step — a direct/stale visit here without it
+  // has nothing to submit, so send them back rather than letting a blank address reach the API.
+  useEffect(() => {
+    if (!state.deliveryAddress) navigate("/subscribe/delivery", { replace: true })
+  }, [state.deliveryAddress, navigate])
+
+  async function handlePay() {
     setStatus("processing")
+    update({ paymentAttempted: true })
 
     try {
       if (!state.customerId) throw new Error("Missing your profile — go back and complete the earlier steps.")
@@ -46,7 +43,7 @@ function Payment() {
         planDuration: state.planDuration,
         startDate: state.startDate,
         mealsPerDay: state.mealsPerDay,
-        address,
+        address: state.deliveryAddress,
         dayMenus: state.dayMenus,
       })
       update({ subscriptionId: subscription.subscriptionId })
@@ -76,18 +73,10 @@ function Payment() {
       <p className="text-ink-muted mb-8">Your selections are saved — a failed payment won't cost you any progress.</p>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <form onSubmit={handlePay} className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft space-y-5 order-2 lg:order-1">
+        <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft space-y-5 order-2 lg:order-1">
           <div>
-            <Label htmlFor="address">Delivery address</Label>
-            <textarea
-              id="address"
-              rows={3}
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Flat / house number, street, Birmingham, postcode"
-              className="flex w-full rounded-md border border-border bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500"
-            />
-            <FieldError>{error}</FieldError>
+            <p className="text-sm font-medium text-ink mb-1">Delivering to</p>
+            <p className="text-sm text-ink-muted">{state.deliveryAddress}</p>
           </div>
 
           <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
@@ -107,32 +96,19 @@ function Payment() {
             </div>
           )}
 
-          <Button type="submit" variant="accent" size="lg" className="w-full" disabled={status === "processing"}>
+          <Button type="button" variant="accent" size="lg" className="w-full" disabled={status === "processing"} onClick={handlePay}>
             <Lock className="h-4 w-4" />
             {status === "processing" ? "Processing…" : `Continue to secure payment · ${formatGBP(total)}`}
           </Button>
-        </form>
+        </div>
 
         <div className="order-1 lg:order-2">
-          <div className="rounded-2xl bg-surface border border-border p-6 shadow-soft sticky top-24">
-            <h2 className="text-lg text-ink mb-4">Order summary</h2>
-            <dl className="space-y-2 text-sm">
-              <div className="flex justify-between"><dt className="text-ink-muted">Plan length</dt><dd className="text-ink font-medium">{state.planDuration} days</dd></div>
-              <div className="flex justify-between"><dt className="text-ink-muted">Meals/day</dt><dd className="text-ink font-medium">{state.mealsPerDay}</dd></div>
-              <div className="flex justify-between"><dt className="text-ink-muted">Goal</dt><dd className="text-ink font-medium">{state.goal}</dd></div>
-              <div className="flex justify-between"><dt className="text-ink-muted">Diet</dt><dd className="text-ink font-medium">{state.dietType}</dd></div>
-              <div className="flex justify-between"><dt className="text-ink-muted">Start date</dt><dd className="text-ink font-medium">{state.startDate ? new Date(state.startDate).toLocaleDateString("en-GB") : "—"}</dd></div>
-            </dl>
-            <div className="border-t border-border mt-4 pt-4 flex justify-between items-baseline">
-              <span className="text-ink font-semibold">Total</span>
-              <span className="font-display text-2xl font-bold text-ink">{formatGBP(total)}</span>
-            </div>
-          </div>
+          <OrderSummary />
         </div>
       </div>
 
       <div className="mt-10">
-        <Button type="button" variant="ghost" onClick={() => navigate("/subscribe/account-setup")} disabled={status === "processing"}>
+        <Button type="button" variant="ghost" onClick={() => navigate("/subscribe/delivery")} disabled={status === "processing"}>
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>
       </div>

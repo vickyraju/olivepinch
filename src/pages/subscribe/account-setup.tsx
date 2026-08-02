@@ -40,7 +40,7 @@ function AccountSetup() {
     if (!customer) return
     const raw = sessionStorage.getItem(SUBSCRIBE_STORAGE_KEY)
     const storedCustomerId = raw ? (JSON.parse(raw).customerId as string | null) : null
-    navigate(storedCustomerId === customer.id ? "/subscribe/payment" : "/dashboard")
+    navigate(storedCustomerId === customer.id ? "/subscribe/delivery" : "/dashboard")
   }, [customer, navigate])
 
   useEffect(() => {
@@ -72,7 +72,7 @@ function AccountSetup() {
         postcode: state.postcode,
       })
       update({ profile: { ...p, email: email.trim() }, customerId: res.customerId })
-      navigate("/subscribe/payment")
+      navigate("/subscribe/delivery")
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Couldn't save your details — try again.")
     } finally {

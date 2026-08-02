@@ -25,6 +25,7 @@ export const PHASES: Phase[] = [
     steps: [
       { path: "/subscribe/profile", label: "Profile" },
       { path: "/subscribe/account-setup", label: "Account" },
+      { path: "/subscribe/delivery", label: "Delivery" },
     ],
   },
   {
