@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { CheckCircle2, Target, ChefHat, Truck, Activity } from "lucide-react"
+import { CheckCircle2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -17,13 +17,6 @@ const PERKS = [
   "Meals matched to your goal, diet, and BMI",
   "Pause up to 4 times a month — never lose a meal you've paid for",
   "Your health data stays yours — export or delete it any time",
-]
-
-const HOW_IT_WORKS = [
-  { icon: Target, title: "Goal-matched menu", description: "Built from your goal, diet, and allergies." },
-  { icon: ChefHat, title: "Freshly prepared", description: "Chef-prepared each morning, delivered chilled." },
-  { icon: Truck, title: "Flexible delivery", description: "Pick your start date, pause anytime." },
-  { icon: Activity, title: "Track your progress", description: "Log your BMI and meals from your dashboard." },
 ]
 
 function AccountSetup() {
@@ -163,33 +156,16 @@ function AccountSetup() {
         <StepNav backTo="/subscribe/profile" hideContinue />
       </div>
 
-      <div className="space-y-6">
-        <div className="rounded-2xl bg-olive-50 border border-olive-100 p-8">
-          <h2 className="text-xl text-ink mb-5">Join OlivePinch</h2>
-          <ul className="space-y-4">
-            {PERKS.map((perk) => (
-              <li key={perk} className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
-                <span className="text-ink-muted">{perk}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="rounded-2xl bg-cream-100 border border-border p-8">
-          <h2 className="text-xl text-ink mb-5">How does it work?</h2>
-          <div className="grid grid-cols-2 gap-6">
-            {HOW_IT_WORKS.map(({ icon: Icon, title, description }) => (
-              <div key={title}>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface border border-border mb-3">
-                  <Icon className="h-4.5 w-4.5 text-olive-600" strokeWidth={1.75} />
-                </div>
-                <h3 className="text-sm font-semibold text-ink mb-1">{title}</h3>
-                <p className="text-xs text-ink-muted leading-relaxed">{description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      <div className="rounded-2xl bg-olive-50 border border-olive-100 p-8">
+        <h2 className="text-xl text-ink mb-5">Join OlivePinch</h2>
+        <ul className="space-y-4">
+          {PERKS.map((perk) => (
+            <li key={perk} className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+              <span className="text-ink-muted">{perk}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )
