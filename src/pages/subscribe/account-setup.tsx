@@ -1,22 +1,51 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Mail } from "lucide-react"
+import { Mail, CheckCircle2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field-error"
+import { GoogleIcon, AppleIcon } from "@/components/ui/social-icons"
 import { useSubscribe } from "@/lib/subscribe-context"
+import { useAuth, PENDING_SOCIAL_SIGNUP_KEY } from "@/lib/auth"
 import { GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
+import { SUBSCRIBE_STORAGE_KEY } from "@/lib/subscribe-storage"
 import { api, ApiError } from "@/lib/api"
 import { StepNav } from "./step-nav"
 
+const PERKS = [
+  "Meals matched to your goal, diet, and BMI",
+  "Pause up to 4 times a month — never lose a meal you've paid for",
+  "Your health data stays yours — export or delete it any time",
+]
+
 function AccountSetup() {
   const { state, update } = useSubscribe()
+  const { customer, authError, isLoading: authLoading, signInWithGoogle, signInWithApple } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState(state.profile.email)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
 
   const canContinue = /\S+@\S+\.\S+/.test(email)
+
+  // Landed back here after an OAuth redirect. Reads sessionStorage directly rather than this
+  // funnel's own React state, since that state can lag a render behind — auth.tsx's listener
+  // writes the resulting customerId straight to storage before setting `customer`, so by the
+  // time `customer` is truthy the storage write has already happened; the React state hasn't
+  // necessarily caught up yet (that sync lives in subscribe-context.tsx, for pages after this one).
+  // If the linked customer matches what this funnel session just created, keep going; if it's a
+  // *different*, pre-existing account, don't silently continue the funnel as someone else.
+  useEffect(() => {
+    if (!customer) return
+    const raw = sessionStorage.getItem(SUBSCRIBE_STORAGE_KEY)
+    const storedCustomerId = raw ? (JSON.parse(raw).customerId as string | null) : null
+    navigate(storedCustomerId === customer.id ? "/subscribe/payment" : "/dashboard")
+  }, [customer, navigate])
+
+  useEffect(() => {
+    if (authError) setError(authError)
+  }, [authError])
 
   async function handleContinue() {
     if (!state.goal || !state.dietType) return
@@ -51,36 +80,100 @@ function AccountSetup() {
     }
   }
 
+  async function handleSocial(provider: "google" | "apple") {
+    setError("")
+    sessionStorage.setItem(PENDING_SOCIAL_SIGNUP_KEY, "1")
+    try {
+      if (provider === "google") await signInWithGoogle("/subscribe/account-setup")
+      else await signInWithApple("/subscribe/account-setup")
+      // Browser navigates away to the provider on success — nothing more to do here.
+    } catch {
+      sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
+      setError(`Couldn't continue with ${provider === "google" ? "Google" : "Apple"} — try again.`)
+    }
+  }
+
+  if (authLoading) {
+    return <p className="text-center text-ink-muted py-24">Signing you in…</p>
+  }
+
   return (
-    <div>
-      <div className="text-center mb-8">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-olive-50">
-          <Mail className="h-6 w-6 text-olive-600" />
+    <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+      <div>
+        <div className="text-center lg:text-left mb-8">
+          <div className="mx-auto lg:mx-0 mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-olive-50">
+            <Mail className="h-6 w-6 text-olive-600" />
+          </div>
+          <h1 className="text-3xl sm:text-4xl text-ink">You're almost there</h1>
+          <p className="mt-3 text-ink-muted">This becomes your login — no password needed, we'll email you a code.</p>
         </div>
-        <h1 className="text-3xl sm:text-4xl text-ink">You're almost there</h1>
-        <p className="mt-3 text-ink-muted">This becomes your login — no password needed, we'll email you a code.</p>
+
+        <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="w-full border border-border text-ink hover:bg-cream-100"
+              onClick={() => handleSocial("apple")}
+            >
+              <AppleIcon /> Continue with Apple
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="w-full border border-border text-ink hover:bg-cream-100"
+              onClick={() => handleSocial("google")}
+            >
+              <GoogleIcon /> Continue with Google
+            </Button>
+          </div>
+
+          <div className="my-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium text-ink-muted">OR</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <Label htmlFor="email">Email address</Label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-invalid={!!error}
+          />
+          <FieldError>{error}</FieldError>
+
+          <Button
+            type="button"
+            variant="accent"
+            size="lg"
+            className="w-full mt-5"
+            disabled={!canContinue || saving}
+            onClick={handleContinue}
+          >
+            {saving ? "Saving…" : "Continue"}
+          </Button>
+        </div>
+
+        <StepNav backTo="/subscribe/profile" hideContinue />
       </div>
 
-      <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
-        <Label htmlFor="email">Email address</Label>
-        <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          aria-invalid={!!error}
-        />
-        <FieldError>{error}</FieldError>
+      <div className="rounded-2xl bg-olive-50 border border-olive-100 p-8">
+        <h2 className="text-xl text-ink mb-5">Join OlivePinch</h2>
+        <ul className="space-y-4">
+          {PERKS.map((perk) => (
+            <li key={perk} className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+              <span className="text-ink-muted">{perk}</span>
+            </li>
+          ))}
+        </ul>
       </div>
-
-      <StepNav
-        backTo="/subscribe/profile"
-        continueDisabled={!canContinue || saving}
-        continueLabel={saving ? "Saving…" : "Continue"}
-        onContinue={handleContinue}
-      />
     </div>
   )
 }
