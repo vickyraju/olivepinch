@@ -19,6 +19,9 @@ interface AuthContextValue {
   authError: string | null
   sendOtp: (email: string) => Promise<void>
   verifyOtp: (email: string, code: string) => Promise<void>
+  /** Password sign-in — for testing accounts created directly in Supabase's dashboard.
+   * Not offered anywhere in the real customer signup flow, which stays OTP/social-only. */
+  signInWithPassword: (email: string, password: string) => Promise<void>
   signInWithGoogle: (redirectPath?: string) => Promise<void>
   signInWithApple: (redirectPath?: string) => Promise<void>
   logout: () => Promise<void>
@@ -123,6 +126,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // onAuthStateChange's SIGNED_IN handler above does the link-account + profile load.
   }, [])
 
+  const signInWithPassword = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    // onAuthStateChange's SIGNED_IN handler above does the link-account + profile load.
+  }, [])
+
   const signInWithGoogle = useCallback(async (redirectPath = "/dashboard") => {
     const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}${redirectPath}` } })
     if (error) throw error
@@ -139,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, authError, sendOtp, verifyOtp, signInWithGoogle, signInWithApple, logout }}>
+    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, authError, sendOtp, verifyOtp, signInWithPassword, signInWithGoogle, signInWithApple, logout }}>
       {children}
     </AuthContext.Provider>
   )
