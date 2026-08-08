@@ -45,7 +45,7 @@ function Subscription() {
     confirmRenewal()
       .then(() => {
         setConfirmed(true)
-        setTimeout(() => setConfirmed(false), 4000)
+        setTimeout(() => setConfirmed(false), 8000)
       })
       .catch(() => setError("Couldn't renew your subscription — try again."))
       .finally(() => {
@@ -62,7 +62,7 @@ function Subscription() {
     try {
       await renew(duration, goal, dietType, allergens)
       setConfirmed(true)
-      setTimeout(() => setConfirmed(false), 4000)
+      setTimeout(() => setConfirmed(false), 8000)
       setRenewing(false)
     } catch {
       setError("Couldn't renew your subscription — try again.")
@@ -84,6 +84,13 @@ function Subscription() {
         <h1 className="text-3xl text-ink mb-1">Subscription Management</h1>
         <p className="text-ink-muted">Renew your plan, or update the preferences it uses.</p>
       </div>
+
+      {confirmed && (
+        <div role="status" className="rounded-lg bg-olive-50 p-4 flex items-center gap-3">
+          <CheckCircle2 className="h-5 w-5 text-olive-600 shrink-0" />
+          <p className="text-sm font-medium text-olive-700">Renewed — you're still logged in, no need to sign in again.</p>
+        </div>
+      )}
 
       {isExpired && (
         <Card className="p-5 bg-coral-50 border-coral-100">
@@ -249,12 +256,6 @@ function Subscription() {
             </p>
           </div>
 
-          {confirmed && (
-            <div role="status" className="rounded-lg bg-olive-50 p-4 flex items-center gap-3">
-              <CheckCircle2 className="h-5 w-5 text-olive-600 shrink-0" />
-              <p className="text-sm font-medium text-olive-700">Renewed — you're still logged in, no need to sign in again.</p>
-            </div>
-          )}
           {error && (
             <div role="alert" className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600 font-medium">{error}</div>
           )}

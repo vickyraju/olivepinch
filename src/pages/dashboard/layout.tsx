@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom"
-import { User, Activity, Truck, RefreshCw, LogOut } from "lucide-react"
+import { User, Activity, Truck, RefreshCw, LogOut, HelpCircle } from "lucide-react"
 import { DashboardProvider } from "@/lib/dashboard-context"
 import { useAuth } from "@/lib/auth"
 import { Logo } from "@/components/ui/logo"
@@ -23,6 +23,12 @@ function DashboardLayoutInner() {
 
   return (
     <div className="min-h-dvh flex flex-col">
+      <a
+        href="#dashboard-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-olive-600 focus:text-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
+      >
+        Skip to content
+      </a>
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-4 flex items-center justify-between">
           <Link to="/">
@@ -53,9 +59,15 @@ function DashboardLayoutInner() {
                 {item.label}
               </NavLink>
             ))}
+            <a
+              href="/contact"
+              className="flex items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm font-medium whitespace-nowrap text-ink-muted hover:text-ink mt-2 md:mt-4 md:border-t md:border-border md:pt-4"
+            >
+              <HelpCircle className="h-4 w-4 shrink-0" /> Need help?
+            </a>
           </nav>
 
-          <div className="min-w-0">
+          <div id="dashboard-content" className="min-w-0">
             <Outlet />
           </div>
         </div>

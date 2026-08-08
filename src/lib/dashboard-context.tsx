@@ -88,6 +88,7 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietType: DietType, a
 interface DashboardContextValue {
   customer: DashboardCustomer
   addHealthLog: (log: Omit<HealthLog, "id" | "date">) => Promise<void>
+  deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   renew: (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => Promise<void>
   confirmRenewal: () => Promise<void>
@@ -109,6 +110,11 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
       ...c,
       healthLogs: [{ ...log, id: created.id, date: created.loggedAt.slice(0, 10) }, ...c.healthLogs],
     }))
+  }, [])
+
+  const deleteHealthLog = useCallback(async (id: string) => {
+    await api.del(`/health-logs/${id}`)
+    setCustomer((c) => ({ ...c, healthLogs: c.healthLogs.filter((h) => h.id !== id) }))
   }, [])
 
   const togglePause = useCallback(
@@ -176,8 +182,8 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   const pausesUsed = pausesUsedThisMonth(customer.subscription.pausedDates)
 
   const value = useMemo(
-    () => ({ customer, addHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
-    [customer, addHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
+    () => ({ customer, addHealthLog, deleteHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
+    [customer, addHealthLog, deleteHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
   )
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>

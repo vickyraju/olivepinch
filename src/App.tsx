@@ -25,6 +25,7 @@ import DashboardProfile from '@/pages/dashboard/profile'
 import DashboardHealth from '@/pages/dashboard/health'
 import DashboardDelivery from '@/pages/dashboard/delivery'
 import DashboardSubscription from '@/pages/dashboard/subscription'
+import DashboardPrivacy from '@/pages/dashboard/privacy'
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
           <Route path="health" element={<DashboardHealth />} />
           <Route path="delivery" element={<DashboardDelivery />} />
           <Route path="subscription" element={<DashboardSubscription />} />
+          <Route path="privacy" element={<DashboardPrivacy />} />
         </Route>
       </Route>
     </Routes>

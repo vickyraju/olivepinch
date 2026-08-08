@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Trash2 } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { calculateBmi, bmiCategory, BMI_CATEGORY_COLOR } from "@/lib/bmi"
 import { Card } from "@/components/ui/card"
@@ -18,18 +18,21 @@ const FIELDS: { key: "heightCm" | "weightKg" | "chestCm" | "bicepCm" | "abdomenC
   { key: "waistCm", label: "Waist", unit: "cm" },
 ]
 
+const BMI_SUPPORT_COPY = "This is a general fitness indicator based on height and weight — it doesn't account for muscle mass or body composition. Speak with a healthcare provider for personalized advice."
+
 function Health() {
-  const { customer, addHealthLog } = useDashboard()
+  const { customer, addHealthLog, deleteHealthLog } = useDashboard()
   const [showForm, setShowForm] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const sortedLogs = [...customer.healthLogs].sort((a, b) => b.date.localeCompare(a.date))
   const latest = sortedLogs[0]
   const [form, setForm] = useState(() => ({
     heightCm: String(latest?.heightCm ?? ""),
-    weightKg: "",
-    chestCm: "",
-    bicepCm: "",
-    abdomenCm: "",
-    waistCm: "",
+    weightKg: String(latest?.weightKg ?? ""),
+    chestCm: String(latest?.chestCm ?? ""),
+    bicepCm: String(latest?.bicepCm ?? ""),
+    abdomenCm: String(latest?.abdomenCm ?? ""),
+    waistCm: String(latest?.waistCm ?? ""),
   }))
 
   const bmi = latest ? calculateBmi(latest.heightCm, latest.weightKg) : null
@@ -48,6 +51,15 @@ function Health() {
       setShowForm(false)
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleDelete(id: string) {
+    setDeletingId(id)
+    try {
+      await deleteHealthLog(id)
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -87,7 +99,7 @@ function Health() {
         </Card>
       )}
 
-      {latest && (
+      {latest ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <Card className="p-6">
             <p className="text-sm text-ink-muted mb-1">Current BMI</p>
@@ -96,43 +108,69 @@ function Health() {
               {category && <Badge variant={BMI_CATEGORY_COLOR[category]}>{category}</Badge>}
             </div>
             <p className="text-xs text-ink-muted mt-2">From your {new Date(latest.date).toLocaleDateString("en-GB")} entry</p>
+            <p className="text-xs text-ink-muted mt-2 leading-relaxed">{BMI_SUPPORT_COPY}</p>
           </Card>
           <Card className="p-6">
             <p className="text-sm text-ink-muted mb-2">Weight trend</p>
             <Sparkline values={weightTrend} />
           </Card>
         </div>
+      ) : (
+        !showForm && (
+          <Card className="p-8 text-center">
+            <p className="text-ink font-medium mb-1">No entries yet</p>
+            <p className="text-sm text-ink-muted mb-4">Log your first measurement to start tracking your BMI and weight trend.</p>
+            <Button type="button" variant="primary" onClick={() => setShowForm(true)}>
+              <Plus className="h-4 w-4" /> Log your first entry
+            </Button>
+          </Card>
+        )
       )}
 
-      <div>
-        <h2 className="text-lg text-ink mb-3">Log history</h2>
-        <Card className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
-            <thead>
-              <tr className="border-b border-border text-left text-ink-muted">
-                <th className="p-4 font-medium">Date</th>
-                <th className="p-4 font-medium">Weight</th>
-                <th className="p-4 font-medium">Chest</th>
-                <th className="p-4 font-medium">Bicep</th>
-                <th className="p-4 font-medium">Abdomen</th>
-                <th className="p-4 font-medium">Waist</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedLogs.map((log) => (
-                <tr key={log.id} className="border-b border-border last:border-0">
-                  <td className="p-4 text-ink font-medium">{new Date(log.date).toLocaleDateString("en-GB")}</td>
-                  <td className="p-4 text-ink">{log.weightKg} kg</td>
-                  <td className="p-4 text-ink">{log.chestCm} cm</td>
-                  <td className="p-4 text-ink">{log.bicepCm} cm</td>
-                  <td className="p-4 text-ink">{log.abdomenCm} cm</td>
-                  <td className="p-4 text-ink">{log.waistCm} cm</td>
+      {sortedLogs.length > 0 && (
+        <div>
+          <h2 className="text-lg text-ink mb-3">Log history</h2>
+          <Card className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="border-b border-border text-left text-ink-muted">
+                  <th className="p-4 font-medium">Date</th>
+                  <th className="p-4 font-medium">Weight</th>
+                  <th className="p-4 font-medium">Chest</th>
+                  <th className="p-4 font-medium">Bicep</th>
+                  <th className="p-4 font-medium">Abdomen</th>
+                  <th className="p-4 font-medium">Waist</th>
+                  <th className="p-4 font-medium sr-only">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      </div>
+              </thead>
+              <tbody>
+                {sortedLogs.map((log) => (
+                  <tr key={log.id} className="border-b border-border last:border-0">
+                    <td className="p-4 text-ink font-medium">{new Date(log.date).toLocaleDateString("en-GB")}</td>
+                    <td className="p-4 text-ink">{log.weightKg} kg</td>
+                    <td className="p-4 text-ink">{log.chestCm} cm</td>
+                    <td className="p-4 text-ink">{log.bicepCm} cm</td>
+                    <td className="p-4 text-ink">{log.abdomenCm} cm</td>
+                    <td className="p-4 text-ink">{log.waistCm} cm</td>
+                    <td className="p-4 text-right">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        disabled={deletingId === log.id}
+                        onClick={() => handleDelete(log.id)}
+                        aria-label={`Delete entry from ${new Date(log.date).toLocaleDateString("en-GB")}`}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
