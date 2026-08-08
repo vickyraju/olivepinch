@@ -90,6 +90,7 @@ interface DashboardContextValue {
   addHealthLog: (log: Omit<HealthLog, "id" | "date">) => Promise<void>
   deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
+  pauseMultiple: (dates: string[]) => Promise<{ ok: boolean; reason?: string }>
   renew: (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
@@ -130,6 +131,31 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
         return { ok: true }
       } catch (err) {
         return { ok: false, reason: err instanceof ApiError ? err.message : "Couldn't update that day — try again." }
+      }
+    },
+    [customer.subscription, refetch]
+  )
+
+  // Pauses several days in one action (e.g. a whole week off) — sequential awaited calls to
+  // the same single-date endpoint rather than a new backend route, since each call commits to
+  // the DB before the next runs, so the server's own per-call budget check still can't be
+  // exceeded even without a refetch in between.
+  const pauseMultiple = useCallback(
+    async (dates: string[]) => {
+      const sub = customer.subscription
+      const remaining = MAX_PAUSES_PER_MONTH - pausesUsedThisMonth(sub.pausedDates)
+      if (dates.length > remaining) {
+        return { ok: false, reason: `You can only pause ${remaining} more day${remaining === 1 ? "" : "s"} this month.` }
+      }
+      try {
+        for (const date of dates) {
+          await api.post(`/subscriptions/${sub.id}/pause`, { date })
+        }
+        setCustomer(await refetch())
+        return { ok: true }
+      } catch (err) {
+        setCustomer(await refetch())
+        return { ok: false, reason: err instanceof ApiError ? err.message : "Couldn't pause those days — try again." }
       }
     },
     [customer.subscription, refetch]
@@ -182,8 +208,8 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   const pausesUsed = pausesUsedThisMonth(customer.subscription.pausedDates)
 
   const value = useMemo(
-    () => ({ customer, addHealthLog, deleteHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
-    [customer, addHealthLog, deleteHealthLog, togglePause, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
+    () => ({ customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
+    [customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
   )
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>

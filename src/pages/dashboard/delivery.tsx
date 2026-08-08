@@ -1,10 +1,11 @@
 import { useRef, useState } from "react"
-import { Pause, Play, Truck, PackageCheck, Clock, AlertTriangle } from "lucide-react"
+import { Pause, Play, Truck, PackageCheck, Clock, AlertTriangle, CalendarRange } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 
 const STATUS_STYLE: Record<OrderStatus, { variant: "olive" | "coral" | "neutral" | "destructive"; icon: typeof Truck }> = {
@@ -18,13 +19,18 @@ const STATUS_STYLE: Record<OrderStatus, { variant: "olive" | "coral" | "neutral"
 const PAGE_SIZE = 8
 
 function Delivery() {
-  const { customer, togglePause, endDate, pausesUsed } = useDashboard()
+  const { customer, togglePause, pauseMultiple, endDate, pausesUsed } = useDashboard()
   const sub = customer.subscription
   const [pauseError, setPauseError] = useState("")
   const [pausingDate, setPausingDate] = useState<string | null>(null)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const lastToggledButton = useRef<HTMLButtonElement | null>(null)
 
+  const [selecting, setSelecting] = useState(false)
+  const [selectedDates, setSelectedDates] = useState<string[]>([])
+  const [pausingMultiple, setPausingMultiple] = useState(false)
+
+  const remaining = MAX_PAUSES_PER_MONTH - pausesUsed
   const allUpcoming = sub.orders.filter((o) => o.status !== "Delivered")
   const upcoming = allUpcoming.slice(0, visibleCount)
 
@@ -39,15 +45,41 @@ function Delivery() {
     requestAnimationFrame(() => lastToggledButton.current?.focus())
   }
 
+  function toggleSelected(date: string) {
+    setSelectedDates((prev) => {
+      if (prev.includes(date)) return prev.filter((d) => d !== date)
+      if (prev.length >= remaining) return prev
+      return [...prev, date]
+    })
+  }
+
+  function cancelSelecting() {
+    setSelecting(false)
+    setSelectedDates([])
+  }
+
+  async function handlePauseSelected() {
+    setPausingMultiple(true)
+    const result = await pauseMultiple(selectedDates)
+    setPauseError(result.ok ? "" : result.reason ?? "")
+    setPausingMultiple(false)
+    if (result.ok) cancelSelecting()
+  }
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl text-ink mb-1">Meal Delivery</h1>
-        <p className="text-ink-muted">
-          {sub.status === "active"
-            ? <>Plan ends <strong className="text-ink">{new Date(endDate).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}</strong> · {pausesUsed}/{MAX_PAUSES_PER_MONTH} pauses used this month</>
-            : "Your plan has expired — renew to resume deliveries."}
-        </p>
+      <div className="flex items-start justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl text-ink mb-1">Meal Delivery</h1>
+          <p className="text-ink-muted">
+            {sub.status === "active"
+              ? <>Plan ends <strong className="text-ink">{new Date(endDate).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}</strong></>
+              : "Your plan has expired — renew to resume deliveries."}
+          </p>
+        </div>
+        <Badge variant={remaining === 0 ? "coral" : "olive"} className="text-sm px-3.5 py-1.5">
+          {pausesUsed}/{MAX_PAUSES_PER_MONTH} pauses used
+        </Badge>
       </div>
 
       {pauseError && (
@@ -56,16 +88,39 @@ function Delivery() {
         </div>
       )}
 
+      {remaining === 0 && (
+        <div className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600">
+          You've used all {MAX_PAUSES_PER_MONTH} pauses for this month. Resuming an already-paused day frees up a slot —
+          otherwise, more open up next month.
+        </div>
+      )}
+
       <div>
-        <h2 className="text-lg text-ink mb-3">Upcoming deliveries</h2>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+          <h2 className="text-lg text-ink">Upcoming deliveries</h2>
+          {!selecting && remaining > 0 && (
+            <Button type="button" variant="ghost" size="sm" onClick={() => setSelecting(true)}>
+              <CalendarRange className="h-3.5 w-3.5" /> Pause multiple days
+            </Button>
+          )}
+        </div>
+
         <div className="space-y-3">
           {upcoming.map((day) => {
             const style = STATUS_STYLE[day.status]
             const isFuture = day.status === "Scheduled" || day.status === "Paused"
+            const isSelectable = selecting && day.status === "Scheduled"
             return (
               <Card key={day.id} className="p-5">
                 <div className="flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-3">
+                    {isSelectable && (
+                      <Checkbox
+                        checked={selectedDates.includes(day.date)}
+                        onCheckedChange={() => toggleSelected(day.date)}
+                        aria-label={`Select ${new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} to pause`}
+                      />
+                    )}
                     <span className={cn("flex h-10 w-10 items-center justify-center rounded-full", day.status === "Paused" ? "bg-cream-100" : "bg-olive-50")}>
                       <style.icon className={cn("h-4.5 w-4.5", day.status === "Paused" ? "text-ink-muted" : "text-olive-600")} />
                     </span>
@@ -80,7 +135,7 @@ function Delivery() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Badge variant={style.variant}>{day.status}</Badge>
-                    {isFuture && (
+                    {!selecting && isFuture && (day.status === "Paused" || remaining > 0) && (
                       <Button
                         type="button"
                         variant={day.status === "Paused" ? "outline" : "ghost"}
@@ -105,6 +160,28 @@ function Delivery() {
           </Button>
         )}
       </div>
+
+      {selecting && (
+        <div className="sticky bottom-4 rounded-xl border border-olive-200 bg-surface shadow-lifted p-4 flex items-center justify-between flex-wrap gap-3">
+          <p className="text-sm text-ink">
+            {selectedDates.length} of {remaining} available day{remaining === 1 ? "" : "s"} selected
+          </p>
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={cancelSelecting} disabled={pausingMultiple}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="accent"
+              size="sm"
+              disabled={selectedDates.length === 0 || pausingMultiple}
+              onClick={handlePauseSelected}
+            >
+              {pausingMultiple ? "Pausing…" : `Pause ${selectedDates.length} day${selectedDates.length === 1 ? "" : "s"}`}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <Card className="p-5 bg-olive-50 border-olive-100">
         <p className="text-sm text-ink-muted">

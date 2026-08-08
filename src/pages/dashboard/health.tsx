@@ -70,9 +70,11 @@ function Health() {
           <h1 className="text-3xl text-ink mb-1">Health Tracker</h1>
           <p className="text-ink-muted">Weekly logging is encouraged, never required.</p>
         </div>
-        <Button type="button" variant="accent" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="h-4 w-4" /> Log entry
-        </Button>
+        {latest && !showForm && (
+          <Button type="button" variant="primary" onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4" /> Log entry
+          </Button>
+        )}
       </div>
 
       {showForm && (
