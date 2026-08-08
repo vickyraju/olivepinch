@@ -88,7 +88,7 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietType: DietType, a
 
 interface DashboardContextValue {
   customer: DashboardCustomer
-  addHealthLog: (log: Omit<HealthLog, "id" | "date">) => Promise<void>
+  addHealthLog: (log: Omit<HealthLog, "id" | "date" | "loggedAt">) => Promise<void>
   deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   pauseMultiple: (dates: string[]) => Promise<{ ok: boolean; reason?: string }>

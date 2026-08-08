@@ -50,7 +50,7 @@ function Health() {
     if (Object.values(values).some((v) => isNaN(v))) return
     setSaving(true)
     try {
-      await addHealthLog(values as Omit<typeof customer.healthLogs[number], "id" | "date">)
+      await addHealthLog(values as Omit<typeof customer.healthLogs[number], "id" | "date" | "loggedAt">)
       setShowForm(false)
     } finally {
       setSaving(false)
