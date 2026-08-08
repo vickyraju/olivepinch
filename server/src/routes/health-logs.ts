@@ -31,3 +31,11 @@ healthLogsRouter.post("/", validateBody(logSchema), async (req, res) => {
   })
   res.status(201).json(log)
 })
+
+// Scoped to the caller's own customerId so one customer can't delete another's log by guessing an id.
+healthLogsRouter.delete("/:id", async (req, res) => {
+  const log = await prisma.healthLog.findFirst({ where: { id: req.params.id as string, customerId: req.customerId } })
+  if (!log) return res.status(404).json({ error: "Health log not found" })
+  await prisma.healthLog.delete({ where: { id: log.id } })
+  res.status(204).send()
+})
