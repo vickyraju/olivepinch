@@ -3,7 +3,7 @@ import type { DietType, Goal } from "@/data/menu"
 import { computeEndDate, pausesUsedThisMonth, toDateKey, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
-import { goalFromEnum, dietFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
+import { goalFromEnum, dietFromEnum, mealSlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
 
 export interface HealthLog {
   id: string
@@ -80,7 +80,7 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietType: DietType, a
       id: o.id,
       date: o.deliveryDate.slice(0, 10),
       status: displayStatusFor(o.deliveryDate.slice(0, 10), o.status),
-      items: o.items.map((i) => ({ name: i.menuItem.name, slot: i.slot })),
+      items: o.items.map((i) => ({ name: i.menuItem.name, slot: mealSlotFromEnum(i.slot) })),
     })),
   }
 }

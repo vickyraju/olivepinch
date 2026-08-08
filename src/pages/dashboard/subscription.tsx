@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
-import { CheckCircle2, AlertTriangle } from "lucide-react"
+import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
-import { GOALS, DIET_TYPES, ALLERGENS, type Goal, type DietType } from "@/data/menu"
+import { GOALS, DIET_TYPES, ALLERGENS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal, type DietType } from "@/data/menu"
+import { formatGBP } from "@/lib/pricing"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,6 +13,14 @@ import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
 
+function estimateTotal(duration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietType: DietType, allergens: string[]) {
+  const perDay = SLOTS_BY_MEALS_PER_DAY[mealsPerDay].reduce(
+    (sum, slot) => sum + defaultMenuFor(goal, dietType, allergens, slot).price,
+    0
+  )
+  return perDay * duration
+}
+
 function Subscription() {
   const { customer, endDate, renew, confirmRenewal } = useDashboard()
   const sub = customer.subscription
@@ -19,12 +28,14 @@ function Subscription() {
   const [goal, setGoal] = useState<Goal>(sub.goal)
   const [dietType, setDietType] = useState<DietType>(sub.dietType)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
+  const [editingPreferences, setEditingPreferences] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
   const [error, setError] = useState("")
   const [searchParams, setSearchParams] = useSearchParams()
 
   const isExpired = sub.status === "expired"
+  const total = estimateTotal(duration, sub.mealsPerDay, goal, dietType, allergens)
 
   // Worldpay redirects back here (not a separate return page — this form already lives
   // where the renewal started) after the customer finishes on the hosted payment page.
@@ -57,6 +68,14 @@ function Subscription() {
       setError("Couldn't renew your subscription — try again.")
       setRenewing(false)
     }
+  }
+
+  function cancelEditing() {
+    setDuration(sub.planDuration)
+    setGoal(sub.goal)
+    setDietType(sub.dietType)
+    setAllergens(sub.allergens)
+    setEditingPreferences(false)
   }
 
   return (
@@ -108,82 +127,126 @@ function Subscription() {
           <div>
             <h2 className="text-lg text-ink mb-1">Renew your subscription</h2>
             <p className="text-sm text-ink-muted mb-4">Your goal, diet, and allergy preferences carry over — edit them below if anything's changed.</p>
-
-            <Label>New plan length</Label>
-            <div className="grid grid-cols-3 gap-3">
-              {DURATIONS.map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  aria-pressed={duration === d}
-                  onClick={() => setDuration(d)}
-                  className={cn(
-                    "rounded-xl border-2 py-4 font-semibold transition-colors cursor-pointer",
-                    duration === d ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
-                  )}
-                >
-                  {d} days
-                </button>
-              ))}
-            </div>
           </div>
 
-          <div>
-            <Label>Goal</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {GOALS.map((g) => (
-                <button
-                  key={g.id}
-                  type="button"
-                  aria-pressed={goal === g.id}
-                  onClick={() => setGoal(g.id)}
-                  className={cn(
-                    "rounded-lg border-2 py-3 px-2 text-sm font-medium transition-colors cursor-pointer",
-                    goal === g.id ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
-                  )}
-                >
-                  {g.id}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label>Diet type</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {DIET_TYPES.map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  aria-pressed={dietType === d}
-                  onClick={() => setDietType(d)}
-                  className={cn(
-                    "rounded-lg border-2 py-3 text-sm font-medium transition-colors cursor-pointer",
-                    dietType === d ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
-                  )}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <Label>Excluded allergens</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {ALLERGENS.map((allergen) => (
-                <div key={allergen} className="flex items-center gap-2.5">
-                  <Checkbox
-                    id={`renew-allergen-${allergen}`}
-                    checked={allergens.includes(allergen)}
-                    onCheckedChange={(v) =>
-                      setAllergens((prev) => (v === true ? [...prev, allergen] : prev.filter((a) => a !== allergen)))
-                    }
-                  />
-                  <Label htmlFor={`renew-allergen-${allergen}`} className="mb-0 font-normal cursor-pointer">{allergen}</Label>
+          {!editingPreferences ? (
+            <div className="rounded-xl border border-border bg-cream-100 p-5">
+              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4">
+                <div>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Length</dt>
+                  <dd className="mt-0.5 text-ink font-medium">{duration} days</dd>
                 </div>
-              ))}
+                <div>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Goal</dt>
+                  <dd className="mt-0.5 text-ink font-medium">{goal}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Diet</dt>
+                  <dd className="mt-0.5 text-ink font-medium">{dietType}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Excludes</dt>
+                  <dd className="mt-0.5 text-ink font-medium">{allergens.length ? allergens.join(", ") : "Nothing"}</dd>
+                </div>
+              </dl>
+              <Button type="button" variant="outline" size="sm" onClick={() => setEditingPreferences(true)}>
+                Edit preferences
+              </Button>
             </div>
+          ) : (
+            <>
+              <div>
+                <Label id="duration-label">New plan length</Label>
+                <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-labelledby="duration-label">
+                  {DURATIONS.map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      role="radio"
+                      aria-checked={duration === d}
+                      onClick={() => setDuration(d)}
+                      className={cn(
+                        "rounded-xl border-2 py-4 font-semibold transition-colors cursor-pointer",
+                        duration === d ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                      )}
+                    >
+                      {d} days
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label id="goal-label">Goal</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="radiogroup" aria-labelledby="goal-label">
+                  {GOALS.map((g) => (
+                    <button
+                      key={g.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={goal === g.id}
+                      onClick={() => setGoal(g.id)}
+                      className={cn(
+                        "rounded-lg border-2 py-3 px-2 text-sm font-medium transition-colors cursor-pointer",
+                        goal === g.id ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                      )}
+                    >
+                      {g.id}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label id="diet-label">Diet type</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" role="radiogroup" aria-labelledby="diet-label">
+                  {DIET_TYPES.map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      role="radio"
+                      aria-checked={dietType === d}
+                      onClick={() => setDietType(d)}
+                      className={cn(
+                        "rounded-lg border-2 py-3 text-sm font-medium transition-colors cursor-pointer",
+                        dietType === d ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                      )}
+                    >
+                      {d}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label>Excluded allergens</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {ALLERGENS.map((allergen) => (
+                    <div key={allergen} className="flex items-center gap-2.5">
+                      <Checkbox
+                        id={`renew-allergen-${allergen}`}
+                        checked={allergens.includes(allergen)}
+                        onCheckedChange={(v) =>
+                          setAllergens((prev) => (v === true ? [...prev, allergen] : prev.filter((a) => a !== allergen)))
+                        }
+                      />
+                      <Label htmlFor={`renew-allergen-${allergen}`} className="mb-0 font-normal cursor-pointer">{allergen}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Button type="button" variant="ghost" size="sm" onClick={cancelEditing}>
+                Cancel
+              </Button>
+            </>
+          )}
+
+          <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
+            <ShieldCheck className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-ink-muted">
+              You'll be redirected to Worldpay's secure payment page to complete this charge — we never see or store your card number.
+            </p>
           </div>
 
           {confirmed && (
@@ -197,7 +260,7 @@ function Subscription() {
           )}
 
           <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing}>
-            {renewing ? "Renewing…" : "Confirm & renew"}
+            {renewing ? "Renewing…" : `Confirm & renew · ${formatGBP(total)}`}
           </Button>
         </Card>
       </form>

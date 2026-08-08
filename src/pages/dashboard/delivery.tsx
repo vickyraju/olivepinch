@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Pause, Play, Truck, PackageCheck, Clock, AlertTriangle } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
@@ -7,27 +7,36 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const STATUS_STYLE: Record<OrderStatus, { variant: "olive" | "coral" | "neutral"; icon: typeof Truck }> = {
+const STATUS_STYLE: Record<OrderStatus, { variant: "olive" | "coral" | "neutral" | "destructive"; icon: typeof Truck }> = {
   Scheduled: { variant: "neutral", icon: Clock },
   "Out for Delivery": { variant: "coral", icon: Truck },
   Delivered: { variant: "olive", icon: PackageCheck },
-  Attempted: { variant: "coral", icon: AlertTriangle },
+  Attempted: { variant: "destructive", icon: AlertTriangle },
   Paused: { variant: "neutral", icon: Pause },
 }
+
+const PAGE_SIZE = 8
 
 function Delivery() {
   const { customer, togglePause, endDate, pausesUsed } = useDashboard()
   const sub = customer.subscription
   const [pauseError, setPauseError] = useState("")
   const [pausingDate, setPausingDate] = useState<string | null>(null)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const lastToggledButton = useRef<HTMLButtonElement | null>(null)
 
-  const upcoming = sub.orders.filter((o) => o.status !== "Delivered").slice(0, 8)
+  const allUpcoming = sub.orders.filter((o) => o.status !== "Delivered")
+  const upcoming = allUpcoming.slice(0, visibleCount)
 
-  async function handleToggle(date: string) {
+  async function handleToggle(date: string, e: React.MouseEvent<HTMLButtonElement>) {
+    lastToggledButton.current = e.currentTarget
     setPausingDate(date)
     const result = await togglePause(date)
     setPauseError(result.ok ? "" : result.reason ?? "")
     setPausingDate(null)
+    // The button disables mid-request, which blurs it — refocus the same (now relabeled)
+    // button once it resolves so a keyboard user doesn't lose their place.
+    requestAnimationFrame(() => lastToggledButton.current?.focus())
   }
 
   return (
@@ -65,7 +74,7 @@ function Delivery() {
                         {new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
                       </div>
                       <div className="text-xs text-ink-muted mt-0.5">
-                        {day.items.map((i) => i.name).join(" · ")}
+                        {day.items.map((i) => `${i.slot}: ${i.name}`).join(" · ")}
                       </div>
                     </div>
                   </div>
@@ -77,9 +86,11 @@ function Delivery() {
                         variant={day.status === "Paused" ? "outline" : "ghost"}
                         size="sm"
                         disabled={pausingDate === day.date}
-                        onClick={() => handleToggle(day.date)}
+                        onClick={(e) => handleToggle(day.date, e)}
                       >
-                        {day.status === "Paused" ? <><Play className="h-3.5 w-3.5" /> Resume</> : <><Pause className="h-3.5 w-3.5" /> Pause</>}
+                        {pausingDate === day.date
+                          ? (day.status === "Paused" ? "Resuming…" : "Pausing…")
+                          : day.status === "Paused" ? <><Play className="h-3.5 w-3.5" /> Resume</> : <><Pause className="h-3.5 w-3.5" /> Pause</>}
                       </Button>
                     )}
                   </div>
@@ -88,6 +99,11 @@ function Delivery() {
             )
           })}
         </div>
+        {visibleCount < allUpcoming.length && (
+          <Button type="button" variant="ghost" size="sm" className="mt-3" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+            Show {Math.min(PAGE_SIZE, allUpcoming.length - visibleCount)} more day{allUpcoming.length - visibleCount > 1 ? "s" : ""}
+          </Button>
+        )}
       </div>
 
       <Card className="p-5 bg-olive-50 border-olive-100">

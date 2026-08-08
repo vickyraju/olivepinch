@@ -26,6 +26,7 @@ export const MEAL_SLOT_TO_ENUM: Record<MealSlot, string> = {
 
 const ENUM_TO_GOAL = Object.fromEntries(Object.entries(GOAL_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, Goal>
 const ENUM_TO_DIET = Object.fromEntries(Object.entries(DIET_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, DietType>
+const ENUM_TO_MEAL_SLOT = Object.fromEntries(Object.entries(MEAL_SLOT_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, MealSlot>
 
 export function goalFromEnum(value: string): Goal {
   return ENUM_TO_GOAL[value]
@@ -33,6 +34,10 @@ export function goalFromEnum(value: string): Goal {
 
 export function dietFromEnum(value: string): DietType {
   return ENUM_TO_DIET[value]
+}
+
+export function mealSlotFromEnum(value: string): MealSlot {
+  return ENUM_TO_MEAL_SLOT[value] ?? value as MealSlot
 }
 
 const ORDER_STATUS_FROM_ENUM: Record<string, OrderStatus> = {
