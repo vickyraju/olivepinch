@@ -8,6 +8,7 @@ import { goalFromEnum, dietFromEnum, mealSlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENU
 export interface HealthLog {
   id: string
   date: string
+  loggedAt: string
   heightCm: number
   weightKg: number
   chestCm: number
@@ -105,11 +106,11 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   const { logout } = useAuth()
   const [customer, setCustomer] = useState<DashboardCustomer>(initial)
 
-  const addHealthLog = useCallback(async (log: Omit<HealthLog, "id" | "date">) => {
-    const created = await api.post<{ id: string; loggedAt: string } & Omit<HealthLog, "id" | "date">>("/health-logs", log)
+  const addHealthLog = useCallback(async (log: Omit<HealthLog, "id" | "date" | "loggedAt">) => {
+    const created = await api.post<{ id: string; loggedAt: string } & Omit<HealthLog, "id" | "date" | "loggedAt">>("/health-logs", log)
     setCustomer((c) => ({
       ...c,
-      healthLogs: [{ ...log, id: created.id, date: created.loggedAt.slice(0, 10) }, ...c.healthLogs],
+      healthLogs: [{ ...log, id: created.id, date: created.loggedAt.slice(0, 10), loggedAt: created.loggedAt }, ...c.healthLogs],
     }))
   }, [])
 

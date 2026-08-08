@@ -19,13 +19,16 @@ const FIELDS: { key: "heightCm" | "weightKg" | "chestCm" | "bicepCm" | "abdomenC
 ]
 
 const BMI_SUPPORT_COPY = "This is a general fitness indicator based on height and weight — it doesn't account for muscle mass or body composition. Speak with a healthcare provider for personalized advice."
+const DELETE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 function Health() {
   const { customer, addHealthLog, deleteHealthLog } = useDashboard()
   const [showForm, setShowForm] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const sortedLogs = [...customer.healthLogs].sort((a, b) => b.date.localeCompare(a.date))
+  const [deleteError, setDeleteError] = useState("")
+  const sortedLogs = [...customer.healthLogs].sort((a, b) => b.loggedAt.localeCompare(a.loggedAt))
   const latest = sortedLogs[0]
+  const canDeleteLatest = !!latest && Date.now() - new Date(latest.loggedAt).getTime() < DELETE_WINDOW_MS
   const [form, setForm] = useState(() => ({
     heightCm: String(latest?.heightCm ?? ""),
     weightKg: String(latest?.weightKg ?? ""),
@@ -37,7 +40,7 @@ function Health() {
 
   const bmi = latest ? calculateBmi(latest.heightCm, latest.weightKg) : null
   const category = bmi ? bmiCategory(bmi) : null
-  const weightTrend = [...sortedLogs].reverse().map((l) => l.weightKg)
+  const weightTrend = [...sortedLogs].reverse().map((l) => ({ date: l.date, value: l.weightKg }))
 
   const [saving, setSaving] = useState(false)
 
@@ -56,8 +59,11 @@ function Health() {
 
   async function handleDelete(id: string) {
     setDeletingId(id)
+    setDeleteError("")
     try {
       await deleteHealthLog(id)
+    } catch {
+      setDeleteError("Couldn't delete that entry — try again.")
     } finally {
       setDeletingId(null)
     }
@@ -114,7 +120,7 @@ function Health() {
           </Card>
           <Card className="p-6">
             <p className="text-sm text-ink-muted mb-2">Weight trend</p>
-            <Sparkline values={weightTrend} />
+            <Sparkline points={weightTrend} />
           </Card>
         </div>
       ) : (
@@ -129,9 +135,18 @@ function Health() {
         )
       )}
 
+      {deleteError && (
+        <div role="alert" className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600 font-medium">
+          {deleteError}
+        </div>
+      )}
+
       {sortedLogs.length > 0 && (
         <div>
-          <h2 className="text-lg text-ink mb-3">Log history</h2>
+          <div className="flex items-baseline justify-between flex-wrap gap-2 mb-3">
+            <h2 className="text-lg text-ink">Log history</h2>
+            <p className="text-xs text-ink-muted">Only your most recent entry can be deleted, within 24 hours of logging it.</p>
+          </div>
           <Card className="overflow-x-auto">
             <table className="w-full text-sm min-w-[640px]">
               <thead>
@@ -155,16 +170,18 @@ function Health() {
                     <td className="p-4 text-ink">{log.abdomenCm} cm</td>
                     <td className="p-4 text-ink">{log.waistCm} cm</td>
                     <td className="p-4 text-right">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        disabled={deletingId === log.id}
-                        onClick={() => handleDelete(log.id)}
-                        aria-label={`Delete entry from ${new Date(log.date).toLocaleDateString("en-GB")}`}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      {log.id === latest?.id && canDeleteLatest && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={deletingId === log.id}
+                          onClick={() => handleDelete(log.id)}
+                          aria-label={`Delete entry from ${new Date(log.date).toLocaleDateString("en-GB")}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
