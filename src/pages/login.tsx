@@ -205,9 +205,13 @@ function Login() {
         </div>
       </div>
 
-      {/* Reference: swap FoodPhoto's placeholder for a real lifestyle/kitchen photo (src prop) when one's ready. Desktop only, per design brief. */}
       <div className="hidden lg:block relative">
-        <FoodPhoto seed={0} alt="" className="absolute inset-0 h-full w-full rounded-none" />
+        <FoodPhoto
+          seed={0}
+          src="/images/login-hero.jpg"
+          alt="Grilled chicken meal-prep bowl with roasted vegetables and quinoa"
+          className="absolute inset-0 h-full w-full rounded-none"
+        />
       </div>
     </div>
   )
