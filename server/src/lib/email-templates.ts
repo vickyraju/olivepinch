@@ -5,6 +5,17 @@ const CORAL = "#c9502c"
 const CREAM = "#f7f4ec"
 const INK = "#272c0f"
 
+// p.name comes straight from Customer.fullName (user-supplied at signup, unsanitized) — escape
+// before interpolating into HTML so a name like "<img src=x onerror=...>" can't inject markup.
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
 function emailShell(bodyHtml: string): string {
   return `<!doctype html>
 <html>
@@ -55,7 +66,7 @@ Fresh meals start arriving on your start date. You can manage your plan any time
 
 — The OlivePinch team`
   const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">You're all set, ${p.name}!</h1>
+    <h1 style="font-size:22px;margin:0 0 16px;">You're all set, ${escapeHtml(p.name)}!</h1>
     <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Your payment went through and your <strong>${p.planDuration}-day plan</strong> is confirmed.</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREAM};border-radius:12px;padding:16px;margin:0 0 16px;">
       <tr><td style="font-size:13px;color:#6b6b5f;padding:4px 0;">Starts</td><td align="right" style="font-size:13px;font-weight:bold;padding:4px 0;">${p.startDate}</td></tr>
@@ -82,7 +93,7 @@ Renew here: ${p.dashboardUrl}
 
 — The OlivePinch team`
   const html = emailShell(`
-    <h1 style="font-size:22px;margin:0 0 16px;">Time to renew, ${p.name}</h1>
+    <h1 style="font-size:22px;margin:0 0 16px;">Time to renew, ${escapeHtml(p.name)}</h1>
     <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">Your ${p.planDuration}-day plan ends on <strong>${p.endDate}</strong>. Renew now so there's no gap in your deliveries.</p>
     ${button("Renew my plan", p.dashboardUrl)}
   `)
