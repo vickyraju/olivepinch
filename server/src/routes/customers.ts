@@ -97,7 +97,7 @@ customersRouter.post("/provisional", validateBody(provisionalSchema), async (req
 
 const preferencesSchema = z.object({
   goal: z.enum(GOAL_VALUES as [string, ...string[]]),
-  dietType: z.enum(DIET_VALUES as [string, ...string[]]),
+  dietTypes: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1),
   allergens: z.array(z.string()).default([]),
   postcode: z.string().optional(),
 })
@@ -108,7 +108,7 @@ customersRouter.patch("/:id/preferences", validateBody(preferencesSchema), async
     where: { id: req.params.id as string },
     data: {
       goal: body.goal as never,
-      dietType: body.dietType as never,
+      dietTypes: body.dietTypes as never,
       allergens: body.allergens,
       postcode: body.postcode,
     },
@@ -169,7 +169,7 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
         heightCm: null,
         weightKg: null,
         goal: null,
-        dietType: null,
+        dietTypes: [],
         allergens: [],
         postcode: null,
         address: null,

@@ -29,8 +29,8 @@ const createSchema = z.object({
 subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
   const body = req.body as z.infer<typeof createSchema>
   const customer = await prisma.customer.findUniqueOrThrow({ where: { id: body.customerId } })
-  if (!customer.goal || !customer.dietType) {
-    return res.status(400).json({ error: "Customer must have goal and dietType set before subscribing" })
+  if (!customer.goal || customer.dietTypes.length === 0) {
+    return res.status(400).json({ error: "Customer must have goal and dietTypes set before subscribing" })
   }
 
   const slots = SLOTS_BY_MEALS_PER_DAY[body.mealsPerDay]
@@ -58,7 +58,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
           return {
             slot,
             date,
-            item: customItem ?? (await defaultMenuItemFor(customer.goal as Goal, customer.dietType as DietType, customer.allergens, slot)),
+            item: customItem ?? (await defaultMenuItemFor(customer.goal as Goal, customer.dietTypes as DietType[], customer.allergens, slot)),
           }
         })
       )
@@ -144,7 +144,7 @@ subscriptionsRouter.post("/:id/resume", validateBody(pauseSchema), async (req, r
 const renewSchema = z.object({
   planDuration: z.union([z.literal(7), z.literal(14), z.literal(28)]),
   goal: z.enum(GOAL_VALUES as [string, ...string[]]),
-  dietType: z.enum(DIET_VALUES as [string, ...string[]]),
+  dietTypes: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1),
   allergens: z.array(z.string()).default([]),
 })
 
@@ -154,7 +154,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
   const body = req.body as z.infer<typeof renewSchema>
   await prisma.customer.update({
     where: { id: req.customerId },
-    data: { goal: body.goal as never, dietType: body.dietType as never, allergens: body.allergens },
+    data: { goal: body.goal as never, dietTypes: body.dietTypes as never, allergens: body.allergens },
   })
 
   const slots = SLOTS_BY_MEALS_PER_DAY[2]
@@ -167,7 +167,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
         slots.map(async (slot: MealSlot) => ({
           slot,
           date,
-          item: await defaultMenuItemFor(body.goal as Goal, body.dietType as DietType, body.allergens, slot),
+          item: await defaultMenuItemFor(body.goal as Goal, body.dietTypes as DietType[], body.allergens, slot),
         }))
       )
     )

@@ -60,7 +60,7 @@ model Customer {
   heightCm        Float?
   weightKg        Float?
   goal            Goal?
-  dietType        DietType?
+  dietTypes       DietType[]    @default([])
   allergens       String[]      @default([])
   postcode        String?
   address         String?
