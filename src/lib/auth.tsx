@@ -39,7 +39,7 @@ interface PendingSubscribeState {
   postcode: string
   profile: { fullName: string; gender: string; age: string; heightCm: string; weightKg: string; email: string }
   goal: string | null
-  dietType: string | null
+  dietTypes: string[]
   allergens: string[]
   customerId: string | null
 }
@@ -52,7 +52,7 @@ async function completePendingSubscribeSignup(email: string): Promise<void> {
   if (!raw) throw new Error("No in-progress plan found for this email — start your plan first.")
   const state = JSON.parse(raw) as PendingSubscribeState
   const p = state.profile
-  if (!p?.fullName || !p.age || !p.heightCm || !p.weightKg || !state.goal || !state.dietType) {
+  if (!p?.fullName || !p.age || !p.heightCm || !p.weightKg || !state.goal || !state.dietTypes?.length) {
     throw new Error("Your plan details aren't ready yet — go back and finish the earlier steps.")
   }
 
@@ -68,7 +68,7 @@ async function completePendingSubscribeSignup(email: string): Promise<void> {
   })
   await api.patch(`/customers/${customerId}/preferences`, {
     goal: GOAL_TO_ENUM[state.goal as keyof typeof GOAL_TO_ENUM],
-    dietType: DIET_TO_ENUM[state.dietType as keyof typeof DIET_TO_ENUM],
+    dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d as keyof typeof DIET_TO_ENUM]),
     allergens: state.allergens ?? [],
     postcode: state.postcode,
   })

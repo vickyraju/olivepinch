@@ -30,8 +30,9 @@ export interface SubscribeState {
   startDate: string | null
   profile: CustomerProfile
   goal: Goal | null
-  dietType: DietType | null
+  dietTypes: DietType[]
   allergens: string[]
+  noAllergies: boolean
   mealsPerDay: MealsPerDay
   useDefaultMenu: boolean
   dayMenus: DayMenu[]
@@ -57,8 +58,9 @@ const INITIAL_STATE: SubscribeState = {
   startDate: null,
   profile: EMPTY_PROFILE,
   goal: null,
-  dietType: null,
+  dietTypes: [],
   allergens: [],
+  noAllergies: false,
   mealsPerDay: 2,
   useDefaultMenu: true,
   dayMenus: [],
@@ -113,7 +115,7 @@ export function SubscribeProvider({ children }: { children: ReactNode }) {
 
   const buildDayMenus = () => {
     setState((s) => {
-      if (!s.goal || !s.dietType || !s.startDate) return s
+      if (!s.goal || s.dietTypes.length === 0 || !s.startDate) return s
       const slots = SLOTS_BY_MEALS_PER_DAY[s.mealsPerDay]
       const start = fromDateKey(s.startDate)
       const dayMenus: DayMenu[] = Array.from({ length: s.planDuration }, (_, i) => {
@@ -121,7 +123,7 @@ export function SubscribeProvider({ children }: { children: ReactNode }) {
         date.setDate(start.getDate() + i)
         return {
           date: toDateKey(date),
-          items: slots.map((slot: MealSlot) => defaultMenuFor(s.goal!, s.dietType!, s.allergens, slot).id),
+          items: slots.map((slot: MealSlot) => defaultMenuFor(s.goal!, s.dietTypes, s.allergens, slot).id),
         }
       })
       return { ...s, dayMenus }
@@ -130,13 +132,13 @@ export function SubscribeProvider({ children }: { children: ReactNode }) {
 
   const resetMenuToDefaults = () => {
     setState((s) => {
-      if (!s.goal || !s.dietType) return s
+      if (!s.goal || s.dietTypes.length === 0) return s
       const slots = SLOTS_BY_MEALS_PER_DAY[s.mealsPerDay]
       return {
         ...s,
         dayMenus: s.dayMenus.map((day) => ({
           ...day,
-          items: slots.map((slot: MealSlot) => defaultMenuFor(s.goal!, s.dietType!, s.allergens, slot).id),
+          items: slots.map((slot: MealSlot) => defaultMenuFor(s.goal!, s.dietTypes, s.allergens, slot).id),
         })),
       }
     })

@@ -48,7 +48,7 @@ function AccountSetup() {
   }, [authError])
 
   async function handleContinue() {
-    if (!state.goal || !state.dietType) return
+    if (!state.goal || state.dietTypes.length === 0) return
     setError("")
     setSaving(true)
     try {
@@ -67,7 +67,7 @@ function AccountSetup() {
       // until now — that PATCH is customer-scoped, and this is the first point a customerId exists.
       await api.patch(`/customers/${res.customerId}/preferences`, {
         goal: GOAL_TO_ENUM[state.goal],
-        dietType: DIET_TO_ENUM[state.dietType],
+        dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
         allergens: state.allergens,
         postcode: state.postcode,
       })

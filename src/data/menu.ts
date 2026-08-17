@@ -72,24 +72,24 @@ export const MENU_ITEMS: MenuItem[] = [
   { id: "d-chicken-pasta", name: "Chicken & Pesto Pasta", description: "Grilled chicken, wholewheat pasta, basil pesto.", slot: "Dinner", dietTags: ["Meat"], allergenTags: ["Gluten", "Dairy", "Tree Nuts"], goalTags: ["Weight Gain", "Muscle Building"], kcal: 640, protein: 44, price: 7.60, premium: true },
 ]
 
-export function defaultMenuFor(goal: Goal, diet: DietType, allergens: string[], slot: MealSlot): MenuItem {
+export function defaultMenuFor(goal: Goal, diets: DietType[], allergens: string[], slot: MealSlot): MenuItem {
   const excludeAllergens = new Set(allergens)
   const pool = MENU_ITEMS.filter(
     (item) =>
       item.slot === slot &&
-      item.dietTags.includes(diet) &&
+      item.dietTags.some((tag) => diets.includes(tag)) &&
       !item.allergenTags.some((a) => excludeAllergens.has(a))
   )
   const goalMatch = pool.find((item) => item.goalTags.includes(goal))
   return goalMatch ?? pool[0] ?? MENU_ITEMS.find((item) => item.slot === slot)!
 }
 
-export function menuOptionsFor(diet: DietType, allergens: string[], slot: MealSlot): MenuItem[] {
+export function menuOptionsFor(diets: DietType[], allergens: string[], slot: MealSlot): MenuItem[] {
   const excludeAllergens = new Set(allergens)
   return MENU_ITEMS.filter(
     (item) =>
       item.slot === slot &&
-      item.dietTags.includes(diet) &&
+      item.dietTags.some((tag) => diets.includes(tag)) &&
       !item.allergenTags.some((a) => excludeAllergens.has(a))
   )
 }

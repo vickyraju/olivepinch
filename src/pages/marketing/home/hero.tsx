@@ -23,26 +23,12 @@ function Hero() {
               <a href="#how-it-works">See how it works</a>
             </Button>
           </div>
-          <div className="mt-8 flex items-center gap-5 text-sm text-ink-muted">
-            <span><strong className="text-ink font-semibold">4.8/5</strong> 400+ reviews</span>
-            <span className="text-border">·</span>
-            <span>Pause up to 4x a month</span>
-            <span className="text-border">·</span>
-            <span>Cancel anytime</span>
-          </div>
         </div>
 
         <div className="relative">
           <div className="grid grid-cols-2 gap-4">
             <FoodPhoto seed={0} src="/images/hero-1.jpg" alt="Grilled chicken breast over jasmine rice with broccoli" className="aspect-[4/5]" />
             <FoodPhoto seed={1} src="/images/hero-2.jpg" alt="Pan-seared salmon over quinoa with roasted vegetables" className="aspect-[4/5] mt-8" />
-          </div>
-          <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[85%] rounded-2xl bg-surface border border-border px-5 py-4">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm font-semibold text-ink">Today's plan</span>
-              <span className="eyebrow">Muscle Building</span>
-            </div>
-            <p className="text-sm text-ink-muted">620 kcal · 48g protein · 3 meals/day</p>
           </div>
         </div>
       </div>

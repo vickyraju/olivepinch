@@ -33,7 +33,7 @@ function Postcode() {
       setChecked(res.valid ? "valid" : "invalid")
       if (res.valid) {
         update({ postcode: formatPostcode(postcode), postcodeConfirmed: true })
-        setTimeout(() => navigate("/subscribe/goal"), 900)
+        setTimeout(() => navigate("/subscribe/goal"), 3000)
       }
     } catch {
       setError("Couldn't check that postcode — try again.")

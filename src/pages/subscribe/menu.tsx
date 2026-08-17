@@ -22,7 +22,7 @@ function Menu() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  if (!state.dietType || !state.goal || state.dayMenus.length === 0) {
+  if (state.dietTypes.length === 0 || !state.goal || state.dayMenus.length === 0) {
     return <p className="text-ink-muted">Loading your menu…</p>
   }
 
@@ -93,7 +93,7 @@ function Menu() {
               <AccordionContent>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {day.items.map((itemId, slotIndex) => {
-                    const options = menuOptionsFor(state.dietType!, state.allergens, slots[slotIndex])
+                    const options = menuOptionsFor(state.dietTypes, state.allergens, slots[slotIndex])
                     return (
                       <div key={slotIndex}>
                         <span className="text-xs font-semibold text-coral-600">{slots[slotIndex]}</span>

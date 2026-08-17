@@ -36,6 +36,10 @@ export function dietFromEnum(value: string): DietType {
   return ENUM_TO_DIET[value]
 }
 
+export function dietTypesFromEnum(values: string[]): DietType[] {
+  return values.map(dietFromEnum)
+}
+
 export function mealSlotFromEnum(value: string): MealSlot {
   return ENUM_TO_MEAL_SLOT[value] ?? value as MealSlot
 }

@@ -3,7 +3,7 @@ import type { DietType, Goal } from "@/data/menu"
 import { computeEndDate, pausesUsedThisMonth, toDateKey, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
-import { goalFromEnum, dietFromEnum, mealSlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
+import { goalFromEnum, dietTypesFromEnum, mealSlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
 
 export interface HealthLog {
   id: string
@@ -31,7 +31,7 @@ export interface Subscription {
   startDate: string
   mealsPerDay: 1 | 2 | 3
   goal: Goal
-  dietType: DietType
+  dietTypes: DietType[]
   allergens: string[]
   pausedDates: string[]
   orders: OrderDay[]
@@ -66,7 +66,7 @@ function displayStatusFor(deliveryDateIso: string, backendStatus: string): Order
   return "Scheduled"
 }
 
-function mapSubscription(raw: RawSubscription, goal: Goal, dietType: DietType, allergens: string[]): Subscription {
+function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[], allergens: string[]): Subscription {
   return {
     id: raw.id,
     status: subscriptionStatusFromEnum(raw.status),
@@ -74,7 +74,7 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietType: DietType, a
     startDate: raw.startDate.slice(0, 10),
     mealsPerDay: raw.mealsPerDay,
     goal,
-    dietType,
+    dietTypes,
     allergens,
     pausedDates: raw.pausedDates.map((d) => d.slice(0, 10)),
     orders: raw.orders.map((o) => ({
@@ -92,7 +92,7 @@ interface DashboardContextValue {
   deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   pauseMultiple: (dates: string[]) => Promise<{ ok: boolean; reason?: string }>
-  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => Promise<void>
+  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[]) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
   deleteAccount: () => Promise<void>
@@ -168,11 +168,11 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   }, [customer.subscription.id, refetch])
 
   const renew = useCallback(
-    async (planDuration: 7 | 14 | 28, goal: Goal, dietType: DietType, allergens: string[]) => {
+    async (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[]) => {
       const { subscriptionId } = await api.post<{ subscriptionId: string }>(`/subscriptions/${customer.subscription.id}/renew`, {
         planDuration,
         goal: GOAL_TO_ENUM[goal],
-        dietType: DIET_TO_ENUM[dietType],
+        dietTypes: dietTypes.map((d) => DIET_TO_ENUM[d]),
         allergens,
       })
       // Same intent endpoint initial checkout uses — the only place that decides real
@@ -223,7 +223,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   const load = useCallback(async (): Promise<DashboardCustomer> => {
     const [me, rawSub, healthLogs] = await Promise.all([
-      api.get<{ fullName: string; email: string; age: number | null; marketingOptIn: boolean; goal: string; dietType: string; allergens: string[] }>(
+      api.get<{ fullName: string; email: string; age: number | null; marketingOptIn: boolean; goal: string; dietTypes: string[]; allergens: string[] }>(
         "/customers/me"
       ),
       api.get<RawSubscription>("/subscriptions/current"),
@@ -237,8 +237,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       email: me.email,
       age: me.age ?? 0,
       marketingOptIn: me.marketingOptIn,
-      // goal/dietType/allergens live on the customer, not the subscription
-      subscription: mapSubscription(rawSub, goalFromEnum(me.goal), dietFromEnum(me.dietType), me.allergens),
+      // goal/dietTypes/allergens live on the customer, not the subscription
+      subscription: mapSubscription(rawSub, goalFromEnum(me.goal), dietTypesFromEnum(me.dietTypes), me.allergens),
       healthLogs: healthLogs.map((h) => ({ ...h, date: h.loggedAt.slice(0, 10) })),
     }
   }, [])

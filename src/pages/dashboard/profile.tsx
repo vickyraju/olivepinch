@@ -10,7 +10,8 @@ const LINKS = [
 ]
 
 function Profile() {
-  const { customer } = useDashboard()
+  const { customer, endDate } = useDashboard()
+  const sub = customer.subscription
 
   return (
     <div className="space-y-8">
@@ -32,6 +33,40 @@ function Profile() {
           <div>
             <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Email</dt>
             <dd className="mt-1 text-lg text-ink">{customer.email}</dd>
+          </div>
+        </dl>
+      </Card>
+
+      <Card className="p-6 sm:p-8">
+        <h2 className="text-lg text-ink mb-4">Your plan</h2>
+        <dl className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Plan length</dt>
+            <dd className="mt-1 text-ink">{sub.planDuration} days</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Goal</dt>
+            <dd className="mt-1 text-ink">{sub.goal}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Preferred food</dt>
+            <dd className="mt-1 text-ink">{sub.dietTypes.join(", ") || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Meals/day</dt>
+            <dd className="mt-1 text-ink">{sub.mealsPerDay}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Allergens</dt>
+            <dd className="mt-1 text-ink">{sub.allergens.length ? sub.allergens.join(", ") : "None"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Start date</dt>
+            <dd className="mt-1 text-ink">{new Date(sub.startDate).toLocaleDateString("en-GB")}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">End date</dt>
+            <dd className="mt-1 text-ink">{new Date(endDate).toLocaleDateString("en-GB")}</dd>
           </div>
         </dl>
       </Card>

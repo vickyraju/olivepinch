@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
 
-function estimateTotal(duration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietType: DietType, allergens: string[]) {
+function estimateTotal(duration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[]) {
   const perDay = SLOTS_BY_MEALS_PER_DAY[mealsPerDay].reduce(
-    (sum, slot) => sum + defaultMenuFor(goal, dietType, allergens, slot).price,
+    (sum, slot) => sum + defaultMenuFor(goal, dietTypes, allergens, slot).price,
     0
   )
   return perDay * duration
@@ -26,7 +26,7 @@ function Subscription() {
   const sub = customer.subscription
   const [duration, setDuration] = useState<7 | 14 | 28>(sub.planDuration)
   const [goal, setGoal] = useState<Goal>(sub.goal)
-  const [dietType, setDietType] = useState<DietType>(sub.dietType)
+  const [dietTypes, setDietTypes] = useState<DietType[]>(sub.dietTypes)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
   const [editingPreferences, setEditingPreferences] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
@@ -35,7 +35,11 @@ function Subscription() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const isExpired = sub.status === "expired"
-  const total = estimateTotal(duration, sub.mealsPerDay, goal, dietType, allergens)
+  const total = estimateTotal(duration, sub.mealsPerDay, goal, dietTypes, allergens)
+
+  function toggleDietType(diet: DietType, checked: boolean) {
+    setDietTypes((prev) => (checked ? [...prev, diet] : prev.filter((d) => d !== diet)))
+  }
 
   // Worldpay redirects back here (not a separate return page — this form already lives
   // where the renewal started) after the customer finishes on the hosted payment page.
@@ -60,7 +64,7 @@ function Subscription() {
     setError("")
     setRenewing(true)
     try {
-      await renew(duration, goal, dietType, allergens)
+      await renew(duration, goal, dietTypes, allergens)
       setConfirmed(true)
       setTimeout(() => setConfirmed(false), 8000)
       setRenewing(false)
@@ -73,7 +77,7 @@ function Subscription() {
   function cancelEditing() {
     setDuration(sub.planDuration)
     setGoal(sub.goal)
-    setDietType(sub.dietType)
+    setDietTypes(sub.dietTypes)
     setAllergens(sub.allergens)
     setEditingPreferences(false)
   }
@@ -149,7 +153,7 @@ function Subscription() {
                 </div>
                 <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Diet</dt>
-                  <dd className="mt-0.5 text-ink font-medium">{dietType}</dd>
+                  <dd className="mt-0.5 text-ink font-medium">{dietTypes.join(", ")}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Excludes</dt>
@@ -205,23 +209,26 @@ function Subscription() {
               </div>
 
               <div>
-                <Label id="diet-label">Diet type</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" role="radiogroup" aria-labelledby="diet-label">
-                  {DIET_TYPES.map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      role="radio"
-                      aria-checked={dietType === d}
-                      onClick={() => setDietType(d)}
-                      className={cn(
-                        "rounded-lg border-2 py-3 text-sm font-medium transition-colors cursor-pointer",
-                        dietType === d ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
-                      )}
-                    >
-                      {d}
-                    </button>
-                  ))}
+                <Label id="diet-label">Preferred food category</Label>
+                <p className="text-xs text-ink-muted -mt-1 mb-3">Select as many as apply — we'll draw your menu from all of them.</p>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" role="group" aria-labelledby="diet-label">
+                  {DIET_TYPES.map((d) => {
+                    const active = dietTypes.includes(d)
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => toggleDietType(d, !active)}
+                        className={cn(
+                          "rounded-lg border-2 py-3 text-sm font-medium transition-colors cursor-pointer",
+                          active ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                        )}
+                      >
+                        {d}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 

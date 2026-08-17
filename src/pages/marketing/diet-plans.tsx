@@ -25,7 +25,7 @@ const MEALS: MealsPerDay[] = [1, 2, 3]
 
 function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }) {
   const [expanded, setExpanded] = useState(false)
-  const sample = SLOTS_BY_MEALS_PER_DAY[3].map((slot) => defaultMenuFor(goal.id, "Meat", [], slot))
+  const sample = SLOTS_BY_MEALS_PER_DAY[3].map((slot) => defaultMenuFor(goal.id, ["Meat"], [], slot))
 
   return (
     <Card className="overflow-hidden flex flex-col">
@@ -76,7 +76,7 @@ function PriceEstimator() {
   const [planDuration, setPlanDuration] = useState<7 | 14 | 28>(14)
 
   const slots = SLOTS_BY_MEALS_PER_DAY[mealsPerDay]
-  const perDay = slots.reduce((sum, slot) => sum + defaultMenuFor(goal, dietType, [], slot).price, 0)
+  const perDay = slots.reduce((sum, slot) => sum + defaultMenuFor(goal, [dietType], [], slot).price, 0)
   const estimate = perDay * planDuration
 
   return (

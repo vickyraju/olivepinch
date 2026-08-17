@@ -56,13 +56,14 @@ function Plan() {
       <Calendar
         minDate={min}
         selected={state.startDate ? fromDateKey(state.startDate) : null}
-        onSelect={(date) => {
-          update({ startDate: toDateKey(date) })
-          setTimeout(() => navigate("/subscribe/menu"), 200)
-        }}
+        onSelect={(date) => update({ startDate: toDateKey(date) })}
       />
 
-      <StepNav backTo="/subscribe/meals" hideContinue />
+      <StepNav
+        backTo="/subscribe/meals"
+        continueDisabled={!state.startDate}
+        onContinue={() => navigate("/subscribe/menu")}
+      />
     </div>
   )
 }
