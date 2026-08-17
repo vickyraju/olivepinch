@@ -1,6 +1,6 @@
 import { createContext, useContext, useCallback, useMemo, useState, useEffect, type ReactNode } from "react"
 import type { DietType, Goal } from "@/data/menu"
-import type { DeliverySlot } from "@/lib/subscribe-context"
+import type { DeliverySlot, DeliveryAddress } from "@/lib/subscribe-context"
 import { computeEndDate, pausesUsedThisMonth, toDateKey, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
@@ -43,7 +43,7 @@ export interface DashboardCustomer {
   name: string
   email: string
   age: number
-  address: string
+  address: DeliveryAddress
   marketingOptIn: boolean
   subscription: Subscription
   healthLogs: HealthLog[]
@@ -100,7 +100,7 @@ interface DashboardContextValue {
   renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
-  updateAddress: (address: string) => Promise<void>
+  updateAddress: (address: DeliveryAddress) => Promise<{ ok: boolean; reason?: string }>
   deleteAccount: () => Promise<void>
   endDate: string
   pausesUsed: number
@@ -207,9 +207,20 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
     setCustomer((c) => ({ ...c, marketingOptIn: value }))
   }, [])
 
-  const updateAddress = useCallback(async (address: string) => {
-    await api.patch("/customers/me", { address })
-    setCustomer((c) => ({ ...c, address }))
+  const updateAddress = useCallback(async (address: DeliveryAddress) => {
+    try {
+      await api.patch("/customers/me/address", {
+        addressDoorNumber: address.doorNumber,
+        addressBuildingName: address.buildingName || undefined,
+        addressStreet: address.street,
+        addressArea: address.area,
+        addressPostcode: address.postcode,
+      })
+      setCustomer((c) => ({ ...c, address }))
+      return { ok: true }
+    } catch (err) {
+      return { ok: false, reason: err instanceof ApiError ? err.message : "Couldn't save your address — try again." }
+    }
   }, [])
 
   const deleteAccount = useCallback(async () => {
@@ -235,9 +246,20 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   const load = useCallback(async (): Promise<DashboardCustomer> => {
     const [me, rawSub, healthLogs] = await Promise.all([
-      api.get<{ fullName: string; email: string; age: number | null; address: string | null; marketingOptIn: boolean; goal: string; dietTypes: string[]; allergens: string[] }>(
-        "/customers/me"
-      ),
+      api.get<{
+        fullName: string
+        email: string
+        age: number | null
+        addressDoorNumber: string | null
+        addressBuildingName: string | null
+        addressStreet: string | null
+        addressArea: string | null
+        addressPostcode: string | null
+        marketingOptIn: boolean
+        goal: string
+        dietTypes: string[]
+        allergens: string[]
+      }>("/customers/me"),
       api.get<RawSubscription>("/subscriptions/current"),
       api.get<{ id: string; heightCm: number; weightKg: number; chestCm: number; bicepCm: number; abdomenCm: number; waistCm: number; loggedAt: string }[]>(
         "/health-logs"
@@ -248,7 +270,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       name: me.fullName,
       email: me.email,
       age: me.age ?? 0,
-      address: me.address ?? "",
+      address: {
+        doorNumber: me.addressDoorNumber ?? "",
+        buildingName: me.addressBuildingName ?? "",
+        street: me.addressStreet ?? "",
+        area: me.addressArea ?? "",
+        postcode: me.addressPostcode ?? "",
+      },
       marketingOptIn: me.marketingOptIn,
       // goal/dietTypes/allergens live on the customer, not the subscription
       subscription: mapSubscription(rawSub, goalFromEnum(me.goal), dietTypesFromEnum(me.dietTypes), me.allergens),

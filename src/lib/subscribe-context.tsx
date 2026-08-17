@@ -19,6 +19,14 @@ export interface CustomerProfile {
   weightKg: string
 }
 
+export interface DeliveryAddress {
+  doorNumber: string
+  buildingName: string
+  street: string
+  area: string
+  postcode: string
+}
+
 export interface DayMenu {
   date: string
   items: string[] // menu item ids, indexed by slot order for mealsPerDay
@@ -37,7 +45,7 @@ export interface SubscribeState {
   mealsPerDay: MealsPerDay
   useDefaultMenu: boolean
   dayMenus: DayMenu[]
-  deliveryAddress: string
+  deliveryAddress: DeliveryAddress
   deliverySlot: DeliverySlot
   paymentAttempted: boolean
   customerId: string | null
@@ -53,6 +61,14 @@ const EMPTY_PROFILE: CustomerProfile = {
   weightKg: "",
 }
 
+const EMPTY_ADDRESS: DeliveryAddress = {
+  doorNumber: "",
+  buildingName: "",
+  street: "",
+  area: "",
+  postcode: "",
+}
+
 const INITIAL_STATE: SubscribeState = {
   postcode: "",
   postcodeConfirmed: false,
@@ -66,7 +82,7 @@ const INITIAL_STATE: SubscribeState = {
   mealsPerDay: 2,
   useDefaultMenu: true,
   dayMenus: [],
-  deliveryAddress: "",
+  deliveryAddress: EMPTY_ADDRESS,
   deliverySlot: "Daily",
   paymentAttempted: false,
   customerId: null,

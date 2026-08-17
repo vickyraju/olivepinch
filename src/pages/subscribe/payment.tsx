@@ -5,6 +5,7 @@ import { useSubscribe } from "@/lib/subscribe-context"
 import { priceForDayMenus, formatGBP } from "@/lib/pricing"
 import { api, ApiError } from "@/lib/api"
 import { DELIVERY_SLOT_TO_ENUM } from "@/lib/enum-map"
+import { formatAddress } from "@/lib/address"
 import { Button } from "@/components/ui/button"
 import { OrderSummary } from "./order-summary"
 
@@ -29,7 +30,7 @@ function Payment() {
   // Delivery address is collected on the previous step — a direct/stale visit here without it
   // has nothing to submit, so send them back rather than letting a blank address reach the API.
   useEffect(() => {
-    if (!state.deliveryAddress) navigate("/subscribe/delivery", { replace: true })
+    if (!state.deliveryAddress.postcode) navigate("/subscribe/delivery", { replace: true })
   }, [state.deliveryAddress, navigate])
 
   async function handlePay() {
@@ -44,7 +45,11 @@ function Payment() {
         planDuration: state.planDuration,
         startDate: state.startDate,
         mealsPerDay: state.mealsPerDay,
-        address: state.deliveryAddress,
+        addressDoorNumber: state.deliveryAddress.doorNumber,
+        addressBuildingName: state.deliveryAddress.buildingName || undefined,
+        addressStreet: state.deliveryAddress.street,
+        addressArea: state.deliveryAddress.area,
+        addressPostcode: state.deliveryAddress.postcode,
         deliverySlot: DELIVERY_SLOT_TO_ENUM[state.deliverySlot],
         dayMenus: state.dayMenus,
       })
@@ -78,7 +83,7 @@ function Payment() {
         <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft space-y-5 order-2 lg:order-1">
           <div>
             <p className="text-sm font-medium text-ink mb-1">Delivering to</p>
-            <p className="text-sm text-ink-muted">{state.deliveryAddress}</p>
+            <p className="text-sm text-ink-muted">{formatAddress(state.deliveryAddress)}</p>
           </div>
 
           <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">

@@ -2,7 +2,9 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe, type DeliverySlot } from "@/lib/subscribe-context"
+import { api } from "@/lib/api"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
@@ -16,17 +18,40 @@ const DELIVERY_SLOTS: { value: DeliverySlot; label: string; hint: string }[] = [
 function Delivery() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
-  const [line1, setLine1] = useState("")
-  const [line2, setLine2] = useState("")
-  const [city, setCity] = useState("")
-  const [postcode, setPostcode] = useState(state.postcode)
+  const [doorNumber, setDoorNumber] = useState(state.deliveryAddress.doorNumber)
+  const [buildingName, setBuildingName] = useState(state.deliveryAddress.buildingName)
+  const [street, setStreet] = useState(state.deliveryAddress.street)
+  const [area, setArea] = useState(state.deliveryAddress.area || "Birmingham")
+  const [postcode, setPostcode] = useState(state.deliveryAddress.postcode || state.postcode)
+  const [error, setError] = useState("")
+  const [checking, setChecking] = useState(false)
 
-  const canContinue = !!(line1.trim() && city.trim() && postcode.trim())
+  const canContinue = !!(doorNumber.trim() && street.trim() && area.trim() && postcode.trim())
 
-  function handleContinue() {
-    const address = [line1.trim(), line2.trim(), city.trim(), postcode.trim()].filter(Boolean).join(", ")
-    update({ deliveryAddress: address })
-    navigate("/subscribe/payment")
+  async function handleContinue() {
+    setError("")
+    setChecking(true)
+    try {
+      const res = await api.post<{ valid: boolean; postcode: string }>("/postcode/check", { postcode })
+      if (!res.valid) {
+        setError("We don't currently deliver to that postcode — we're only piloting in Birmingham right now.")
+        setChecking(false)
+        return
+      }
+      update({
+        deliveryAddress: {
+          doorNumber: doorNumber.trim(),
+          buildingName: buildingName.trim(),
+          street: street.trim(),
+          area: area.trim(),
+          postcode: res.postcode,
+        },
+      })
+      navigate("/subscribe/payment")
+    } catch {
+      setError("Couldn't check that postcode — try again.")
+      setChecking(false)
+    }
   }
 
   return (
@@ -36,24 +61,40 @@ function Delivery() {
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft order-2 lg:order-1 space-y-5">
-          <div>
-            <Label htmlFor="line1">Address line 1</Label>
-            <Input id="line1" autoComplete="address-line1" placeholder="Flat / house number, street" value={line1} onChange={(e) => setLine1(e.target.value)} />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="doorNumber">Door number</Label>
+              <Input id="doorNumber" autoComplete="address-line1" placeholder="e.g. 12" value={doorNumber} onChange={(e) => setDoorNumber(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="buildingName">Building name <span className="text-ink-muted font-normal">(optional)</span></Label>
+              <Input id="buildingName" autoComplete="address-line2" value={buildingName} onChange={(e) => setBuildingName(e.target.value)} />
+            </div>
           </div>
           <div>
-            <Label htmlFor="line2">Address line 2 <span className="text-ink-muted font-normal">(optional)</span></Label>
-            <Input id="line2" autoComplete="address-line2" value={line2} onChange={(e) => setLine2(e.target.value)} />
+            <Label htmlFor="street">Street</Label>
+            <Input id="street" autoComplete="address-line1" value={street} onChange={(e) => setStreet(e.target.value)} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="city">Town or city</Label>
-              <Input id="city" autoComplete="address-level2" value={city} onChange={(e) => setCity(e.target.value)} />
+              <Label htmlFor="area">Area</Label>
+              <Input id="area" autoComplete="address-level2" value={area} onChange={(e) => setArea(e.target.value)} />
             </div>
             <div>
               <Label htmlFor="postcode">Postcode</Label>
-              <Input id="postcode" autoComplete="postal-code" value={postcode} onChange={(e) => setPostcode(e.target.value)} />
+              <Input
+                id="postcode"
+                autoComplete="postal-code"
+                value={postcode}
+                onChange={(e) => {
+                  setPostcode(e.target.value)
+                  setError("")
+                }}
+                aria-invalid={!!error}
+              />
             </div>
           </div>
+          <FieldError>{error}</FieldError>
 
           <div>
             <Label>Delivery frequency</Label>
@@ -85,7 +126,12 @@ function Delivery() {
         </div>
       </div>
 
-      <StepNav backTo="/subscribe/account-setup" continueDisabled={!canContinue} onContinue={handleContinue} />
+      <StepNav
+        backTo="/subscribe/account-setup"
+        continueDisabled={!canContinue || checking}
+        continueLabel={checking ? "Checking…" : "Continue"}
+        onContinue={handleContinue}
+      />
     </div>
   )
 }

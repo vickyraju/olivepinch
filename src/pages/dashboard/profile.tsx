@@ -2,10 +2,14 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { Activity, Truck, RefreshCw, ArrowRight, ShieldCheck, MapPin } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
+import type { DeliveryAddress } from "@/lib/subscribe-context"
+import { formatAddress } from "@/lib/address"
+import { api } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FieldError } from "@/components/ui/field-error"
 
 const LINKS = [
   { to: "/dashboard/health", label: "Health Tracker", desc: "Log weight and body measurements", icon: Activity },
@@ -17,19 +21,32 @@ function Profile() {
   const { customer, endDate, updateAddress } = useDashboard()
   const sub = customer.subscription
   const [editingAddress, setEditingAddress] = useState(false)
-  const [addressInput, setAddressInput] = useState(customer.address)
+  const [addressInput, setAddressInput] = useState<DeliveryAddress>(customer.address)
   const [savingAddress, setSavingAddress] = useState(false)
   const [addressError, setAddressError] = useState("")
 
+  const canSaveAddress = !!(addressInput.doorNumber.trim() && addressInput.street.trim() && addressInput.area.trim() && addressInput.postcode.trim())
+
   async function handleSaveAddress() {
-    if (!addressInput.trim()) return
+    if (!canSaveAddress) return
     setSavingAddress(true)
     setAddressError("")
     try {
-      await updateAddress(addressInput.trim())
-      setEditingAddress(false)
+      const check = await api.post<{ valid: boolean; postcode: string }>("/postcode/check", { postcode: addressInput.postcode })
+      if (!check.valid) {
+        setAddressError("We don't currently deliver to that postcode — we're only piloting in Birmingham right now.")
+        setSavingAddress(false)
+        return
+      }
+      const cleaned: DeliveryAddress = { ...addressInput, postcode: check.postcode }
+      const result = await updateAddress(cleaned)
+      if (result.ok) {
+        setEditingAddress(false)
+      } else {
+        setAddressError(result.reason ?? "Couldn't save your address — try again.")
+      }
     } catch {
-      setAddressError("Couldn't save your address — try again.")
+      setAddressError("Couldn't check that postcode — try again.")
     } finally {
       setSavingAddress(false)
     }
@@ -115,16 +132,60 @@ function Profile() {
           )}
         </div>
         {!editingAddress ? (
-          <p className="text-ink mt-2">{customer.address || "No address on file"}</p>
+          <p className="text-ink mt-2">{formatAddress(customer.address) || "No address on file"}</p>
         ) : (
           <div className="mt-3 space-y-3">
-            <div>
-              <Label htmlFor="address">Address</Label>
-              <Input id="address" value={addressInput} onChange={(e) => setAddressInput(e.target.value)} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="doorNumber">Door number</Label>
+                <Input
+                  id="doorNumber"
+                  value={addressInput.doorNumber}
+                  onChange={(e) => setAddressInput((a) => ({ ...a, doorNumber: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="buildingName">Building name <span className="text-ink-muted font-normal">(optional)</span></Label>
+                <Input
+                  id="buildingName"
+                  value={addressInput.buildingName}
+                  onChange={(e) => setAddressInput((a) => ({ ...a, buildingName: e.target.value }))}
+                />
+              </div>
             </div>
-            {addressError && <p className="text-sm text-coral-600">{addressError}</p>}
+            <div>
+              <Label htmlFor="street">Street</Label>
+              <Input
+                id="street"
+                value={addressInput.street}
+                onChange={(e) => setAddressInput((a) => ({ ...a, street: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="area">Area</Label>
+                <Input
+                  id="area"
+                  value={addressInput.area}
+                  onChange={(e) => setAddressInput((a) => ({ ...a, area: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="postcode">Postcode</Label>
+                <Input
+                  id="postcode"
+                  value={addressInput.postcode}
+                  onChange={(e) => {
+                    setAddressInput((a) => ({ ...a, postcode: e.target.value }))
+                    setAddressError("")
+                  }}
+                  aria-invalid={!!addressError}
+                />
+              </div>
+            </div>
+            <FieldError>{addressError}</FieldError>
             <div className="flex gap-2">
-              <Button type="button" variant="primary" size="sm" disabled={savingAddress || !addressInput.trim()} onClick={handleSaveAddress}>
+              <Button type="button" variant="primary" size="sm" disabled={savingAddress || !canSaveAddress} onClick={handleSaveAddress}>
                 {savingAddress ? "Saving…" : "Save"}
               </Button>
               <Button type="button" variant="ghost" size="sm" onClick={cancelEditingAddress} disabled={savingAddress}>
