@@ -35,6 +35,12 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+enum DeliverySlot {
+  DAILY
+  WEEKLY
+  ALTERNATE
+}
+
 enum OrderStatus {
   SCHEDULED
   OUT_FOR_DELIVERY
@@ -96,6 +102,7 @@ model Subscription {
   mealsPerDay   Int
   status        SubscriptionStatus  @default(PENDING_PAYMENT)
   pausedDates   DateTime[]          @default([]) @db.Date
+  deliverySlot  DeliverySlot        @default(DAILY)
   createdAt     DateTime            @default(now())
 
   orders        Order[]

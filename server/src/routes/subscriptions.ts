@@ -3,7 +3,7 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
-import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
+import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor } from "../lib/pricing.js"
 import { computeEndDate, pausesUsedThisMonth, buildDeliveryDates, MAX_PAUSES_PER_MONTH } from "../lib/subscription.js"
 import type { Goal, DietType, MealSlot } from "@prisma/client"
@@ -16,6 +16,7 @@ const createSchema = z.object({
   startDate: z.string(), // YYYY-MM-DD
   mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   address: z.string().min(1),
+  deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]).default("DAILY"),
   // Optional per-day menu customization from the "customize your menu" funnel step.
   // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
   // Falls back to the goal/diet-matched default when omitted.
@@ -71,6 +72,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
       planDuration: body.planDuration,
       startDate,
       mealsPerDay: body.mealsPerDay,
+      deliverySlot: body.deliverySlot as never,
       status: "PENDING_PAYMENT",
       orders: {
         create: dayItems.map((day) => ({
@@ -146,6 +148,7 @@ const renewSchema = z.object({
   goal: z.enum(GOAL_VALUES as [string, ...string[]]),
   dietTypes: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1),
   allergens: z.array(z.string()).default([]),
+  deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]),
 })
 
 // FR-C23: preferences carry over (client sends current values, editable before confirming);
@@ -179,6 +182,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
       planDuration: body.planDuration,
       startDate,
       mealsPerDay: 2,
+      deliverySlot: body.deliverySlot as never,
       status: "PENDING_PAYMENT",
       orders: {
         create: dayItems.map((day) => ({

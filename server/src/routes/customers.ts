@@ -124,6 +124,7 @@ customersRouter.get("/me", requireAuth, async (req, res) => {
 
 const updateMeSchema = z.object({
   marketingOptIn: z.boolean().optional(),
+  address: z.string().min(1).optional(),
 })
 
 customersRouter.patch("/me", requireAuth, validateBody(updateMeSchema), async (req, res) => {
