@@ -1,6 +1,6 @@
 export const MAX_PAUSES_PER_MONTH = 4
 
-function addDays(date: Date, days: number): Date {
+export function addDays(date: Date, days: number): Date {
   const d = new Date(date)
   d.setUTCDate(d.getUTCDate() + days)
   return d

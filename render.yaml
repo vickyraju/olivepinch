@@ -35,3 +35,17 @@ services:
         sync: false
       - key: CRON_SECRET
         sync: false
+
+  - type: cron
+    name: olivepinch-daily-sweep
+    runtime: node
+    plan: free
+    region: frankfurt
+    schedule: "0 7 * * *"
+    buildCommand: "true"
+    startCommand: 'curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" "$SWEEP_URL"'
+    envVars:
+      - key: SWEEP_URL
+        value: https://olivepinch-backend-0cca.onrender.com/api/internal/daily-sweep
+      - key: CRON_SECRET
+        sync: false

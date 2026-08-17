@@ -3,6 +3,8 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { worldpayConfig, createHostedPayment, queryPaymentStatus } from "../lib/worldpay.js"
 import { validateBody } from "../middleware/validate.js"
+import { sendEmail } from "../lib/email.js"
+import { subscriptionConfirmationEmail } from "../lib/email-templates.js"
 
 export const paymentsRouter = Router()
 
@@ -100,6 +102,27 @@ paymentsRouter.post(
     }
 
     const subscription = await activateSubscription(subscriptionId)
+
+    // First-ever subscription for this customer (renewals create a new Subscription row too,
+    // so "only one exists" is what distinguishes initial signup from a renewal) — send the
+    // welcome/confirmation email. Never let an email failure fail a paid checkout's response.
+    const subscriptionCount = await prisma.subscription.count({ where: { customerId: subscription.customerId } })
+    if (subscriptionCount === 1) {
+      try {
+        const total = await subscriptionTotal(subscriptionId)
+        const { subject, text, html } = subscriptionConfirmationEmail({
+          name: subscription.customer.fullName,
+          planDuration: subscription.planDuration,
+          startDate: subscription.startDate.toISOString().slice(0, 10),
+          mealsPerDay: subscription.mealsPerDay,
+          total,
+        })
+        await sendEmail(subscription.customer.email, subject, text, html)
+      } catch (err) {
+        console.error("subscription confirmation email failed", subscriptionId, err)
+      }
+    }
+
     res.json({ customerId: subscription.customerId, status: subscription.status })
   }
 )
