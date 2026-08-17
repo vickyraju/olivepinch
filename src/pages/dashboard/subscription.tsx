@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom"
 import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { GOALS, DIET_TYPES, ALLERGENS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal, type DietType } from "@/data/menu"
+import type { DeliverySlot } from "@/lib/subscribe-context"
 import { formatGBP } from "@/lib/pricing"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +13,11 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
+const DELIVERY_SLOTS: { value: DeliverySlot; hint: string }[] = [
+  { value: "Daily", hint: "A box every day" },
+  { value: "Weekly", hint: "One box for the whole week" },
+  { value: "Alternate days", hint: "A box every other day" },
+]
 
 function estimateTotal(duration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[]) {
   const perDay = SLOTS_BY_MEALS_PER_DAY[mealsPerDay].reduce(
@@ -28,6 +34,7 @@ function Subscription() {
   const [goal, setGoal] = useState<Goal>(sub.goal)
   const [dietTypes, setDietTypes] = useState<DietType[]>(sub.dietTypes)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
+  const [deliverySlot, setDeliverySlot] = useState<DeliverySlot>(sub.deliverySlot)
   const [editingPreferences, setEditingPreferences] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
@@ -64,7 +71,7 @@ function Subscription() {
     setError("")
     setRenewing(true)
     try {
-      await renew(duration, goal, dietTypes, allergens)
+      await renew(duration, goal, dietTypes, allergens, deliverySlot)
       setConfirmed(true)
       setTimeout(() => setConfirmed(false), 8000)
       setRenewing(false)
@@ -79,6 +86,7 @@ function Subscription() {
     setGoal(sub.goal)
     setDietTypes(sub.dietTypes)
     setAllergens(sub.allergens)
+    setDeliverySlot(sub.deliverySlot)
     setEditingPreferences(false)
   }
 
@@ -142,7 +150,7 @@ function Subscription() {
 
           {!editingPreferences ? (
             <div className="rounded-xl border border-border bg-cream-100 p-5">
-              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4">
+              <dl className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm mb-4">
                 <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Length</dt>
                   <dd className="mt-0.5 text-ink font-medium">{duration} days</dd>
@@ -158,6 +166,10 @@ function Subscription() {
                 <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Excludes</dt>
                   <dd className="mt-0.5 text-ink font-medium">{allergens.length ? allergens.join(", ") : "Nothing"}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Delivery</dt>
+                  <dd className="mt-0.5 text-ink font-medium">{deliverySlot}</dd>
                 </div>
               </dl>
               <Button type="button" variant="outline" size="sm" onClick={() => setEditingPreferences(true)}>
@@ -246,6 +258,28 @@ function Subscription() {
                       />
                       <Label htmlFor={`renew-allergen-${allergen}`} className="mb-0 font-normal cursor-pointer">{allergen}</Label>
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label id="delivery-slot-label">Delivery frequency</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-labelledby="delivery-slot-label">
+                  {DELIVERY_SLOTS.map((d) => (
+                    <button
+                      key={d.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={deliverySlot === d.value}
+                      onClick={() => setDeliverySlot(d.value)}
+                      className={cn(
+                        "rounded-lg border-2 py-3 px-2 text-left text-sm font-medium transition-colors cursor-pointer",
+                        deliverySlot === d.value ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                      )}
+                    >
+                      <div>{d.value}</div>
+                      <div className="text-xs font-normal text-ink-muted mt-0.5">{d.hint}</div>
+                    </button>
                   ))}
                 </div>
               </div>

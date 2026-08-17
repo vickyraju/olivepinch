@@ -1,9 +1,10 @@
 import { createContext, useContext, useCallback, useMemo, useState, useEffect, type ReactNode } from "react"
 import type { DietType, Goal } from "@/data/menu"
+import type { DeliverySlot } from "@/lib/subscribe-context"
 import { computeEndDate, pausesUsedThisMonth, toDateKey, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
-import { goalFromEnum, dietTypesFromEnum, mealSlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
+import { goalFromEnum, dietTypesFromEnum, mealSlotFromEnum, deliverySlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, DELIVERY_SLOT_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
 
 export interface HealthLog {
   id: string
@@ -34,6 +35,7 @@ export interface Subscription {
   dietTypes: DietType[]
   allergens: string[]
   pausedDates: string[]
+  deliverySlot: DeliverySlot
   orders: OrderDay[]
 }
 
@@ -41,6 +43,7 @@ export interface DashboardCustomer {
   name: string
   email: string
   age: number
+  address: string
   marketingOptIn: boolean
   subscription: Subscription
   healthLogs: HealthLog[]
@@ -53,6 +56,7 @@ interface RawSubscription {
   startDate: string
   mealsPerDay: 1 | 2 | 3
   pausedDates: string[]
+  deliverySlot: string
   orders: { id: string; deliveryDate: string; status: string; items: { slot: string; menuItem: { name: string } }[] }[]
 }
 
@@ -77,6 +81,7 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[]
     dietTypes,
     allergens,
     pausedDates: raw.pausedDates.map((d) => d.slice(0, 10)),
+    deliverySlot: deliverySlotFromEnum(raw.deliverySlot),
     orders: raw.orders.map((o) => ({
       id: o.id,
       date: o.deliveryDate.slice(0, 10),
@@ -92,9 +97,10 @@ interface DashboardContextValue {
   deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   pauseMultiple: (dates: string[]) => Promise<{ ok: boolean; reason?: string }>
-  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[]) => Promise<void>
+  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
+  updateAddress: (address: string) => Promise<void>
   deleteAccount: () => Promise<void>
   endDate: string
   pausesUsed: number
@@ -168,12 +174,13 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   }, [customer.subscription.id, refetch])
 
   const renew = useCallback(
-    async (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[]) => {
+    async (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot) => {
       const { subscriptionId } = await api.post<{ subscriptionId: string }>(`/subscriptions/${customer.subscription.id}/renew`, {
         planDuration,
         goal: GOAL_TO_ENUM[goal],
         dietTypes: dietTypes.map((d) => DIET_TO_ENUM[d]),
         allergens,
+        deliverySlot: DELIVERY_SLOT_TO_ENUM[deliverySlot],
       })
       // Same intent endpoint initial checkout uses — the only place that decides real
       // Worldpay vs. dev-mode auto-succeed, so renewal reuses it rather than faking success.
@@ -200,6 +207,11 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
     setCustomer((c) => ({ ...c, marketingOptIn: value }))
   }, [])
 
+  const updateAddress = useCallback(async (address: string) => {
+    await api.patch("/customers/me", { address })
+    setCustomer((c) => ({ ...c, address }))
+  }, [])
+
   const deleteAccount = useCallback(async () => {
     await api.del("/customers/me")
     await logout()
@@ -209,8 +221,8 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   const pausesUsed = pausesUsedThisMonth(customer.subscription.pausedDates)
 
   const value = useMemo(
-    () => ({ customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed }),
-    [customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, deleteAccount, endDate, pausesUsed]
+    () => ({ customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, updateAddress, deleteAccount, endDate, pausesUsed }),
+    [customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, updateAddress, deleteAccount, endDate, pausesUsed]
   )
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>
@@ -223,7 +235,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
 
   const load = useCallback(async (): Promise<DashboardCustomer> => {
     const [me, rawSub, healthLogs] = await Promise.all([
-      api.get<{ fullName: string; email: string; age: number | null; marketingOptIn: boolean; goal: string; dietTypes: string[]; allergens: string[] }>(
+      api.get<{ fullName: string; email: string; age: number | null; address: string | null; marketingOptIn: boolean; goal: string; dietTypes: string[]; allergens: string[] }>(
         "/customers/me"
       ),
       api.get<RawSubscription>("/subscriptions/current"),
@@ -236,6 +248,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       name: me.fullName,
       email: me.email,
       age: me.age ?? 0,
+      address: me.address ?? "",
       marketingOptIn: me.marketingOptIn,
       // goal/dietTypes/allergens live on the customer, not the subscription
       subscription: mapSubscription(rawSub, goalFromEnum(me.goal), dietTypesFromEnum(me.dietTypes), me.allergens),

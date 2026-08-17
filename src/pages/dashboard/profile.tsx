@@ -1,7 +1,11 @@
+import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Activity, Truck, RefreshCw, ArrowRight, ShieldCheck } from "lucide-react"
+import { Activity, Truck, RefreshCw, ArrowRight, ShieldCheck, MapPin } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const LINKS = [
   { to: "/dashboard/health", label: "Health Tracker", desc: "Log weight and body measurements", icon: Activity },
@@ -10,8 +14,32 @@ const LINKS = [
 ]
 
 function Profile() {
-  const { customer, endDate } = useDashboard()
+  const { customer, endDate, updateAddress } = useDashboard()
   const sub = customer.subscription
+  const [editingAddress, setEditingAddress] = useState(false)
+  const [addressInput, setAddressInput] = useState(customer.address)
+  const [savingAddress, setSavingAddress] = useState(false)
+  const [addressError, setAddressError] = useState("")
+
+  async function handleSaveAddress() {
+    if (!addressInput.trim()) return
+    setSavingAddress(true)
+    setAddressError("")
+    try {
+      await updateAddress(addressInput.trim())
+      setEditingAddress(false)
+    } catch {
+      setAddressError("Couldn't save your address — try again.")
+    } finally {
+      setSavingAddress(false)
+    }
+  }
+
+  function cancelEditingAddress() {
+    setAddressInput(customer.address)
+    setEditingAddress(false)
+    setAddressError("")
+  }
 
   return (
     <div className="space-y-8">
@@ -68,7 +96,43 @@ function Profile() {
             <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">End date</dt>
             <dd className="mt-1 text-ink">{new Date(endDate).toLocaleDateString("en-GB")}</dd>
           </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Delivery</dt>
+            <dd className="mt-1 text-ink">{sub.deliverySlot}</dd>
+          </div>
         </dl>
+      </Card>
+
+      <Card className="p-6 sm:p-8">
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <h2 className="text-lg text-ink flex items-center gap-2">
+            <MapPin className="h-4.5 w-4.5 text-olive-600" /> Delivery address
+          </h2>
+          {!editingAddress && (
+            <Button type="button" variant="outline" size="sm" onClick={() => setEditingAddress(true)}>
+              Change
+            </Button>
+          )}
+        </div>
+        {!editingAddress ? (
+          <p className="text-ink mt-2">{customer.address || "No address on file"}</p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            <div>
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" value={addressInput} onChange={(e) => setAddressInput(e.target.value)} />
+            </div>
+            {addressError && <p className="text-sm text-coral-600">{addressError}</p>}
+            <div className="flex gap-2">
+              <Button type="button" variant="primary" size="sm" disabled={savingAddress || !addressInput.trim()} onClick={handleSaveAddress}>
+                {savingAddress ? "Saving…" : "Save"}
+              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={cancelEditingAddress} disabled={savingAddress}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
 
       <div>

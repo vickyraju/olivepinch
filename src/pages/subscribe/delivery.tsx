@@ -2,9 +2,16 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { useSubscribe } from "@/lib/subscribe-context"
+import { useSubscribe, type DeliverySlot } from "@/lib/subscribe-context"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
+import { cn } from "@/lib/utils"
+
+const DELIVERY_SLOTS: { value: DeliverySlot; label: string; hint: string }[] = [
+  { value: "Daily", label: "Daily", hint: "A box every day" },
+  { value: "Weekly", label: "Weekly", hint: "One box for the whole week" },
+  { value: "Alternate days", label: "Alternate days", hint: "A box every other day" },
+]
 
 function Delivery() {
   const { state, update } = useSubscribe()
@@ -45,6 +52,30 @@ function Delivery() {
             <div>
               <Label htmlFor="postcode">Postcode</Label>
               <Input id="postcode" autoComplete="postal-code" value={postcode} onChange={(e) => setPostcode(e.target.value)} />
+            </div>
+          </div>
+
+          <div>
+            <Label>Delivery frequency</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {DELIVERY_SLOTS.map((d) => {
+                const active = state.deliverySlot === d.value
+                return (
+                  <button
+                    key={d.value}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => update({ deliverySlot: d.value })}
+                    className={cn(
+                      "rounded-xl border-2 p-4 text-left transition-colors cursor-pointer",
+                      active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
+                    )}
+                  >
+                    <div className="font-semibold text-ink">{d.label}</div>
+                    <div className="text-xs text-ink-muted mt-1">{d.hint}</div>
+                  </button>
+                )
+              })}
             </div>
           </div>
         </div>

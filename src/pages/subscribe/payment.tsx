@@ -4,6 +4,7 @@ import { AlertCircle, ArrowLeft, Lock, ShieldCheck } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { priceForDayMenus, formatGBP } from "@/lib/pricing"
 import { api, ApiError } from "@/lib/api"
+import { DELIVERY_SLOT_TO_ENUM } from "@/lib/enum-map"
 import { Button } from "@/components/ui/button"
 import { OrderSummary } from "./order-summary"
 
@@ -44,6 +45,7 @@ function Payment() {
         startDate: state.startDate,
         mealsPerDay: state.mealsPerDay,
         address: state.deliveryAddress,
+        deliverySlot: DELIVERY_SLOT_TO_ENUM[state.deliverySlot],
         dayMenus: state.dayMenus,
       })
       update({ subscriptionId: subscription.subscriptionId })

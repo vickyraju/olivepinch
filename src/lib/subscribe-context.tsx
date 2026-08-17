@@ -8,6 +8,7 @@ import { SUBSCRIBE_STORAGE_KEY as STORAGE_KEY } from "@/lib/subscribe-storage"
 export type PlanDuration = 7 | 14 | 28
 export type MealsPerDay = 1 | 2 | 3
 export type Gender = "Female" | "Male" | "Non-binary" | "Prefer not to say"
+export type DeliverySlot = "Daily" | "Weekly" | "Alternate days"
 
 export interface CustomerProfile {
   fullName: string
@@ -37,6 +38,7 @@ export interface SubscribeState {
   useDefaultMenu: boolean
   dayMenus: DayMenu[]
   deliveryAddress: string
+  deliverySlot: DeliverySlot
   paymentAttempted: boolean
   customerId: string | null
   subscriptionId: string | null
@@ -65,6 +67,7 @@ const INITIAL_STATE: SubscribeState = {
   useDefaultMenu: true,
   dayMenus: [],
   deliveryAddress: "",
+  deliverySlot: "Daily",
   paymentAttempted: false,
   customerId: null,
   subscriptionId: null,

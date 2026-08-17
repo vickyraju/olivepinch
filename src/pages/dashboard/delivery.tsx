@@ -1,7 +1,8 @@
 import { useRef, useState } from "react"
-import { Pause, Play, Truck, PackageCheck, Clock, AlertTriangle, CalendarRange } from "lucide-react"
-import { useDashboard } from "@/lib/dashboard-context"
+import { Pause, Play, Truck, PackageCheck, Clock, AlertTriangle, CalendarRange, Package } from "lucide-react"
+import { useDashboard, type OrderDay } from "@/lib/dashboard-context"
 import { MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
+import { groupIntoBatches } from "@/lib/delivery-batches"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -33,6 +34,7 @@ function Delivery() {
   const remaining = MAX_PAUSES_PER_MONTH - pausesUsed
   const allUpcoming = sub.orders.filter((o) => o.status !== "Delivered")
   const upcoming = allUpcoming.slice(0, visibleCount)
+  const batches = groupIntoBatches(upcoming, sub.deliverySlot)
 
   async function handleToggle(date: string, e: React.MouseEvent<HTMLButtonElement>) {
     lastToggledButton.current = e.currentTarget
@@ -64,6 +66,55 @@ function Delivery() {
     setPauseError(result.ok ? "" : result.reason ?? "")
     setPausingMultiple(false)
     if (result.ok) cancelSelecting()
+  }
+
+  // A plain render helper (not a component) — defining this as a nested component would give
+  // React a new component type every render, remounting it and breaking the focus-restoration
+  // trick in handleToggle below.
+  function renderDay(day: OrderDay) {
+    const style = STATUS_STYLE[day.status]
+    const isFuture = day.status === "Scheduled" || day.status === "Paused"
+    const isSelectable = selecting && day.status === "Scheduled"
+    return (
+      <div key={day.id} className="flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          {isSelectable && (
+            <Checkbox
+              checked={selectedDates.includes(day.date)}
+              onCheckedChange={() => toggleSelected(day.date)}
+              aria-label={`Select ${new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} to pause`}
+            />
+          )}
+          <span className={cn("flex h-10 w-10 items-center justify-center rounded-full", day.status === "Paused" ? "bg-cream-100" : "bg-olive-50")}>
+            <style.icon className={cn("h-4.5 w-4.5", day.status === "Paused" ? "text-ink-muted" : "text-olive-600")} />
+          </span>
+          <div>
+            <div className="font-semibold text-ink">
+              {new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
+            </div>
+            <div className="text-xs text-ink-muted mt-0.5">
+              {day.items.map((i) => `${i.slot}: ${i.name}`).join(" · ")}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge variant={style.variant}>{day.status}</Badge>
+          {!selecting && isFuture && (day.status === "Paused" || remaining > 0) && (
+            <Button
+              type="button"
+              variant={day.status === "Paused" ? "outline" : "ghost"}
+              size="sm"
+              disabled={pausingDate === day.date}
+              onClick={(e) => handleToggle(day.date, e)}
+            >
+              {pausingDate === day.date
+                ? (day.status === "Paused" ? "Resuming…" : "Pausing…")
+                : day.status === "Paused" ? <><Play className="h-3.5 w-3.5" /> Resume</> : <><Pause className="h-3.5 w-3.5" /> Pause</>}
+            </Button>
+          )}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -106,49 +157,28 @@ function Delivery() {
         </div>
 
         <div className="space-y-3">
-          {upcoming.map((day) => {
-            const style = STATUS_STYLE[day.status]
-            const isFuture = day.status === "Scheduled" || day.status === "Paused"
-            const isSelectable = selecting && day.status === "Scheduled"
+          {batches.map((batch) => {
+            if (batch.length === 1) {
+              return (
+                <Card key={batch[0].id} className="p-5">
+                  {renderDay(batch[0])}
+                </Card>
+              )
+            }
+            const first = batch[0].date
+            const last = batch[batch.length - 1].date
+            const rangeLabel =
+              first === last
+                ? new Date(first).toLocaleDateString("en-GB", { day: "numeric", month: "long" })
+                : `${new Date(first).toLocaleDateString("en-GB", { day: "numeric", month: "long" })} – ${new Date(last).toLocaleDateString("en-GB", { day: "numeric", month: "long" })}`
             return (
-              <Card key={day.id} className="p-5">
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3">
-                    {isSelectable && (
-                      <Checkbox
-                        checked={selectedDates.includes(day.date)}
-                        onCheckedChange={() => toggleSelected(day.date)}
-                        aria-label={`Select ${new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} to pause`}
-                      />
-                    )}
-                    <span className={cn("flex h-10 w-10 items-center justify-center rounded-full", day.status === "Paused" ? "bg-cream-100" : "bg-olive-50")}>
-                      <style.icon className={cn("h-4.5 w-4.5", day.status === "Paused" ? "text-ink-muted" : "text-olive-600")} />
-                    </span>
-                    <div>
-                      <div className="font-semibold text-ink">
-                        {new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
-                      </div>
-                      <div className="text-xs text-ink-muted mt-0.5">
-                        {day.items.map((i) => `${i.slot}: ${i.name}`).join(" · ")}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={style.variant}>{day.status}</Badge>
-                    {!selecting && isFuture && (day.status === "Paused" || remaining > 0) && (
-                      <Button
-                        type="button"
-                        variant={day.status === "Paused" ? "outline" : "ghost"}
-                        size="sm"
-                        disabled={pausingDate === day.date}
-                        onClick={(e) => handleToggle(day.date, e)}
-                      >
-                        {pausingDate === day.date
-                          ? (day.status === "Paused" ? "Resuming…" : "Pausing…")
-                          : day.status === "Paused" ? <><Play className="h-3.5 w-3.5" /> Resume</> : <><Pause className="h-3.5 w-3.5" /> Pause</>}
-                      </Button>
-                    )}
-                  </div>
+              <Card key={batch[0].id} className="p-5">
+                <div className="flex items-center gap-2 mb-4 pb-4 border-b border-border text-sm font-medium text-ink-muted">
+                  <Package className="h-4 w-4 text-olive-600" />
+                  One delivery · {rangeLabel}
+                </div>
+                <div className="space-y-4 divide-y divide-border [&>*:not(:first-child)]:pt-4">
+                  {batch.map((day) => renderDay(day))}
                 </div>
               </Card>
             )
