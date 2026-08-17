@@ -1,0 +1,80 @@
+import { prisma } from "./prisma.js"
+import { SLOTS_BY_MEALS_PER_DAY } from "./pricing.js"
+import type { MealSlot } from "@prisma/client"
+
+function httpError(status: number, message: string) {
+  return Object.assign(new Error(message), { status })
+}
+
+export function assertMonday(dateIso: string): Date {
+  const date = new Date(`${dateIso}T00:00:00.000Z`)
+  if (Number.isNaN(date.getTime())) throw httpError(400, "Invalid week date")
+  if (date.getUTCDay() !== 1) throw httpError(400, "Week must start on a Monday")
+  return date
+}
+
+// End of Friday the week before weekStart — i.e. Saturday 00:00 UTC, two days earlier.
+export function fridayCutoffFor(weekStart: Date): Date {
+  const cutoff = new Date(weekStart)
+  cutoff.setUTCDate(cutoff.getUTCDate() - 2)
+  return cutoff
+}
+
+function weekDates(weekStart: Date): Date[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart)
+    d.setUTCDate(d.getUTCDate() + i)
+    return d
+  })
+}
+
+export interface WeekDaySelection {
+  date: string // YYYY-MM-DD
+  items: string[] // menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay]
+}
+
+// Shared by the customer-facing and admin-override endpoints — they differ only in whether
+// the Friday cutoff is enforced (checked by the caller) and how the change gets logged.
+export async function applyWeekSelection(subscriptionId: string, weekStart: Date, dayItems: WeekDaySelection[]) {
+  const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
+  const slots = SLOTS_BY_MEALS_PER_DAY[subscription.mealsPerDay as 1 | 2 | 3]
+
+  const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart }, include: { items: { include: { menuItem: true } } } })
+  if (!menuWeek || !menuWeek.published) {
+    throw httpError(400, "No published menu for that week yet")
+  }
+  const availableItems = new Map(menuWeek.items.map((wi) => [wi.menuItemId, wi.menuItem]))
+
+  // Only the days that actually belong to this subscription within the week (a plan can
+  // start or end mid-week, so not every one of the 7 calendar days necessarily has an Order).
+  const orders = await prisma.order.findMany({
+    where: { subscriptionId, deliveryDate: { in: weekDates(weekStart) } },
+  })
+  if (orders.length === 0) throw httpError(400, "This subscription has no deliveries in that week")
+
+  const byDate = new Map(dayItems.map((d) => [d.date, d.items]))
+
+  const updates = orders.map((order) => {
+    const date = order.deliveryDate.toISOString().slice(0, 10)
+    const itemIds = byDate.get(date)
+    if (!itemIds || itemIds.length !== slots.length) {
+      throw httpError(400, `Missing menu selection for ${date}`)
+    }
+    const items = itemIds.map((id, i) => {
+      const item = availableItems.get(id)
+      if (!item || item.slot !== slots[i]) {
+        throw httpError(400, `Invalid menu selection for ${date} (${slots[i]})`)
+      }
+      return { menuItemId: item.id, slot: item.slot as MealSlot }
+    })
+    return { orderId: order.id, items }
+  })
+
+  await prisma.$transaction(
+    updates.flatMap(({ orderId, items }) => [
+      prisma.orderItem.deleteMany({ where: { orderId } }),
+      prisma.orderItem.createMany({ data: items.map((i) => ({ orderId, menuItemId: i.menuItemId, slot: i.slot })) }),
+      prisma.order.update({ where: { id: orderId }, data: { menuChosenAt: new Date() } }),
+    ])
+  )
+}

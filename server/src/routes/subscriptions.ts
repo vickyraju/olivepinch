@@ -7,6 +7,7 @@ import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor } from "../lib/pricing.js"
 import { computeEndDate, pausesUsedThisMonth, buildDeliveryDates, MAX_PAUSES_PER_MONTH } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
+import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
 import type { Goal, DietType, MealSlot } from "@prisma/client"
 
 export const subscriptionsRouter = Router()
@@ -158,6 +159,23 @@ subscriptionsRouter.post("/:id/resume", validateBody(pauseSchema), async (req, r
     data: { status: "SCHEDULED" },
   })
   res.json({ pausedDates: updated.pausedDates })
+})
+
+const weekSelectionSchema = z.object({
+  dayItems: z.array(z.object({ date: z.string(), items: z.array(z.string()) })),
+})
+
+// Customer picks next week's menu from whatever the admin has published, up until the
+// Friday-midnight cutoff for that week.
+subscriptionsRouter.patch("/:id/menu-weeks/:weekStart", validateBody(weekSelectionSchema), async (req, res) => {
+  await prisma.subscription.findFirstOrThrow({ where: { id: req.params.id as string, customerId: req.customerId } })
+  const weekStart = assertMonday(req.params.weekStart as string)
+  if (Date.now() >= fridayCutoffFor(weekStart).getTime()) {
+    return res.status(400).json({ error: "Selection window has closed for this week" })
+  }
+  const { dayItems } = req.body as z.infer<typeof weekSelectionSchema>
+  await applyWeekSelection(req.params.id as string, weekStart, dayItems)
+  res.status(204).send()
 })
 
 const renewSchema = z.object({

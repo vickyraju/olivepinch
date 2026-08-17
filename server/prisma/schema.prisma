@@ -142,6 +142,7 @@ model MenuItem {
   dailyCapacity Int?
 
   orderItems    OrderItem[]
+  weekItems     MenuWeekItem[]
 }
 
 model Order {
@@ -150,10 +151,39 @@ model Order {
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
   deliveryDate   DateTime     @db.Date
   status         OrderStatus  @default(SCHEDULED)
+  // Set once this order's items reflect an explicit customer (or admin-override) choice for
+  // its week, rather than the goal/diet default assigned at plan creation — drives both the
+  // dashboard's "choose next week" banner and the admin missed-cutoff list.
+  menuChosenAt   DateTime?
 
   items          OrderItem[]
 
   @@unique([subscriptionId, deliveryDate])
+}
+
+// Shared, business-wide weekly menu cycle: admin drafts/publishes an available-item list for
+// a given Monday-start week; customers then edit their existing per-day Order/OrderItem rows
+// for that week's dates, constrained to what's published, up to the Friday cutoff.
+model MenuWeek {
+  id          String         @id @default(cuid())
+  weekStart   DateTime       @db.Date
+  published   Boolean        @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  items       MenuWeekItem[]
+
+  @@unique([weekStart])
+}
+
+model MenuWeekItem {
+  id         String   @id @default(cuid())
+  menuWeekId String
+  menuWeek   MenuWeek @relation(fields: [menuWeekId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@unique([menuWeekId, menuItemId])
 }
 
 model OrderItem {

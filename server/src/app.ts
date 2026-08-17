@@ -7,6 +7,7 @@ import { healthLogsRouter } from "./routes/health-logs.js"
 import { subscriptionsRouter } from "./routes/subscriptions.js"
 import { paymentsRouter } from "./routes/payments.js"
 import { menuItemsRouter } from "./routes/menu-items.js"
+import { menuWeeksRouter } from "./routes/menu-weeks.js"
 import { pricingRouter } from "./routes/pricing.js"
 import { adminRouter } from "./routes/admin/index.js"
 import { internalRouter } from "./routes/internal.js"
@@ -33,6 +34,7 @@ export function createApp() {
   app.use("/api/subscriptions", subscriptionsRouter)
   app.use("/api/payments", paymentsRouter)
   app.use("/api/menu-items", menuItemsRouter)
+  app.use("/api/menu-weeks", menuWeeksRouter)
   app.use("/api/pricing", pricingRouter)
   app.use("/api/admin", adminRouter)
   app.use("/api/internal", internalRouter)
