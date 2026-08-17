@@ -22,7 +22,8 @@ export interface OrderDay {
   id: string
   date: string
   status: OrderStatus
-  items: { name: string; slot: string }[]
+  menuChosenAt: string | null
+  items: { id: string; name: string; slot: string }[]
 }
 
 export interface Subscription {
@@ -57,7 +58,13 @@ interface RawSubscription {
   mealsPerDay: 1 | 2 | 3
   pausedDates: string[]
   deliverySlot: string
-  orders: { id: string; deliveryDate: string; status: string; items: { slot: string; menuItem: { name: string } }[] }[]
+  orders: {
+    id: string
+    deliveryDate: string
+    status: string
+    menuChosenAt: string | null
+    items: { slot: string; menuItem: { id: string; name: string } }[]
+  }[]
 }
 
 /** SCHEDULED never advances on its own in this pilot (no ops staff/cron flips it) — derive a
@@ -86,7 +93,8 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[]
       id: o.id,
       date: o.deliveryDate.slice(0, 10),
       status: displayStatusFor(o.deliveryDate.slice(0, 10), o.status),
-      items: o.items.map((i) => ({ name: i.menuItem.name, slot: mealSlotFromEnum(i.slot) })),
+      menuChosenAt: o.menuChosenAt,
+      items: o.items.map((i) => ({ id: i.menuItem.id, name: i.menuItem.name, slot: mealSlotFromEnum(i.slot) })),
     })),
   }
 }
@@ -101,6 +109,7 @@ interface DashboardContextValue {
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
   updateAddress: (address: DeliveryAddress) => Promise<{ ok: boolean; reason?: string }>
+  chooseMenuWeek: (weekStart: string, dayItems: { date: string; items: string[] }[]) => Promise<{ ok: boolean; reason?: string }>
   deleteAccount: () => Promise<void>
   endDate: string
   pausesUsed: number
@@ -223,6 +232,19 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
     }
   }, [])
 
+  const chooseMenuWeek = useCallback(
+    async (weekStart: string, dayItems: { date: string; items: string[] }[]) => {
+      try {
+        await api.patch(`/subscriptions/${customer.subscription.id}/menu-weeks/${weekStart}`, { dayItems })
+        setCustomer(await refetch())
+        return { ok: true }
+      } catch (err) {
+        return { ok: false, reason: err instanceof ApiError ? err.message : "Couldn't save your menu choices — try again." }
+      }
+    },
+    [customer.subscription.id, refetch]
+  )
+
   const deleteAccount = useCallback(async () => {
     await api.del("/customers/me")
     await logout()
@@ -232,8 +254,8 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   const pausesUsed = pausesUsedThisMonth(customer.subscription.pausedDates)
 
   const value = useMemo(
-    () => ({ customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, updateAddress, deleteAccount, endDate, pausesUsed }),
-    [customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, updateAddress, deleteAccount, endDate, pausesUsed]
+    () => ({ customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, updateAddress, chooseMenuWeek, deleteAccount, endDate, pausesUsed }),
+    [customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, updateAddress, chooseMenuWeek, deleteAccount, endDate, pausesUsed]
   )
 
   return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>

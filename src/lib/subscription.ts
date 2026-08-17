@@ -52,6 +52,21 @@ export function buildOrderDays(startDate: string, planDuration: number, pausedDa
   return days
 }
 
+// Monday of the calendar week containing this date — the shared business-wide weekly
+// menu cycle boundary. Stays in local calendar components throughout (no UTC mixing),
+// same reasoning as toDateKey/fromDateKey above.
+export function mondayOf(dateKey: string): string {
+  const d = fromDateKey(dateKey)
+  const day = d.getDay() // 0 = Sunday
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  return toDateKey(d)
+}
+
+export function addWeeks(dateKey: string, weeks: number): string {
+  return addDays(dateKey, weeks * 7)
+}
+
 export function pausesUsedThisMonth(pausedDates: string[]): number {
   const now = new Date()
   return pausedDates.filter((d) => {

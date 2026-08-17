@@ -24,6 +24,7 @@ import DashboardLayout from '@/pages/dashboard/layout'
 import DashboardProfile from '@/pages/dashboard/profile'
 import DashboardHealth from '@/pages/dashboard/health'
 import DashboardDelivery from '@/pages/dashboard/delivery'
+import DashboardWeeklyMenu from '@/pages/dashboard/weekly-menu'
 import DashboardSubscription from '@/pages/dashboard/subscription'
 import DashboardPrivacy from '@/pages/dashboard/privacy'
 
@@ -57,6 +58,7 @@ function App() {
           <Route index element={<DashboardProfile />} />
           <Route path="health" element={<DashboardHealth />} />
           <Route path="delivery" element={<DashboardDelivery />} />
+          <Route path="weekly-menu" element={<DashboardWeeklyMenu />} />
           <Route path="subscription" element={<DashboardSubscription />} />
           <Route path="privacy" element={<DashboardPrivacy />} />
         </Route>

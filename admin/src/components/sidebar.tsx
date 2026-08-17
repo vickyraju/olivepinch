@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, UtensilsCrossed, MapPin, Users, Truck, LogOut } from "lucide-react"
+import { LayoutDashboard, UtensilsCrossed, CalendarRange, MapPin, Users, Truck, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 
@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
   { path: "/orders", label: "Order Board", icon: Truck },
   { path: "/menu", label: "Menu Control", icon: UtensilsCrossed },
+  { path: "/menu-weeks", label: "Weekly Menu", icon: CalendarRange },
   { path: "/customers", label: "Customers", icon: Users },
   { path: "/zones", label: "Zones", icon: MapPin },
 ]
@@ -25,7 +26,8 @@ function Sidebar() {
 
       <nav className="flex-1 overflow-y-auto py-4 flex flex-col gap-0.5">
         {NAV_ITEMS.map((item) => {
-          const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)
+          const isActive =
+            item.path === "/" ? location.pathname === "/" : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
           return (
             <Link
               key={item.path}

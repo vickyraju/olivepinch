@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom"
-import { User, Activity, Truck, RefreshCw, LogOut, HelpCircle } from "lucide-react"
+import { User, Activity, Truck, RefreshCw, LogOut, HelpCircle, CalendarRange } from "lucide-react"
 import { DashboardProvider } from "@/lib/dashboard-context"
 import { useAuth } from "@/lib/auth"
 import { Logo } from "@/components/ui/logo"
@@ -9,6 +9,7 @@ const NAV = [
   { to: "/dashboard", label: "Profile", icon: User, end: true },
   { to: "/dashboard/health", label: "Health Tracker", icon: Activity, end: false },
   { to: "/dashboard/delivery", label: "Meal Delivery", icon: Truck, end: false },
+  { to: "/dashboard/weekly-menu", label: "Weekly Menu", icon: CalendarRange, end: false },
   { to: "/dashboard/subscription", label: "Subscription", icon: RefreshCw, end: false },
 ]
 

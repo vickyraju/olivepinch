@@ -1,14 +1,6 @@
 import type { OrderDay } from "@/lib/dashboard-context"
 import type { DeliverySlot } from "@/lib/subscribe-context"
-import { toDateKey } from "@/lib/subscription"
-
-function mondayOf(dateKey: string): string {
-  const d = new Date(`${dateKey}T00:00:00.000Z`)
-  const day = d.getUTCDay() // 0 = Sunday
-  const diff = day === 0 ? -6 : 1 - day
-  d.setUTCDate(d.getUTCDate() + diff)
-  return toDateKey(d)
-}
+import { mondayOf } from "@/lib/subscription"
 
 /** Groups a customer's upcoming per-day orders into physical drop-offs based on their chosen
  * delivery slot. Order/OrderItem stay per-day underneath — this is a display-only grouping,

@@ -4,6 +4,7 @@ import { ProtectedRoute } from '@/components/protected-route'
 import Login from '@/pages/login'
 import Dashboard from '@/pages/dashboard'
 import MenuControl from '@/pages/menu-control'
+import MenuWeeks from '@/pages/menu-weeks'
 import Zones from '@/pages/zones'
 import Customers from '@/pages/customers'
 import CustomerDetail from '@/pages/customer-detail'
@@ -18,6 +19,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/menu" element={<MenuControl />} />
+          <Route path="/menu-weeks" element={<MenuWeeks />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
           <Route path="/zones" element={<Zones />} />
