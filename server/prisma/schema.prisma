@@ -69,7 +69,11 @@ model Customer {
   dietTypes       DietType[]    @default([])
   allergens       String[]      @default([])
   postcode        String?
-  address         String?
+  addressDoorNumber   String?
+  addressBuildingName String?
+  addressStreet       String?
+  addressArea         String?
+  addressPostcode     String?
   marketingOptIn  Boolean       @default(false)
   accountStatus   AccountStatus @default(PROVISIONAL)
   createdAt       DateTime      @default(now())

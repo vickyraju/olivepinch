@@ -3,6 +3,7 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
+import { formatAddress } from "../../lib/address.js"
 
 export const adminCustomersRouter = Router()
 adminCustomersRouter.use(requireAdminAuth)
@@ -41,7 +42,7 @@ adminCustomersRouter.get("/:id", async (req, res) => {
     },
   })
   const { passwordHash: _passwordHash, ...safe } = customer
-  res.json(safe)
+  res.json({ ...safe, address: formatAddress(customer) })
 })
 
 function logAction(adminId: string, action: string, customerId?: string, detail?: string) {

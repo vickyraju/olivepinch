@@ -6,6 +6,7 @@ import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor } from "../lib/pricing.js"
 import { computeEndDate, pausesUsedThisMonth, buildDeliveryDates, MAX_PAUSES_PER_MONTH } from "../lib/subscription.js"
+import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import type { Goal, DietType, MealSlot } from "@prisma/client"
 
 export const subscriptionsRouter = Router()
@@ -15,7 +16,11 @@ const createSchema = z.object({
   planDuration: z.union([z.literal(7), z.literal(14), z.literal(28)]),
   startDate: z.string(), // YYYY-MM-DD
   mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
-  address: z.string().min(1),
+  addressDoorNumber: z.string().min(1),
+  addressBuildingName: z.string().optional(),
+  addressStreet: z.string().min(1),
+  addressArea: z.string().min(1),
+  addressPostcode: z.string().min(1),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]).default("DAILY"),
   // Optional per-day menu customization from the "customize your menu" funnel step.
   // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
@@ -32,6 +37,9 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
   const customer = await prisma.customer.findUniqueOrThrow({ where: { id: body.customerId } })
   if (!customer.goal || customer.dietTypes.length === 0) {
     return res.status(400).json({ error: "Customer must have goal and dietTypes set before subscribing" })
+  }
+  if (!(await isPostcodeInActiveZone(body.addressPostcode))) {
+    return res.status(400).json({ error: "We don't currently deliver to that postcode" })
   }
 
   const slots = SLOTS_BY_MEALS_PER_DAY[body.mealsPerDay]
@@ -84,7 +92,16 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
     include: { orders: { include: { items: { include: { menuItem: true } } } } },
   })
 
-  await prisma.customer.update({ where: { id: customer.id }, data: { address: body.address } })
+  await prisma.customer.update({
+    where: { id: customer.id },
+    data: {
+      addressDoorNumber: body.addressDoorNumber,
+      addressBuildingName: body.addressBuildingName,
+      addressStreet: body.addressStreet,
+      addressArea: body.addressArea,
+      addressPostcode: body.addressPostcode,
+    },
+  })
 
   const total = subscription.orders.reduce(
     (sum, order) => sum + order.items.reduce((s, i) => s + Number(i.menuItem.price), 0),

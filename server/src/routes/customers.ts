@@ -5,6 +5,7 @@ import { calculateBmi, bmiCategory } from "../lib/bmi.js"
 import { requireAuth, verifySupabaseUser } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
+import { isPostcodeInActiveZone } from "../lib/postcode.js"
 
 export const customersRouter = Router()
 
@@ -124,13 +125,37 @@ customersRouter.get("/me", requireAuth, async (req, res) => {
 
 const updateMeSchema = z.object({
   marketingOptIn: z.boolean().optional(),
-  address: z.string().min(1).optional(),
 })
 
 customersRouter.patch("/me", requireAuth, validateBody(updateMeSchema), async (req, res) => {
   const customer = await prisma.customer.update({
     where: { id: req.customerId },
     data: req.body,
+  })
+  const { passwordHash: _passwordHash, ...safe } = customer
+  res.json(safe)
+})
+
+const updateAddressSchema = z.object({
+  addressDoorNumber: z.string().min(1),
+  addressBuildingName: z.string().optional(),
+  addressStreet: z.string().min(1),
+  addressArea: z.string().min(1),
+  addressPostcode: z.string().min(1),
+})
+
+// Separate from PATCH /me since, unlike the other self-service fields, the postcode here
+// must be re-checked against active delivery zones every time — we only deliver to
+// Birmingham right now, and a customer could otherwise move their account to an
+// undeliverable address with no server-side check.
+customersRouter.patch("/me/address", requireAuth, validateBody(updateAddressSchema), async (req, res) => {
+  const body = req.body as z.infer<typeof updateAddressSchema>
+  if (!(await isPostcodeInActiveZone(body.addressPostcode))) {
+    return res.status(400).json({ error: "We don't currently deliver to that postcode" })
+  }
+  const customer = await prisma.customer.update({
+    where: { id: req.customerId },
+    data: body,
   })
   const { passwordHash: _passwordHash, ...safe } = customer
   res.json(safe)
@@ -173,7 +198,11 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
         dietTypes: [],
         allergens: [],
         postcode: null,
-        address: null,
+        addressDoorNumber: null,
+        addressBuildingName: null,
+        addressStreet: null,
+        addressArea: null,
+        addressPostcode: null,
         accountStatus: "DELETED",
       },
     }),
