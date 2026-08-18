@@ -1,13 +1,13 @@
 import { cn } from "@/lib/utils"
 
-// Mirrors src/components/ui/logo.tsx in the customer app exactly, so the admin panel's
-// wordmark matches the real site instead of the separate two-tone treatment that had drifted
-// in here (sidebar.tsx has the same divergence, left as-is — only the login page was asked for).
-function Logo({ className }: { className?: string }) {
+// Mirrors src/components/ui/logo.tsx in the customer app's wordmark (same italic Georgia
+// serif) — the one fixed brand asset shared across both apps — but supports a light-on-dark
+// variant for the admin panel's graphite sidebar, which runs its own distinct visual system.
+function Logo({ className, variant = "dark" }: { className?: string; variant?: "dark" | "light" }) {
   return (
     <span
       className={cn("italic font-bold", className)}
-      style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#1b2a0c" }}
+      style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: variant === "light" ? "#f4f5f4" : "#1b2a0c" }}
     >
       OlivePinch
     </span>

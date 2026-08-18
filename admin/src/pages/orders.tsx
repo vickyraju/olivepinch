@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/ui/page-header"
 
 interface OrderRow {
   id: string
@@ -64,30 +65,30 @@ function Orders() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl text-ink">Order Board</h1>
-        <div className="flex items-end gap-3 flex-wrap">
-          <div>
-            <Label htmlFor="date">Delivery date</Label>
-            <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="status-filter">Status</Label>
-            <select
-              id="status-filter"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="flex h-10 rounded-md border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
-            >
-              <option value="">All statuses</option>
-              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{ORDER_STATUS_STYLES[s].label}</option>)}
-            </select>
-          </div>
-        </div>
-      </div>
-      <p className="text-xs text-ink-muted -mt-4">
-        Kitchen prep and delivery happen off-platform — update each order's status here as it moves.
-      </p>
+      <PageHeader
+        title="Order Board"
+        description="Kitchen prep and delivery happen off-platform — update each order's status here as it moves."
+        actions={
+          <>
+            <div>
+              <Label htmlFor="date">Delivery date</Label>
+              <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="status-filter">Status</Label>
+              <select
+                id="status-filter"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+              >
+                <option value="">All statuses</option>
+                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{ORDER_STATUS_STYLES[s].label}</option>)}
+              </select>
+            </div>
+          </>
+        }
+      />
 
       <Card>
         <CardContent>
@@ -119,19 +120,19 @@ function Orders() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Customer</th>
-                  <th className="px-5 py-2.5 font-medium">Address</th>
-                  <th className="px-5 py-2.5 font-medium">Items</th>
-                  <th className="px-5 py-2.5 font-medium">Status</th>
-                  <th className="px-5 py-2.5 font-medium">Update</th>
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Customer</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Address</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Items</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Update</th>
                 </tr>
               </thead>
               <tbody>
                 {visibleOrders.map((order) => {
                   const style = ORDER_STATUS_STYLES[order.status]
                   return (
-                    <tr key={order.id} className="border-b border-border last:border-0">
+                    <tr key={order.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                       <td className="px-5 py-2.5 text-ink font-medium">{order.subscription.customer.fullName}</td>
                       <td className="px-5 py-2.5 text-ink-muted">{order.subscription.customer.address ?? order.subscription.customer.postcode ?? "—"}</td>
                       <td className="px-5 py-2.5 text-ink-muted">{order.items.map((i) => i.menuItem.name).join(", ")}</td>
@@ -140,7 +141,7 @@ function Orders() {
                         <select
                           value={order.status}
                           onChange={(e) => updateStatus(order.id, e.target.value)}
-                          className="h-8 rounded-md border border-border bg-surface px-2 text-xs text-ink cursor-pointer"
+                          className="h-8 rounded-sm border border-border bg-surface px-2 text-xs text-ink cursor-pointer"
                         >
                           {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{ORDER_STATUS_STYLES[s].label}</option>)}
                         </select>

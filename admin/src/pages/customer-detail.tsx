@@ -307,7 +307,7 @@ function CustomerDetail() {
                   id="goal"
                   value={prefsForm.goal}
                   onChange={(e) => setPrefsForm((f) => ({ ...f, goal: e.target.value }))}
-                  className="flex h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink"
+                  className="flex h-10 w-full rounded-sm border border-border bg-surface px-3 text-sm text-ink"
                 >
                   <option value="" disabled>Select a goal</option>
                   {GOALS.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -346,19 +346,22 @@ function CustomerDetail() {
       <Card>
         <CardHeader><CardTitle>Subscriptions</CardTitle></CardHeader>
         <CardContent className="p-0">
+          {customer.subscriptions.length === 0 ? (
+            <p className="p-5 text-sm text-ink-muted">No subscriptions yet.</p>
+          ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-ink-muted">
-                <th className="px-5 py-2.5 font-medium">Started</th>
-                <th className="px-5 py-2.5 font-medium">Length</th>
-                <th className="px-5 py-2.5 font-medium">Meals/day</th>
-                <th className="px-5 py-2.5 font-medium">Status</th>
-                <th className="px-5 py-2.5 font-medium">Paused days</th>
+              <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Started</th>
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Length</th>
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Meals/day</th>
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Status</th>
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Paused days</th>
               </tr>
             </thead>
             <tbody>
               {customer.subscriptions.map((s) => (
-                <tr key={s.id} className="border-b border-border last:border-0">
+                <tr key={s.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                   <td className="px-5 py-2.5 text-ink">{new Date(s.startDate).toLocaleDateString("en-GB")}</td>
                   <td className="px-5 py-2.5 text-ink-muted">{s.planDuration} days</td>
                   <td className="px-5 py-2.5 text-ink-muted">{s.mealsPerDay}</td>
@@ -368,6 +371,7 @@ function CustomerDetail() {
               ))}
             </tbody>
           </table>
+          )}
         </CardContent>
       </Card>
 
@@ -376,13 +380,16 @@ function CustomerDetail() {
           <CardHeader><CardTitle>Delivery days</CardTitle></CardHeader>
           <CardContent className="p-0">
             <p className="px-5 pt-3 pb-1 text-xs text-ink-muted">Pause or resume specific days on this customer's behalf. Not subject to their monthly pause cap.</p>
+            {activeSub.orders.length === 0 ? (
+              <p className="p-5 text-sm text-ink-muted">No delivery days scheduled yet.</p>
+            ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Date</th>
-                  <th className="px-5 py-2.5 font-medium">Items</th>
-                  <th className="px-5 py-2.5 font-medium">Status</th>
-                  <th className="px-5 py-2.5 font-medium" />
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Date</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Items</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider" />
                 </tr>
               </thead>
               <tbody>
@@ -390,7 +397,7 @@ function CustomerDetail() {
                   const date = o.deliveryDate.slice(0, 10)
                   const isPaused = o.status === "PAUSED"
                   return (
-                    <tr key={o.id} className="border-b border-border last:border-0">
+                    <tr key={o.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                       <td className="px-5 py-2.5 text-ink">{new Date(o.deliveryDate).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</td>
                       <td className="px-5 py-2.5 text-ink-muted">{o.items.map((i) => `${i.slot}: ${i.menuItem.name}`).join(" · ")}</td>
                       <td className="px-5 py-2.5 text-ink-muted">{o.status}</td>
@@ -409,6 +416,7 @@ function CustomerDetail() {
                 })}
               </tbody>
             </table>
+            )}
           </CardContent>
         </Card>
       )}
@@ -416,18 +424,21 @@ function CustomerDetail() {
       <Card>
         <CardHeader><CardTitle>Payments</CardTitle></CardHeader>
         <CardContent className="p-0">
+          {customer.payments.length === 0 ? (
+            <p className="p-5 text-sm text-ink-muted">No payments yet.</p>
+          ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-ink-muted">
-                <th className="px-5 py-2.5 font-medium">Date</th>
-                <th className="px-5 py-2.5 font-medium">Amount</th>
-                <th className="px-5 py-2.5 font-medium">Status</th>
-                <th className="px-5 py-2.5 font-medium" />
+              <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Date</th>
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Amount</th>
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Status</th>
+                <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider" />
               </tr>
             </thead>
             <tbody>
               {customer.payments.map((p) => (
-                <tr key={p.id} className="border-b border-border last:border-0">
+                <tr key={p.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                   <td className="px-5 py-2.5 text-ink">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
                   <td className="px-5 py-2.5 text-ink font-medium">{formatGBP(Number(p.amount))}</td>
                   <td className="px-5 py-2.5 text-ink-muted">{p.status}</td>
@@ -442,6 +453,7 @@ function CustomerDetail() {
               ))}
             </tbody>
           </table>
+          )}
         </CardContent>
       </Card>
 
@@ -453,18 +465,18 @@ function CustomerDetail() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Date</th>
-                  <th className="px-5 py-2.5 font-medium">Weight</th>
-                  <th className="px-5 py-2.5 font-medium">Chest</th>
-                  <th className="px-5 py-2.5 font-medium">Bicep</th>
-                  <th className="px-5 py-2.5 font-medium">Abdomen</th>
-                  <th className="px-5 py-2.5 font-medium">Waist</th>
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Date</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Weight</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Chest</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Bicep</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Abdomen</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Waist</th>
                 </tr>
               </thead>
               <tbody>
                 {customer.healthLogs.map((h) => (
-                  <tr key={h.id} className="border-b border-border last:border-0">
+                  <tr key={h.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                     <td className="px-5 py-2.5 text-ink">{new Date(h.loggedAt).toLocaleDateString("en-GB")}</td>
                     <td className="px-5 py-2.5 text-ink-muted">{h.weightKg} kg</td>
                     <td className="px-5 py-2.5 text-ink-muted">{h.chestCm} cm</td>

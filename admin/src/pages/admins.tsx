@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PageHeader } from "@/components/ui/page-header"
 
 interface AdminRow {
   id: string
@@ -62,12 +63,15 @@ function Admins() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl text-ink">Admin Users</h1>
-        <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="h-4 w-4" /> Invite admin
-        </Button>
-      </div>
+      <PageHeader
+        title="Admin Users"
+        description="Staff with access to this console. Any admin can invite another."
+        actions={
+          <Button size="sm" onClick={() => setShowForm((v) => !v)}>
+            <Plus className="h-4 w-4" /> Invite admin
+          </Button>
+        }
+      />
 
       {showForm && (
         <Card>
@@ -102,16 +106,16 @@ function Admins() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Name</th>
-                  <th className="px-5 py-2.5 font-medium">Email</th>
-                  <th className="px-5 py-2.5 font-medium">Joined</th>
-                  <th className="px-5 py-2.5 font-medium" />
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Email</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Joined</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider" />
                 </tr>
               </thead>
               <tbody>
                 {admins.map((a) => (
-                  <tr key={a.id} className="border-b border-border last:border-0">
+                  <tr key={a.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                     <td className="px-5 py-2.5 text-ink font-medium">{a.name}</td>
                     <td className="px-5 py-2.5 text-ink-muted">{a.email}</td>
                     <td className="px-5 py-2.5 text-ink-muted">{new Date(a.createdAt).toLocaleDateString("en-GB")}</td>

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/ui/page-header"
 
 interface CustomerRow {
   id: string
@@ -51,7 +52,7 @@ function Customers() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl text-ink">Customers</h1>
+      <PageHeader title="Customers" description="Search, filter, and open a customer's record." />
 
       <div className="flex items-end gap-3 flex-wrap">
         <div className="relative max-w-sm flex-1 min-w-[220px]">
@@ -62,7 +63,7 @@ function Customers() {
           <select
             value={status}
             onChange={(e) => { setStatus(e.target.value); setPage(1) }}
-            className="flex h-10 rounded-md border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+            className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
           >
             <option value="">All statuses</option>
             {Object.entries(ACCOUNT_STATUS_STYLES).map(([value, s]) => <option key={value} value={value}>{s.label}</option>)}
@@ -72,7 +73,7 @@ function Customers() {
           <select
             value={sort}
             onChange={(e) => { setSort(e.target.value); setPage(1) }}
-            className="flex h-10 rounded-md border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+            className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
           >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -89,19 +90,19 @@ function Customers() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Name</th>
-                  <th className="px-5 py-2.5 font-medium">Email</th>
-                  <th className="px-5 py-2.5 font-medium">Postcode</th>
-                  <th className="px-5 py-2.5 font-medium">Status</th>
-                  <th className="px-5 py-2.5 font-medium">Joined</th>
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Email</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Postcode</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Joined</th>
                 </tr>
               </thead>
               <tbody>
                 {customers.map((c) => {
                   const style = ACCOUNT_STATUS_STYLES[c.accountStatus]
                   return (
-                    <tr key={c.id} className="border-b border-border last:border-0 hover:bg-cream-100">
+                    <tr key={c.id} className="border-b border-border last:border-0 hover:bg-canvas">
                       <td className="px-5 py-2.5">
                         <Link to={`/customers/${c.id}`} className="text-ink font-medium hover:text-olive-600">
                           {c.fullName}

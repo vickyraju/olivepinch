@@ -7,7 +7,7 @@ function ProtectedRoute() {
 
   if (isLoading) {
     return (
-      <div className="min-h-dvh flex items-center justify-center bg-cream-100">
+      <div className="min-h-dvh flex items-center justify-center bg-canvas">
         <Loader2 className="h-6 w-6 animate-spin text-olive-600" />
       </div>
     )

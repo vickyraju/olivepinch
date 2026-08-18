@@ -31,14 +31,14 @@ function Login() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center bg-cream-100 px-4">
+    <div className="min-h-dvh flex items-center justify-center bg-nav px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Logo className="text-2xl mb-1" />
-          <p className="text-sm text-ink-muted">Admin panel</p>
+          <Logo variant="light" className="text-2xl mb-1.5" />
+          <p className="text-sm text-nav-muted">Operations console</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-lg bg-surface border border-border shadow-soft p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-md bg-surface border border-border shadow-card p-6 space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />

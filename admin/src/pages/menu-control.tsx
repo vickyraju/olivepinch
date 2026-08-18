@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/ui/page-header"
 
 interface MenuItem {
   id: string
@@ -121,12 +122,15 @@ function MenuControl() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl text-ink">Menu Control</h1>
-        <Button size="sm" onClick={() => (showForm ? cancelForm() : setShowForm(true))}>
-          <Plus className="h-4 w-4" /> New item
-        </Button>
-      </div>
+      <PageHeader
+        title="Menu Control"
+        description="Manage the catalog admin publishes into weekly menus."
+        actions={
+          <Button size="sm" onClick={() => (showForm ? cancelForm() : setShowForm(true))}>
+            <Plus className="h-4 w-4" /> New item
+          </Button>
+        }
+      />
 
       <div className="flex items-end gap-3 flex-wrap">
         <div className="relative max-w-sm flex-1 min-w-[220px]">
@@ -136,7 +140,7 @@ function MenuControl() {
         <select
           value={slotFilter}
           onChange={(e) => setSlotFilter(e.target.value)}
-          className="flex h-10 rounded-md border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+          className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
         >
           <option value="">All slots</option>
           {SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -157,7 +161,7 @@ function MenuControl() {
                   id="slot"
                   value={form.slot}
                   onChange={(e) => setForm({ ...form, slot: e.target.value })}
-                  className="flex h-10 w-full rounded-md border border-border bg-surface px-3 text-sm text-ink"
+                  className="flex h-10 w-full rounded-sm border border-border bg-surface px-3 text-sm text-ink"
                 >
                   {SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -222,18 +226,18 @@ function MenuControl() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Name</th>
-                  <th className="px-5 py-2.5 font-medium">Slot</th>
-                  <th className="px-5 py-2.5 font-medium">Diet tags</th>
-                  <th className="px-5 py-2.5 font-medium">Capacity</th>
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Slot</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Diet tags</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Capacity</th>
                   <th className="px-5 py-2.5 font-medium text-right">Price</th>
-                  <th className="px-5 py-2.5 font-medium" />
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider" />
                 </tr>
               </thead>
               <tbody>
                 {visibleItems.map((item) => (
-                  <tr key={item.id} className="border-b border-border last:border-0">
+                  <tr key={item.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                     <td className="px-5 py-2.5 text-ink font-medium">{item.name}</td>
                     <td className="px-5 py-2.5 text-ink-muted">{item.slot}</td>
                     <td className="px-5 py-2.5">

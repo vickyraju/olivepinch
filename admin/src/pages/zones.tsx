@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/ui/page-header"
 
 interface Zone {
   id: string
@@ -55,12 +56,15 @@ function Zones() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl text-ink">Delivery Zones</h1>
-        <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus className="h-4 w-4" /> New zone
-        </Button>
-      </div>
+      <PageHeader
+        title="Delivery Zones"
+        description="Postcode areas OlivePinch currently delivers to."
+        actions={
+          <Button size="sm" onClick={() => setShowForm((v) => !v)}>
+            <Plus className="h-4 w-4" /> New zone
+          </Button>
+        }
+      />
 
       {showForm && (
         <Card>
@@ -91,24 +95,24 @@ function Zones() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-ink-muted">
-                  <th className="px-5 py-2.5 font-medium">Zone</th>
-                  <th className="px-5 py-2.5 font-medium">Postcode areas</th>
-                  <th className="px-5 py-2.5 font-medium">Status</th>
-                  <th className="px-5 py-2.5 font-medium" />
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Zone</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Postcode areas</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider" />
                 </tr>
               </thead>
               <tbody>
                 {zones.map((zone) => (
-                  <tr key={zone.id} className="border-b border-border last:border-0">
+                  <tr key={zone.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
                     <td className="px-5 py-2.5 text-ink font-medium">{zone.name}</td>
                     <td className="px-5 py-2.5">
                       <div className="flex gap-1 flex-wrap">
-                        {zone.postcodePrefixes.map((p) => <Badge key={p} className="bg-cream-100 text-ink-muted border-border">{p}</Badge>)}
+                        {zone.postcodePrefixes.map((p) => <Badge key={p} className="bg-canvas text-ink-muted border-border">{p}</Badge>)}
                       </div>
                     </td>
                     <td className="px-5 py-2.5">
-                      <Badge className={zone.isActive ? "bg-olive-50 text-olive-700 border-olive-100" : "bg-cream-100 text-ink-muted border-border"}>
+                      <Badge className={zone.isActive ? "bg-olive-50 text-olive-700 border-olive-100" : "bg-canvas text-ink-muted border-border"}>
                         {zone.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </td>

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { PageHeader } from "@/components/ui/page-header"
 
 interface MenuItem {
   id: string
@@ -182,7 +183,7 @@ function MenuWeeks() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl text-ink">Weekly Menu</h1>
+      <PageHeader title="Weekly Menu" description="Publish next week's available items and cover anyone who hasn't chosen by the Friday cutoff." />
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
         <Card>
@@ -196,11 +197,11 @@ function MenuWeeks() {
                   <li key={w.weekStart}>
                     <button
                       onClick={() => loadComposerWeek(w.weekStart)}
-                      className={`w-full text-left px-5 py-3 text-sm cursor-pointer hover:bg-cream-100 ${w.weekStart === composerWeek ? "bg-olive-50" : ""}`}
+                      className={`w-full text-left px-5 py-3 text-sm cursor-pointer hover:bg-canvas ${w.weekStart === composerWeek ? "bg-olive-50" : ""}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-ink">{w.weekStart}</span>
-                        <Badge className={w.published ? "bg-olive-50 text-olive-700 border-olive-100" : "bg-cream-100 text-ink-muted border-border"}>
+                        <Badge className={w.published ? "bg-olive-50 text-olive-700 border-olive-100" : "bg-canvas text-ink-muted border-border"}>
                           {w.published ? "Published" : "Draft"}
                         </Badge>
                       </div>
@@ -306,7 +307,7 @@ function MenuWeeks() {
                                   key={slot}
                                   value={overrideSelections[date]?.[i] ?? ""}
                                   onChange={(e) => setOverrideItem(date, i, e.target.value)}
-                                  className="flex h-9 w-full rounded-md border border-border bg-surface px-2 text-xs text-ink"
+                                  className="flex h-9 w-full rounded-sm border border-border bg-surface px-2 text-xs text-ink"
                                 >
                                   <option value="">{slot}…</option>
                                   {(pendingItemsBySlot.get(slot) ?? []).map((item) => (
