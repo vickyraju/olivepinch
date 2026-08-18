@@ -4,24 +4,30 @@ import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
 import { formatAddress } from "../../lib/address.js"
+import { isPostcodeInActiveZone } from "../../lib/postcode.js"
+import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
 
 export const adminCustomersRouter = Router()
 adminCustomersRouter.use(requireAdminAuth)
 
 const PAGE_SIZE = 50
+const SORTABLE = { newest: { createdAt: "desc" as const }, oldest: { createdAt: "asc" as const } }
 
 // FR-A04: search/view profiles, subscription history, pause history, payment records
 adminCustomersRouter.get("/", async (req, res) => {
   const search = String(req.query.search ?? "").trim()
+  const status = String(req.query.status ?? "").trim()
+  const sort = String(req.query.sort ?? "newest")
   const page = Math.max(1, Number(req.query.page ?? 1) || 1)
-  const where = search
-    ? { OR: [{ fullName: { contains: search, mode: "insensitive" as const } }, { email: { contains: search, mode: "insensitive" as const } }] }
-    : undefined
+  const where = {
+    ...(search ? { OR: [{ fullName: { contains: search, mode: "insensitive" as const } }, { email: { contains: search, mode: "insensitive" as const } }] } : {}),
+    ...(status ? { accountStatus: status as never } : {}),
+  }
 
   const [customers, total] = await Promise.all([
     prisma.customer.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy: SORTABLE[sort as keyof typeof SORTABLE] ?? SORTABLE.newest,
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
       select: { id: true, fullName: true, email: true, postcode: true, accountStatus: true, createdAt: true },
@@ -36,7 +42,10 @@ adminCustomersRouter.get("/:id", async (req, res) => {
   const customer = await prisma.customer.findUniqueOrThrow({
     where: { id: req.params.id as string },
     include: {
-      subscriptions: { orderBy: { createdAt: "desc" } },
+      subscriptions: {
+        orderBy: { createdAt: "desc" },
+        include: { orders: { orderBy: { deliveryDate: "asc" }, include: { items: { include: { menuItem: true } } } } },
+      },
       payments: { orderBy: { createdAt: "desc" } },
       healthLogs: { orderBy: { loggedAt: "desc" }, take: 5 },
     },
@@ -69,6 +78,28 @@ adminCustomersRouter.post(
   }
 )
 
+// Symmetric counterpart to pause-override — admin overrides aren't capped, so this is a plain
+// undo rather than a call into the customer's own capped /subscriptions/:id/resume.
+adminCustomersRouter.post(
+  "/:id/resume-override",
+  validateBody(z.object({ subscriptionId: z.string(), date: z.string() })),
+  async (req, res) => {
+    const { subscriptionId, date } = req.body as { subscriptionId: string; date: string }
+    const subscription = await prisma.subscription.findFirstOrThrow({
+      where: { id: subscriptionId, customerId: req.params.id as string },
+    })
+    const target = new Date(`${date}T00:00:00.000Z`).getTime()
+    const nextPaused = subscription.pausedDates.filter((d) => d.getTime() !== target)
+    const updated = await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: { pausedDates: { set: nextPaused } },
+    })
+    await prisma.order.updateMany({ where: { subscriptionId: subscription.id, deliveryDate: new Date(target) }, data: { status: "SCHEDULED" } })
+    await logAction(req.adminId!, "resume-override", req.params.id as string, `subscription ${subscription.id}, date ${date}`)
+    res.json({ pausedDates: updated.pausedDates })
+  }
+)
+
 // FR-A05: refund issuance
 adminCustomersRouter.post(
   "/:id/refund",
@@ -92,6 +123,48 @@ adminCustomersRouter.post("/:id/reactivate", async (req, res) => {
   })
   await logAction(req.adminId!, "reactivate", req.params.id as string)
   res.json({ id: customer.id, accountStatus: customer.accountStatus })
+})
+
+const updateAddressSchema = z.object({
+  addressDoorNumber: z.string().min(1),
+  addressBuildingName: z.string().optional(),
+  addressStreet: z.string().min(1),
+  addressArea: z.string().min(1),
+  addressPostcode: z.string().min(1),
+})
+
+// Mirrors customersRouter's PATCH /me/address (customers.ts) — same postcode re-check, since
+// we only deliver to Birmingham right now. A support call editing the address on a customer's
+// behalf must not be able to move them somewhere undeliverable either.
+adminCustomersRouter.patch("/:id/address", validateBody(updateAddressSchema), async (req, res) => {
+  const body = req.body as z.infer<typeof updateAddressSchema>
+  if (!(await isPostcodeInActiveZone(body.addressPostcode))) {
+    return res.status(400).json({ error: "We don't currently deliver to that postcode" })
+  }
+  const customer = await prisma.customer.update({ where: { id: req.params.id as string }, data: body })
+  await logAction(req.adminId!, "address-edit", req.params.id as string)
+  const { passwordHash: _passwordHash, ...safe } = customer
+  res.json({ ...safe, address: formatAddress(customer) })
+})
+
+const preferencesSchema = z.object({
+  goal: z.enum(GOAL_VALUES as [string, ...string[]]),
+  dietTypes: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1),
+  allergens: z.array(z.string()).default([]),
+})
+
+// Deliberately not the open PATCH /customers/:id/preferences (customers.ts) — that route has
+// no requireAuth at all, since it's used mid-signup before any account exists to auth as.
+// Routing admin traffic through it would mean this "admin capability" isn't actually gated by
+// admin auth and leaves no audit trail. This is a separate, admin-gated, audit-logged route.
+adminCustomersRouter.patch("/:id/preferences", validateBody(preferencesSchema), async (req, res) => {
+  const body = req.body as z.infer<typeof preferencesSchema>
+  const customer = await prisma.customer.update({
+    where: { id: req.params.id as string },
+    data: { goal: body.goal as never, dietTypes: body.dietTypes as never, allergens: body.allergens },
+  })
+  await logAction(req.adminId!, "preferences-edit", req.params.id as string)
+  res.json({ id: customer.id })
 })
 
 // Support-action history for this customer, shown in the admin detail view

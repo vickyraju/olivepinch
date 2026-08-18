@@ -62,7 +62,7 @@ model Customer {
   supabaseUserId  String?       @unique
   passwordHash    String?
   gender          String?
-  age             Int?
+  dateOfBirth     DateTime?     @db.Date
   heightCm        Float?
   weightKg        Float?
   goal            Goal?

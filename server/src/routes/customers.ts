@@ -2,6 +2,7 @@ import { Router } from "express"
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
+import { calculateAge } from "../lib/age.js"
 import { requireAuth, verifySupabaseUser } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
@@ -43,7 +44,13 @@ const provisionalSchema = z.object({
   fullName: z.string().min(1),
   email: z.string().email(),
   gender: z.string().optional(),
-  age: z.number().int().min(16).max(100),
+  dateOfBirth: z
+    .string()
+    .refine((v) => !isNaN(new Date(v).getTime()), "Invalid date of birth")
+    .refine((v) => {
+      const age = calculateAge(new Date(v))
+      return age >= 16 && age <= 100
+    }, "You must be between 16 and 100 years old"),
   heightCm: z.number().positive(),
   weightKg: z.number().positive(),
   healthConsent: z.literal(true),
@@ -67,7 +74,7 @@ customersRouter.post("/provisional", validateBody(provisionalSchema), async (req
     update: {
       fullName: body.fullName,
       gender: body.gender,
-      age: body.age,
+      dateOfBirth: new Date(body.dateOfBirth),
       heightCm: body.heightCm,
       weightKg: body.weightKg,
       marketingOptIn: body.marketingOptIn,
@@ -76,7 +83,7 @@ customersRouter.post("/provisional", validateBody(provisionalSchema), async (req
       fullName: body.fullName,
       email: body.email,
       gender: body.gender,
-      age: body.age,
+      dateOfBirth: new Date(body.dateOfBirth),
       heightCm: body.heightCm,
       weightKg: body.weightKg,
       marketingOptIn: body.marketingOptIn,
@@ -191,7 +198,7 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
         supabaseUserId: null,
         passwordHash: null,
         gender: null,
-        age: null,
+        dateOfBirth: null,
         heightCm: null,
         weightKg: null,
         goal: null,
