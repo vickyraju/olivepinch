@@ -72,6 +72,8 @@ function MenuWeeks() {
   useEffect(() => {
     loadWeeks()
     api.get<MenuItem[]>("/menu-items").then(setAllItems)
+    loadComposerWeek(composerWeek)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function loadComposerWeek(weekStart: string) {
