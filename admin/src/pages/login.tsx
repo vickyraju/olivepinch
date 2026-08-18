@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Logo } from "@/components/ui/logo"
 
 function Login() {
   const { login } = useAuth()
@@ -33,9 +34,7 @@ function Login() {
     <div className="min-h-dvh flex items-center justify-center bg-cream-100 px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="font-display text-2xl font-extrabold text-olive-700 mb-1">
-            Olive<span className="text-coral-500">Pinch</span>
-          </h1>
+          <Logo className="text-2xl mb-1" />
           <p className="text-sm text-ink-muted">Admin panel</p>
         </div>
 
