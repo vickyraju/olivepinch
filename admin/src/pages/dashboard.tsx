@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import { Download, TrendingUp, CreditCard } from "lucide-react"
+import { Link } from "react-router-dom"
+import { Download, TrendingUp, CreditCard, CalendarClock, ArrowRight } from "lucide-react"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { downloadCsv } from "@/lib/csv"
@@ -7,11 +8,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/ui/page-header"
 import { cn } from "@/lib/utils"
+import { nextMondayIso } from "@/lib/dates"
 
 interface RevenueResponse {
   series: { date: string; total: number }[]
   grandTotal: number
   paymentCount: number
+}
+
+interface PendingEntry {
+  subscriptionId: string
+  customer: { id: string; fullName: string; email: string }
+  missingDates: string[]
 }
 
 // Small real-data trend, not decoration — the last dozen points of the actual series
@@ -37,6 +45,7 @@ function Dashboard() {
   const [range, setRange] = useState<"daily" | "weekly">("daily")
   const [data, setData] = useState<RevenueResponse | null>(null)
   const [loading, setLoading] = useState(true)
+  const [pending, setPending] = useState<PendingEntry[] | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -45,6 +54,10 @@ function Dashboard() {
       .then(setData)
       .finally(() => setLoading(false))
   }, [range])
+
+  useEffect(() => {
+    api.get<PendingEntry[]>(`/menu-weeks/${nextMondayIso()}/pending`).then(setPending).catch(() => setPending([]))
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -110,6 +123,32 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {pending && pending.length > 0 && (
+        <Card>
+          <CardContent>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-coral-50 shrink-0">
+                  <CalendarClock className="h-4.5 w-4.5 text-coral-600" />
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-ink">
+                    {pending.length} customer{pending.length === 1 ? "" : "s"} haven't chosen next week's menu
+                  </p>
+                  <p className="text-xs text-ink-muted">
+                    {pending.slice(0, 3).map((p) => p.customer.fullName).join(", ")}
+                    {pending.length > 3 ? `, +${pending.length - 3} more` : ""}
+                  </p>
+                </div>
+              </div>
+              <Link to="/menu-weeks" className="inline-flex items-center gap-1 text-sm font-medium text-coral-600 hover:text-coral-500 shrink-0">
+                Set it for them <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

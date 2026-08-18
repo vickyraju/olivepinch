@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/ui/page-header"
+import { Avatar } from "@/components/ui/avatar"
+import { SegmentedFilter } from "@/components/ui/segmented-filter"
 
 interface OrderRow {
   id: string
@@ -69,25 +71,17 @@ function Orders() {
         title="Order Board"
         description="Kitchen prep and delivery happen off-platform — update each order's status here as it moves."
         actions={
-          <>
-            <div>
-              <Label htmlFor="date">Delivery date</Label>
-              <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="status-filter">Status</Label>
-              <select
-                id="status-filter"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
-              >
-                <option value="">All statuses</option>
-                {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{ORDER_STATUS_STYLES[s].label}</option>)}
-              </select>
-            </div>
-          </>
+          <div>
+            <Label htmlFor="date">Delivery date</Label>
+            <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </div>
         }
+      />
+
+      <SegmentedFilter
+        value={statusFilter}
+        onChange={setStatusFilter}
+        options={[{ value: "", label: "All statuses" }, ...STATUS_OPTIONS.map((s) => ({ value: s, label: ORDER_STATUS_STYLES[s].label }))]}
       />
 
       <Card>
@@ -133,7 +127,7 @@ function Orders() {
                   const style = ORDER_STATUS_STYLES[order.status]
                   return (
                     <tr key={order.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
-                      <td className="px-5 py-2.5 text-ink font-medium">{order.subscription.customer.fullName}</td>
+                      <td className="px-5 py-2.5 text-ink font-medium"><div className="flex items-center gap-2.5"><Avatar name={order.subscription.customer.fullName} />{order.subscription.customer.fullName}</div></td>
                       <td className="px-5 py-2.5 text-ink-muted">{order.subscription.customer.address ?? order.subscription.customer.postcode ?? "—"}</td>
                       <td className="px-5 py-2.5 text-ink-muted">{order.items.map((i) => i.menuItem.name).join(", ")}</td>
                       <td className="px-5 py-2.5"><Badge className={style.className}>{style.label}</Badge></td>

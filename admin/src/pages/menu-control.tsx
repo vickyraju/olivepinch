@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/ui/page-header"
+import { SegmentedFilter } from "@/components/ui/segmented-filter"
 
 interface MenuItem {
   id: string
@@ -132,20 +133,16 @@ function MenuControl() {
         }
       />
 
-      <div className="flex items-end gap-3 flex-wrap">
-        <div className="relative max-w-sm flex-1 min-w-[220px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
-          <Input placeholder="Search by name" value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} className="pl-9" />
-        </div>
-        <select
-          value={slotFilter}
-          onChange={(e) => setSlotFilter(e.target.value)}
-          className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
-        >
-          <option value="">All slots</option>
-          {SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
+        <Input placeholder="Search by name" value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} className="pl-9" />
       </div>
+
+      <SegmentedFilter
+        value={slotFilter}
+        onChange={setSlotFilter}
+        options={[{ value: "", label: "All slots" }, ...SLOTS.map((s) => ({ value: s, label: s }))]}
+      />
 
       {showForm && (
         <Card>
@@ -231,7 +228,7 @@ function MenuControl() {
                   <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Slot</th>
                   <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Diet tags</th>
                   <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Capacity</th>
-                  <th className="px-5 py-2.5 font-medium text-right">Price</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider text-right">Price</th>
                   <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider" />
                 </tr>
               </thead>

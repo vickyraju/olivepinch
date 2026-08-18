@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { PageHeader } from "@/components/ui/page-header"
+import { nextMondayIso } from "@/lib/dates"
 
 interface MenuItem {
   id: string
@@ -31,14 +32,6 @@ const SLOTS_BY_MEALS_PER_DAY: Record<number, string[]> = {
   1: ["LUNCH"],
   2: ["BREAKFAST", "DINNER"],
   3: ["BREAKFAST", "LUNCH", "DINNER"],
-}
-
-function nextMondayIso(): string {
-  const d = new Date()
-  const day = d.getDay()
-  const diff = day === 0 ? 1 : 8 - day
-  d.setDate(d.getDate() + diff)
-  return d.toISOString().slice(0, 10)
 }
 
 function isMonday(iso: string): boolean {

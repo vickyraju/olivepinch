@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Avatar } from "@/components/ui/avatar"
 
 // Admin can act on a customer's behalf for address, delivery days, and preferences — but never
 // triggers a renewal/payment (PCI boundary), edits health log entries, deletes an account, or
@@ -215,9 +216,12 @@ function CustomerDetail() {
       </Link>
 
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl text-ink">{customer.fullName}</h1>
-          <p className="text-sm text-ink-muted">{customer.email}</p>
+        <div className="flex items-center gap-3">
+          <Avatar name={customer.fullName} className="h-11 w-11 text-sm" />
+          <div>
+            <h1 className="text-2xl text-ink">{customer.fullName}</h1>
+            <p className="text-sm text-ink-muted">{customer.email}</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Badge className={style.className}>{style.label}</Badge>

@@ -27,6 +27,11 @@ colors:
   nav-active-bg: "#1f2a20"
   wordmark-dark: "#1b2a0c"
   wordmark-light: "#f4f5f4"
+  identity-blue: "#2f5f9e"
+  identity-violet: "#7c3fa8"
+  identity-pink: "#b83d6b"
+  identity-teal: "#1f8a6b"
+  identity-amber: "#a86a1a"
 typography:
   display:
     fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif"
@@ -121,8 +126,11 @@ Restrained strategy: cool neutrals carry the surface, one accent carries meaning
 - **Ink** (`#16181a`) / **Ink Muted** (`#6b7075`): primary and secondary text on the light workspace.
 - **Border** (`#e2e4e3`): hairline dividers and card edges.
 
+### Identity (categorical, non-semantic)
+- **Blue / Violet / Pink / Teal / Amber** (`#2f5f9e` / `#7c3fa8` / `#b83d6b` / `#1f8a6b` / `#a86a1a`, each on a matching pale tint): a small deterministic palette used only to tell rows of *people* apart at a glance (customer/admin/order-customer avatar initials — see Components). Picked by hashing the person's name, never by status or meaning.
+
 ### Named Rules
-**The One Accent Rule.** Moss green is the only color that means "act here" or "this is active." It never decorates a card corner or fills a background field — it marks exactly one thing per view.
+**The One Accent Rule.** Moss green is the only color that means "act here" or "this is active" — this governs *action and state* color, not the identity palette above. It never decorates a card corner or fills a background field to mean "important"; it marks exactly one actionable thing per view.
 
 ## Typography
 
@@ -180,6 +188,14 @@ Tighter geometry than the customer app: 6px small radius (inputs, badges, button
 - **Style:** 1px border, white background, 6px radius, `h-10`.
 - **Focus:** 2px moss ring, border shifts to moss-500.
 
+### Identity avatars
+- **Shape:** 28px circle (44px on the customer-detail header), two-letter initials, semibold 11px label.
+- **Color:** one of the five identity hues (see Colors), chosen deterministically from the person's name so it never shifts between page loads. Used wherever a row's subject is a specific person — customers, admins, an order's customer — never for a subscription, order, or menu item.
+
+### Segmented filter (pill tabs)
+- **Shape:** full-rounded pills in a horizontal row, replacing a `<select>` wherever the filter set is small and enumerable (order/account status, meal slot). A plain dropdown still owns per-row inline status edits — the pill row is a page-level filter, not a form control.
+- **Selected:** moss fill, white text. **Unselected:** surface background, hairline border, ink-muted text, canvas hover.
+
 ### Navigation (signature component)
 - **Shell:** fixed 240px dark graphite (`#15171b`) sidebar, full height.
 - **Grouping:** nav items grouped under small uppercase muted-gray section labels (Overview / Operations / People / Settings) rather than one flat list — the previous build's single unlabeled list was the clearest "basic" signal to fix.
@@ -193,6 +209,8 @@ Tighter geometry than the customer app: 6px small radius (inputs, badges, button
 - **Do** use moss for exactly one "this is active/primary" signal per view; everything else stays neutral.
 - **Do** use tabular numerals on every data table and stat card.
 - **Do** open every page with the same header grammar: title, one-line context, right-aligned actions.
+- **Do** use the identity palette for person avatars only — never repurpose it for status, category, or emphasis.
+- **Do** use a segmented pill filter instead of a `<select>` for any small, enumerable page-level filter.
 
 ### Don't:
 - **Don't** reintroduce the customer app's warm cream/olive-50 card backgrounds here — this surface is deliberately cooler and flatter.

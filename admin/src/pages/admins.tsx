@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PageHeader } from "@/components/ui/page-header"
+import { Avatar } from "@/components/ui/avatar"
 
 interface AdminRow {
   id: string
@@ -116,7 +117,7 @@ function Admins() {
               <tbody>
                 {admins.map((a) => (
                   <tr key={a.id} className="border-b border-border last:border-0 hover:bg-canvas/60">
-                    <td className="px-5 py-2.5 text-ink font-medium">{a.name}</td>
+                    <td className="px-5 py-2.5 text-ink font-medium"><div className="flex items-center gap-2.5"><Avatar name={a.name} />{a.name}</div></td>
                     <td className="px-5 py-2.5 text-ink-muted">{a.email}</td>
                     <td className="px-5 py-2.5 text-ink-muted">{new Date(a.createdAt).toLocaleDateString("en-GB")}</td>
                     <td className="px-5 py-2.5 text-right">

@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { PageHeader } from "@/components/ui/page-header"
+import { Avatar } from "@/components/ui/avatar"
+import { SegmentedFilter } from "@/components/ui/segmented-filter"
 
 interface CustomerRow {
   id: string
@@ -54,32 +56,26 @@ function Customers() {
     <div className="space-y-6">
       <PageHeader title="Customers" description="Search, filter, and open a customer's record." />
 
-      <div className="flex items-end gap-3 flex-wrap">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="relative max-w-sm flex-1 min-w-[220px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
           <Input placeholder="Search by name or email" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} className="pl-9" />
         </div>
-        <div>
-          <select
-            value={status}
-            onChange={(e) => { setStatus(e.target.value); setPage(1) }}
-            className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
-          >
-            <option value="">All statuses</option>
-            {Object.entries(ACCOUNT_STATUS_STYLES).map(([value, s]) => <option key={value} value={value}>{s.label}</option>)}
-          </select>
-        </div>
-        <div>
-          <select
-            value={sort}
-            onChange={(e) => { setSort(e.target.value); setPage(1) }}
-            className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
-          >
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-          </select>
-        </div>
+        <select
+          value={sort}
+          onChange={(e) => { setSort(e.target.value); setPage(1) }}
+          className="flex h-10 rounded-sm border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
       </div>
+
+      <SegmentedFilter
+        value={status}
+        onChange={(v) => { setStatus(v); setPage(1) }}
+        options={[{ value: "", label: "All statuses" }, ...Object.entries(ACCOUNT_STATUS_STYLES).map(([value, s]) => ({ value, label: s.label }))]}
+      />
 
       <Card>
         <CardContent className="p-0">
@@ -104,7 +100,8 @@ function Customers() {
                   return (
                     <tr key={c.id} className="border-b border-border last:border-0 hover:bg-canvas">
                       <td className="px-5 py-2.5">
-                        <Link to={`/customers/${c.id}`} className="text-ink font-medium hover:text-olive-600">
+                        <Link to={`/customers/${c.id}`} className="flex items-center gap-2.5 text-ink font-medium hover:text-olive-600">
+                          <Avatar name={c.fullName} />
                           {c.fullName}
                         </Link>
                       </td>
