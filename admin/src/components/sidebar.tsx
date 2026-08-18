@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, UtensilsCrossed, CalendarRange, MapPin, Users, Truck, LogOut } from "lucide-react"
+import { LayoutDashboard, UtensilsCrossed, CalendarRange, MapPin, Users, Truck, LogOut, ShieldCheck } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/ui/logo"
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { path: "/menu-weeks", label: "Weekly Menu", icon: CalendarRange },
   { path: "/customers", label: "Customers", icon: Users },
   { path: "/zones", label: "Zones", icon: MapPin },
+  { path: "/admins", label: "Admin Users", icon: ShieldCheck },
 ]
 
 function Sidebar() {

@@ -6,6 +6,7 @@ import { ACCOUNT_STATUS_STYLES } from "@/lib/status-styles"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 
 interface CustomerRow {
   id: string
@@ -16,29 +17,67 @@ interface CustomerRow {
   createdAt: string
 }
 
+interface CustomersResponse {
+  customers: CustomerRow[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
 function Customers() {
   const [search, setSearch] = useState("")
-  const [customers, setCustomers] = useState<CustomerRow[]>([])
+  const [status, setStatus] = useState("")
+  const [sort, setSort] = useState("newest")
+  const [page, setPage] = useState(1)
+  const [result, setResult] = useState<CustomersResponse | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
     const handle = setTimeout(() => {
+      const params = new URLSearchParams({ page: String(page), sort })
+      if (search) params.set("search", search)
+      if (status) params.set("status", status)
       api
-        .get<{ customers: CustomerRow[] }>(`/customers${search ? `?search=${encodeURIComponent(search)}` : ""}`)
-        .then((res) => setCustomers(res.customers))
+        .get<CustomersResponse>(`/customers?${params.toString()}`)
+        .then(setResult)
         .finally(() => setLoading(false))
     }, 250)
     return () => clearTimeout(handle)
-  }, [search])
+  }, [search, status, sort, page])
+
+  const customers = result?.customers ?? []
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl text-ink">Customers</h1>
 
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
-        <Input placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+      <div className="flex items-end gap-3 flex-wrap">
+        <div className="relative max-w-sm flex-1 min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
+          <Input placeholder="Search by name or email" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} className="pl-9" />
+        </div>
+        <div>
+          <select
+            value={status}
+            onChange={(e) => { setStatus(e.target.value); setPage(1) }}
+            className="flex h-10 rounded-md border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+          >
+            <option value="">All statuses</option>
+            {Object.entries(ACCOUNT_STATUS_STYLES).map(([value, s]) => <option key={value} value={value}>{s.label}</option>)}
+          </select>
+        </div>
+        <div>
+          <select
+            value={sort}
+            onChange={(e) => { setSort(e.target.value); setPage(1) }}
+            className="flex h-10 rounded-md border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </div>
       </div>
 
       <Card>
@@ -80,6 +119,18 @@ function Customers() {
           )}
         </CardContent>
       </Card>
+
+      {result && result.total > 0 && (
+        <div className="flex items-center justify-between text-sm text-ink-muted">
+          <p>
+            Showing {(result.page - 1) * result.pageSize + 1}–{Math.min(result.page * result.pageSize, result.total)} of {result.total}
+          </p>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Prev</Button>
+            <Button size="sm" variant="outline" disabled={page >= result.totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

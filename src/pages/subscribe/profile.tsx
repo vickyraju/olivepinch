@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select"
 import { useSubscribe, type Gender } from "@/lib/subscribe-context"
 import { calculateBmi, bmiCategory, BMI_CATEGORY_COLOR } from "@/lib/bmi"
+import { calculateAge } from "@/lib/subscription"
 import { StepNav } from "./step-nav"
 import { useState } from "react"
 
@@ -25,10 +26,13 @@ function Profile() {
   const bmi = hasHealthData ? calculateBmi(height, weight) : null
   const category = bmi ? bmiCategory(bmi) : null
 
+  const age = p.dateOfBirth ? calculateAge(p.dateOfBirth) : null
+  const dobValid = age !== null && age >= 16 && age <= 100
+
   const canContinue =
     p.fullName.trim().length > 1 &&
     p.gender !== "" &&
-    p.age !== "" &&
+    dobValid &&
     hasHealthData &&
     healthConsent
 
@@ -63,15 +67,13 @@ function Profile() {
             </Select>
           </div>
           <div>
-            <Label htmlFor="age">Age</Label>
+            <Label htmlFor="dateOfBirth">Date of birth</Label>
             <Input
-              id="age"
-              type="number"
-              min={16}
-              max={100}
-              inputMode="numeric"
-              value={p.age}
-              onChange={(e) => update({ profile: { ...p, age: e.target.value } })}
+              id="dateOfBirth"
+              type="date"
+              value={p.dateOfBirth}
+              onChange={(e) => update({ profile: { ...p, dateOfBirth: e.target.value } })}
+              aria-invalid={p.dateOfBirth !== "" && !dobValid}
             />
           </div>
         </div>

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react"
-import { Plus, Trash2 } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Plus, Trash2, Pencil, Search } from "lucide-react"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { Card, CardContent } from "@/components/ui/card"
@@ -35,8 +35,11 @@ function MenuControl() {
   const [items, setItems] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [error, setError] = useState("")
+  const [nameFilter, setNameFilter] = useState("")
+  const [slotFilter, setSlotFilter] = useState("")
 
   function load() {
     setLoading(true)
@@ -45,6 +48,35 @@ function MenuControl() {
 
   useEffect(load, [])
 
+  const visibleItems = useMemo(() => {
+    const q = nameFilter.trim().toLowerCase()
+    return items.filter((item) => (!q || item.name.toLowerCase().includes(q)) && (!slotFilter || item.slot === slotFilter))
+  }, [items, nameFilter, slotFilter])
+
+  function startEdit(item: MenuItem) {
+    setEditingId(item.id)
+    setForm({
+      name: item.name,
+      description: item.description,
+      slot: item.slot,
+      dietTags: item.dietTags,
+      allergenTags: item.allergenTags.join(", "),
+      goalTags: item.goalTags,
+      kcal: String(item.kcal),
+      protein: String(item.protein),
+      price: item.price,
+      dailyCapacity: item.dailyCapacity != null ? String(item.dailyCapacity) : "",
+    })
+    setShowForm(true)
+  }
+
+  function cancelForm() {
+    setShowForm(false)
+    setEditingId(null)
+    setForm(emptyForm)
+    setError("")
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
@@ -52,21 +84,25 @@ function MenuControl() {
       setError("Fill in name, at least one diet tag, kcal, protein, and price.")
       return
     }
+    const payload = {
+      name: form.name,
+      description: form.description,
+      slot: form.slot,
+      dietTags: form.dietTags,
+      allergenTags: form.allergenTags ? form.allergenTags.split(",").map((s) => s.trim()) : [],
+      goalTags: form.goalTags,
+      kcal: Number(form.kcal),
+      protein: Number(form.protein),
+      price: Number(form.price),
+      dailyCapacity: form.dailyCapacity ? Number(form.dailyCapacity) : undefined,
+    }
     try {
-      await api.post("/menu-items", {
-        name: form.name,
-        description: form.description,
-        slot: form.slot,
-        dietTags: form.dietTags,
-        allergenTags: form.allergenTags ? form.allergenTags.split(",").map((s) => s.trim()) : [],
-        goalTags: form.goalTags,
-        kcal: Number(form.kcal),
-        protein: Number(form.protein),
-        price: Number(form.price),
-        dailyCapacity: form.dailyCapacity ? Number(form.dailyCapacity) : undefined,
-      })
-      setForm(emptyForm)
-      setShowForm(false)
+      if (editingId) {
+        await api.patch(`/menu-items/${editingId}`, payload)
+      } else {
+        await api.post("/menu-items", payload)
+      }
+      cancelForm()
       load()
     } catch {
       setError("Could not save this item — check the fields and try again.")
@@ -87,9 +123,24 @@ function MenuControl() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl text-ink">Menu Control</h1>
-        <Button size="sm" onClick={() => setShowForm((v) => !v)}>
+        <Button size="sm" onClick={() => (showForm ? cancelForm() : setShowForm(true))}>
           <Plus className="h-4 w-4" /> New item
         </Button>
+      </div>
+
+      <div className="flex items-end gap-3 flex-wrap">
+        <div className="relative max-w-sm flex-1 min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-ink-muted" />
+          <Input placeholder="Search by name" value={nameFilter} onChange={(e) => setNameFilter(e.target.value)} className="pl-9" />
+        </div>
+        <select
+          value={slotFilter}
+          onChange={(e) => setSlotFilter(e.target.value)}
+          className="flex h-10 rounded-md border border-border bg-surface px-3 text-sm text-ink cursor-pointer"
+        >
+          <option value="">All slots</option>
+          {SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
       </div>
 
       {showForm && (
@@ -154,8 +205,8 @@ function MenuControl() {
               </div>
               {error && <p role="alert" className="col-span-2 text-sm text-destructive">{error}</p>}
               <div className="col-span-2 flex justify-end gap-2">
-                <Button type="button" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
-                <Button type="submit">Save item</Button>
+                <Button type="button" variant="ghost" onClick={cancelForm}>Cancel</Button>
+                <Button type="submit">{editingId ? "Update item" : "Save item"}</Button>
               </div>
             </form>
           </CardContent>
@@ -166,6 +217,8 @@ function MenuControl() {
         <CardContent className="p-0">
           {loading ? (
             <p className="p-5 text-sm text-ink-muted">Loading…</p>
+          ) : visibleItems.length === 0 ? (
+            <p className="p-5 text-sm text-ink-muted">No menu items match your filters.</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -179,7 +232,7 @@ function MenuControl() {
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => (
+                {visibleItems.map((item) => (
                   <tr key={item.id} className="border-b border-border last:border-0">
                     <td className="px-5 py-2.5 text-ink font-medium">{item.name}</td>
                     <td className="px-5 py-2.5 text-ink-muted">{item.slot}</td>
@@ -191,9 +244,14 @@ function MenuControl() {
                     <td className="px-5 py-2.5 text-ink-muted">{item.dailyCapacity ?? "—"}</td>
                     <td className="px-5 py-2.5 text-ink text-right font-medium">{formatGBP(Number(item.price))}</td>
                     <td className="px-5 py-2.5 text-right">
-                      <button onClick={() => remove(item.id)} className="text-destructive hover:text-destructive/80 cursor-pointer" aria-label={`Remove ${item.name}`}>
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-3">
+                        <button onClick={() => startEdit(item)} className="text-ink-muted hover:text-ink cursor-pointer" aria-label={`Edit ${item.name}`}>
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => remove(item.id)} className="text-destructive hover:text-destructive/80 cursor-pointer" aria-label={`Remove ${item.name}`}>
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

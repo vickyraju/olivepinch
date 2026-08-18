@@ -4,6 +4,7 @@ import { Activity, Truck, RefreshCw, ArrowRight, ShieldCheck, MapPin } from "luc
 import { useDashboard } from "@/lib/dashboard-context"
 import type { DeliveryAddress } from "@/lib/subscribe-context"
 import { formatAddress } from "@/lib/address"
+import { calculateAge } from "@/lib/subscription"
 import { api } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -73,7 +74,7 @@ function Profile() {
           </div>
           <div>
             <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Age</dt>
-            <dd className="mt-1 text-lg text-ink">{customer.age}</dd>
+            <dd className="mt-1 text-lg text-ink">{customer.dateOfBirth ? calculateAge(customer.dateOfBirth) : "—"}</dd>
           </div>
           <div>
             <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Email</dt>

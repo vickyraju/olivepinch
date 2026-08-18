@@ -43,7 +43,7 @@ export interface Subscription {
 export interface DashboardCustomer {
   name: string
   email: string
-  age: number
+  dateOfBirth: string
   address: DeliveryAddress
   marketingOptIn: boolean
   subscription: Subscription
@@ -271,7 +271,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       api.get<{
         fullName: string
         email: string
-        age: number | null
+        dateOfBirth: string | null
         addressDoorNumber: string | null
         addressBuildingName: string | null
         addressStreet: string | null
@@ -291,7 +291,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     return {
       name: me.fullName,
       email: me.email,
-      age: me.age ?? 0,
+      dateOfBirth: me.dateOfBirth?.slice(0, 10) ?? "",
       address: {
         doorNumber: me.addressDoorNumber ?? "",
         buildingName: me.addressBuildingName ?? "",

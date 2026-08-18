@@ -9,6 +9,7 @@ import Zones from '@/pages/zones'
 import Customers from '@/pages/customers'
 import CustomerDetail from '@/pages/customer-detail'
 import Orders from '@/pages/orders'
+import Admins from '@/pages/admins'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/customers" element={<Customers />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
           <Route path="/zones" element={<Zones />} />
+          <Route path="/admins" element={<Admins />} />
         </Route>
       </Route>
     </Routes>

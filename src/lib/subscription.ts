@@ -67,6 +67,18 @@ export function addWeeks(dateKey: string, weeks: number): string {
   return addDays(dateKey, weeks * 7)
 }
 
+// Same local-calendar-components approach as the rest of this file — never toISOString().
+export function calculateAge(dateOfBirth: string): number {
+  const dob = fromDateKey(dateOfBirth)
+  const now = new Date()
+  let age = now.getFullYear() - dob.getFullYear()
+  const monthDiff = now.getMonth() - dob.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) {
+    age--
+  }
+  return age
+}
+
 export function pausesUsedThisMonth(pausedDates: string[]): number {
   const now = new Date()
   return pausedDates.filter((d) => {

@@ -57,7 +57,7 @@ function AccountSetup() {
         fullName: p.fullName.trim(),
         email: email.trim(),
         gender: p.gender || undefined,
-        age: Number(p.age),
+        dateOfBirth: p.dateOfBirth,
         heightCm: Number(p.heightCm),
         weightKg: Number(p.weightKg),
         healthConsent: true,

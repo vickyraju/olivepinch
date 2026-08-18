@@ -14,7 +14,7 @@ export interface CustomerProfile {
   fullName: string
   email: string
   gender: Gender | ""
-  age: string
+  dateOfBirth: string
   heightCm: string
   weightKg: string
 }
@@ -56,7 +56,7 @@ const EMPTY_PROFILE: CustomerProfile = {
   fullName: "",
   email: "",
   gender: "",
-  age: "",
+  dateOfBirth: "",
   heightCm: "",
   weightKg: "",
 }
