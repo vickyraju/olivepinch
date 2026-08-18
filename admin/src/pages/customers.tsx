@@ -25,8 +25,8 @@ function Customers() {
     setLoading(true)
     const handle = setTimeout(() => {
       api
-        .get<CustomerRow[]>(`/customers${search ? `?search=${encodeURIComponent(search)}` : ""}`)
-        .then(setCustomers)
+        .get<{ customers: CustomerRow[] }>(`/customers${search ? `?search=${encodeURIComponent(search)}` : ""}`)
+        .then((res) => setCustomers(res.customers))
         .finally(() => setLoading(false))
     }, 250)
     return () => clearTimeout(handle)
