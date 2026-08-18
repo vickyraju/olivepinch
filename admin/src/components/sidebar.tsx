@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom"
 import { LayoutDashboard, UtensilsCrossed, CalendarRange, MapPin, Users, Truck, LogOut } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/ui/logo"
 
 const NAV_ITEMS = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -19,9 +20,7 @@ function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-full w-[220px] bg-surface border-r border-border flex flex-col z-20">
       <div className="h-16 flex items-center px-5 border-b border-border">
-        <span className="font-display text-lg font-extrabold text-olive-700">
-          Olive<span className="text-coral-500">Pinch</span>
-        </span>
+        <Logo className="text-lg" />
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 flex flex-col gap-0.5">
