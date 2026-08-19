@@ -7,6 +7,7 @@ import { adminRevenueRouter } from "./revenue.js"
 import { adminOrdersRouter } from "./orders.js"
 import { adminAdminsRouter } from "./admins.js"
 import { adminMenuWeeksRouter } from "./menu-weeks.js"
+import { adminDashboardRouter } from "./dashboard.js"
 
 export const adminRouter = Router()
 
@@ -18,3 +19,4 @@ adminRouter.use("/customers", adminCustomersRouter)
 adminRouter.use("/revenue", adminRevenueRouter)
 adminRouter.use("/orders", adminOrdersRouter)
 adminRouter.use("/admins", adminAdminsRouter)
+adminRouter.use("/dashboard", adminDashboardRouter)
