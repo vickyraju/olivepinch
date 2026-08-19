@@ -12,3 +12,9 @@ export const ACCOUNT_STATUS_STYLES: Record<string, { label: string; className: s
   READ_ONLY: { label: "Read-only", className: "bg-warning/10 text-warning border-warning/20" },
   DELETED: { label: "Deleted", className: "bg-destructive/10 text-destructive border-destructive/20" },
 }
+
+export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
+  PENDING_PAYMENT: "Pending payment",
+  ACTIVE: "Active",
+  EXPIRED: "Expired",
+}

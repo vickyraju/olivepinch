@@ -186,6 +186,10 @@ Tighter geometry than the customer app: 6px small radius (inputs, badges, button
 - **Shape:** 28px circle (44px on the customer-detail header), two-letter initials, semibold 11px label.
 - **Color:** one of the five identity hues (see Colors), chosen deterministically from the person's name so it never shifts between page loads. Used wherever a row's subject is a specific person — customers, admins, an order's customer — never for a subscription, order, or menu item.
 
+### Status breakdown (mini bar list)
+- **Shape:** label, a thin `canvas`-track/`olive-300`-fill proportional bar, and a right-aligned tabular count — the categorical sibling of the trend bars in the revenue card. Used for any "how does this total split into a few categories" widget (today's orders, subscription status, account status, delivery zones on the Overview page).
+- **Not a chart library:** no axes, no legend, no external dependency — deliberately as plain as the trend bars it sits next to.
+
 ### Segmented filter (pill tabs)
 - **Shape:** full-rounded pills in a horizontal row, replacing a `<select>` wherever the filter set is small and enumerable (order/account status, meal slot). A plain dropdown still owns per-row inline status edits — the pill row is a page-level filter, not a form control.
 - **Selected:** moss fill, white text. **Unselected:** surface background, hairline border, ink-muted text, canvas hover.
