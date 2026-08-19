@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { AlertCircle, ArrowLeft, Lock, ShieldCheck } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
-import { priceForDayMenus, formatGBP } from "@/lib/pricing"
+import { estimateTotal, formatGBP } from "@/lib/pricing"
 import { api, ApiError } from "@/lib/api"
 import { DELIVERY_SLOT_TO_ENUM } from "@/lib/enum-map"
 import { formatAddress } from "@/lib/address"
@@ -16,7 +16,7 @@ function Payment() {
   const [status, setStatus] = useState<"idle" | "processing" | "failed">("idle")
   const [declineMessage, setDeclineMessage] = useState("")
 
-  const total = priceForDayMenus(state.dayMenus)
+  const estimate = estimateTotal(state.dayMenus, state.menuItemPrices, state.planDuration, state.mealsPerDay)
 
   // Worldpay redirects back here on a declined/failed/cancelled payment — same failure UI
   // whether it's a real decline or a manual test visit to /subscribe/payment?declined=1.
@@ -105,7 +105,9 @@ function Payment() {
 
           <Button type="button" variant="accent" size="lg" className="w-full" disabled={status === "processing"} onClick={handlePay}>
             <Lock className="h-4 w-4" />
-            {status === "processing" ? "Processing…" : `Continue to secure payment · ${formatGBP(total)}`}
+            {status === "processing"
+              ? "Processing…"
+              : `Continue to secure payment${estimate ? ` · ${formatGBP(estimate.total)}` : ""}`}
           </Button>
         </div>
 

@@ -1,10 +1,10 @@
 import { useSubscribe } from "@/lib/subscribe-context"
-import { priceForDayMenus, formatGBP } from "@/lib/pricing"
+import { estimateTotal, formatGBP } from "@/lib/pricing"
 import { computeEndDate, calculateAge } from "@/lib/subscription"
 
 function OrderSummary() {
   const { state } = useSubscribe()
-  const total = priceForDayMenus(state.dayMenus)
+  const estimate = estimateTotal(state.dayMenus, state.menuItemPrices, state.planDuration, state.mealsPerDay)
   const endDate = state.startDate ? computeEndDate(state.startDate, state.planDuration, []) : null
   const age = state.profile.dateOfBirth ? calculateAge(state.profile.dateOfBirth) : null
 
@@ -24,9 +24,16 @@ function OrderSummary() {
         <div className="flex justify-between"><dt className="text-ink-muted">Start date</dt><dd className="text-ink font-medium">{state.startDate ? new Date(state.startDate).toLocaleDateString("en-GB") : "—"}</dd></div>
         <div className="flex justify-between"><dt className="text-ink-muted">End date</dt><dd className="text-ink font-medium">{endDate ? new Date(endDate).toLocaleDateString("en-GB") : "—"}</dd></div>
       </dl>
-      <div className="border-t border-border mt-4 pt-4 flex justify-between items-baseline">
-        <span className="text-ink font-semibold">Total</span>
-        <span className="font-display text-2xl font-bold text-ink">{formatGBP(total)}</span>
+      <div className="border-t border-border mt-4 pt-4">
+        {estimate ? (
+          <div className="flex justify-between items-baseline">
+            <span className="text-ink font-semibold">{estimate.isEstimate ? "Estimated total" : "Total"}</span>
+            <span className="font-display text-2xl font-bold text-ink">{formatGBP(estimate.total)}</span>
+          </div>
+        ) : (
+          <p className="text-sm text-ink-muted">Your exact price will be confirmed at checkout.</p>
+        )}
+        {estimate?.isEstimate && <p className="text-xs text-ink-muted mt-1">Confirmed at checkout, once every day's meals are set.</p>}
       </div>
     </div>
   )

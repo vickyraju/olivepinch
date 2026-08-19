@@ -1,7 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
-import type { DietType, Goal, MealSlot } from "@/data/menu"
-import { SLOTS_BY_MEALS_PER_DAY, defaultMenuFor } from "@/data/menu"
-import { toDateKey, fromDateKey } from "@/lib/subscription"
+import type { DietType, Goal } from "@/data/menu"
 import { useAuth } from "@/lib/auth"
 import { SUBSCRIBE_STORAGE_KEY as STORAGE_KEY } from "@/lib/subscribe-storage"
 
@@ -44,8 +42,10 @@ export interface SubscribeState {
   allergens: string[]
   noAllergies: boolean
   mealsPerDay: MealsPerDay
-  useDefaultMenu: boolean
   dayMenus: DayMenu[]
+  /** Real MenuItem prices encountered while fetching published weeks during the menu step —
+   * lets order-summary/payment price the plan without depending on the dayMenus payload shape. */
+  menuItemPrices: Record<string, number>
   deliveryAddress: DeliveryAddress
   deliverySlot: DeliverySlot
   paymentAttempted: boolean
@@ -82,8 +82,8 @@ const INITIAL_STATE: SubscribeState = {
   allergens: [],
   noAllergies: false,
   mealsPerDay: 2,
-  useDefaultMenu: true,
   dayMenus: [],
+  menuItemPrices: {},
   deliveryAddress: EMPTY_ADDRESS,
   deliverySlot: "Daily",
   paymentAttempted: false,
@@ -94,8 +94,6 @@ const INITIAL_STATE: SubscribeState = {
 interface SubscribeContextValue {
   state: SubscribeState
   update: (patch: Partial<SubscribeState>) => void
-  buildDayMenus: () => void
-  resetMenuToDefaults: () => void
   reset: () => void
 }
 
@@ -134,44 +132,13 @@ export function SubscribeProvider({ children }: { children: ReactNode }) {
 
   const update = (patch: Partial<SubscribeState>) => setState((s) => ({ ...s, ...patch }))
 
-  const buildDayMenus = () => {
-    setState((s) => {
-      if (!s.goal || s.dietTypes.length === 0 || !s.startDate) return s
-      const slots = SLOTS_BY_MEALS_PER_DAY[s.mealsPerDay]
-      const start = fromDateKey(s.startDate)
-      const dayMenus: DayMenu[] = Array.from({ length: s.planDuration }, (_, i) => {
-        const date = new Date(start)
-        date.setDate(start.getDate() + i)
-        return {
-          date: toDateKey(date),
-          items: slots.map((slot: MealSlot) => defaultMenuFor(s.goal!, s.dietTypes, s.allergens, slot).id),
-        }
-      })
-      return { ...s, dayMenus }
-    })
-  }
-
-  const resetMenuToDefaults = () => {
-    setState((s) => {
-      if (!s.goal || s.dietTypes.length === 0) return s
-      const slots = SLOTS_BY_MEALS_PER_DAY[s.mealsPerDay]
-      return {
-        ...s,
-        dayMenus: s.dayMenus.map((day) => ({
-          ...day,
-          items: slots.map((slot: MealSlot) => defaultMenuFor(s.goal!, s.dietTypes, s.allergens, slot).id),
-        })),
-      }
-    })
-  }
-
   const reset = () => {
     sessionStorage.removeItem(STORAGE_KEY)
     setState(INITIAL_STATE)
   }
 
   const value = useMemo(
-    () => ({ state, update, buildDayMenus, resetMenuToDefaults, reset }),
+    () => ({ state, update, reset }),
     [state]
   )
 
