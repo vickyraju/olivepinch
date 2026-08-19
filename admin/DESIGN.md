@@ -20,13 +20,7 @@ colors:
   success: "#1f7a4d"
   warning: "#a15b04"
   destructive: "#b83232"
-  nav: "#15171b"
-  nav-border: "#262930"
-  nav-foreground: "#e8e9eb"
-  nav-muted: "#8b8f96"
-  nav-active-bg: "#1f2a20"
   wordmark-dark: "#1b2a0c"
-  wordmark-light: "#f4f5f4"
   identity-blue: "#2f5f9e"
   identity-violet: "#7c3fa8"
   identity-pink: "#b83d6b"
@@ -75,22 +69,23 @@ components:
 THESIS: An internal ops console reads as a precision instrument, not the customer app's
 twin — it refuses the warm cream/olive consumer palette and the soft-card sameness that
 made the previous build feel generic and basic.
-OWN-WORLD: A dark graphite navigation shell (near-black, #15171b) anchors a cool-neutral
-light workspace (#f4f5f4 canvas, white cards, slate ink). One restrained accent — a muted
-forest moss carried over from OlivePinch's own brand — marks the active state, primary
-actions, and data highlights; everything else stays quiet so dense tables stay legible.
-Inter throughout, tabular figures on numbers, tighter 6-8px radii than the customer app's
-soft-rounded look.
+OWN-WORLD: An all-light shell — white sidebar and cool-neutral (#f4f5f4) content canvas,
+white cards, slate ink. One restrained accent — a muted forest moss carried over from
+OlivePinch's own brand — marks the active state, primary actions, and data highlights;
+everything else stays quiet so dense tables stay legible. Inter throughout, tabular
+figures on numbers, tighter 6-8px radii than the customer app's soft-rounded look.
+(An initial dark-graphite-sidebar version shipped and was explicitly reverted to light
+per direct user feedback — recorded here so the choice isn't re-litigated by accident.)
 STORY: Ops staff open this mid-phone-call or mid-prep-shift; every page states its task in
 one line, groups navigation by job (Overview / Operations / People / Settings), and never
 makes them hunt for the one control they need.
-FIRST VIEWPORT: Dark sidebar left (grouped nav, wordmark top, admin identity + logout
-bottom), light content area right with a consistent page header (title, one-line context,
-right-aligned actions) above the task itself — a stat row on the dashboard, a table
-elsewhere.
-FORM: Fused from real ops-tool grammar (Stripe's restrained KPI cards, Vercel/Whop's dark
-sidebar, Shopify/Squarespace's table+filter conventions), pinned directly by the user's
-brief (a distinct, Linear/Vercel-register admin look) rather than rolled.
+FIRST VIEWPORT: White sidebar left (grouped nav, wordmark top, admin identity + logout
+bottom), cool-neutral content area right with a consistent page header (title, one-line
+context, right-aligned actions) above the task itself — a stat row on the dashboard, a
+table elsewhere.
+FORM: Fused from real ops-tool grammar (Stripe's restrained KPI cards, Shopify/Squarespace's
+table+filter conventions, Alhaji Foods' light sidebar with a soft moss active-pill), tuned
+by direct user steer away from the initial dark-sidebar direction.
 -->
 
 **Creative North Star: "The Ops Console"**
@@ -98,12 +93,12 @@ brief (a distinct, Linear/Vercel-register admin look) rather than rolled.
 OlivePinch Admin is the instrument panel behind a small, real meal-delivery pilot — built
 for a lean ops team who live in it mid-call and mid-shift, not for a glanceable executive
 dashboard. It deliberately breaks from the customer app's warm, soft-rounded cream/olive
-identity: a near-black graphite sidebar anchors a calm, cool-neutral workspace, with one
-restrained moss-green accent doing all the pointing. Density and legibility outrank charm;
-every screen answers "what do I do here" in the first second.
+identity: an all-light, cool-neutral shell with one restrained moss-green accent doing all
+the pointing. Density and legibility outrank charm; every screen answers "what do I do
+here" in the first second.
 
 **Key Characteristics:**
-- Dark graphite navigation, light cool-neutral workspace — never both light or both dark.
+- All-light shell: white sidebar, cool-neutral content canvas — no dark surfaces anywhere.
 - One accent color (moss), used only for active state, primary actions, and the rare data flag.
 - Inter throughout; tabular numerals on every data table and stat.
 - Tight, precise radii (6–8px) and whisper-quiet shadows — a flat-first system, not a soft consumer one.
@@ -120,9 +115,8 @@ Restrained strategy: cool neutrals carry the surface, one accent carries meaning
 - **Ember** (`#d9603c` / coral scale): the sole warm note — reserved for the "Out for Delivery" status badge and one accent button variant. Never used decoratively.
 
 ### Neutral
-- **Graphite** (`#15171b`, `nav` token): the sidebar's own ground — never used in the light workspace.
-- **Canvas** (`#f4f5f4`): page background in the light workspace.
-- **Surface** (`#ffffff`): cards, table backgrounds, inputs.
+- **Canvas** (`#f4f5f4`): page background in the content area.
+- **Surface** (`#ffffff`): sidebar ground, cards, table backgrounds, inputs — the sidebar and cards share the same white so the sidebar reads as part of the shell, not a separate zone.
 - **Ink** (`#16181a`) / **Ink Muted** (`#6b7075`): primary and secondary text on the light workspace.
 - **Border** (`#e2e4e3`): hairline dividers and card edges.
 
@@ -146,14 +140,14 @@ Restrained strategy: cool neutrals carry the surface, one accent carries meaning
 - **Label** (600, 11px, uppercase, 0.05em tracking): table column headers and sidebar nav-group labels — sized down from the body scale on purpose so it reads as metadata, not competing text.
 
 ### Named exception
-The OlivePinch wordmark (`components/ui/logo.tsx`) is the one element outside this type system — italic Georgia serif, per PRODUCT.md's brand commitment — rendered dark (`#1b2a0c`) on light surfaces and light (`#f4f5f4`) on the graphite sidebar via its `variant` prop. Never restyle it into Inter; never introduce a second off-system font anywhere else.
+The OlivePinch wordmark (`components/ui/logo.tsx`) is the one element outside this type system — italic Georgia serif, per PRODUCT.md's brand commitment — rendered dark (`#1b2a0c`) everywhere in this all-light shell. A light-on-dark `variant` prop existed briefly for the dark-sidebar iteration and was removed once nothing called it — re-add it only if a future surface genuinely goes dark again. Never restyle the wordmark into Inter; never introduce a second off-system font anywhere else.
 
 ### Named Rules
 **The Tabular Numerals Rule.** Every number in a table, stat card, or price column uses tabular figures (`font-variant-numeric: tabular-nums`, applied globally to `table`) so columns of numbers align instead of jittering.
 
 ## Layout
 
-Fixed 240px dark sidebar, content area capped at `max-w-7xl` with 24px page padding, same as the customer app's container discipline. Page rhythm: title block, then a stat row where the page has summary metrics, then the primary content card(s). Consistent 24px vertical rhythm between page sections (`space-y-6`).
+Fixed 240px white sidebar, content area capped at `max-w-7xl` with 24px page padding, same as the customer app's container discipline. Page rhythm: title block, then a stat row where the page has summary metrics, then the primary content card(s). Consistent 24px vertical rhythm between page sections (`space-y-6`).
 
 ## Elevation & Depth
 
@@ -161,7 +155,7 @@ Flat-first with whisper-quiet lift, not the customer app's soft consumer shadow.
 
 ### Shadow Vocabulary
 - **Soft** (`0 1px 2px rgba(15,17,20,0.06)`): resting cards, inputs.
-- **Card** (`0 1px 2px rgba(15,17,20,0.04), 0 4px 10px rgba(15,17,20,0.06)`): elevated panels, dropdowns, the sidebar's edge against content.
+- **Card** (`0 1px 2px rgba(15,17,20,0.04), 0 4px 10px rgba(15,17,20,0.06)`): elevated panels, dropdowns.
 
 ### Named Rules
 **The Flat-By-Default Rule.** Nothing gets a heavy shadow at rest. Depth is a hairline border first, a whisper of shadow second.
@@ -197,15 +191,15 @@ Tighter geometry than the customer app: 6px small radius (inputs, badges, button
 - **Selected:** moss fill, white text. **Unselected:** surface background, hairline border, ink-muted text, canvas hover.
 
 ### Navigation (signature component)
-- **Shell:** fixed 240px dark graphite (`#15171b`) sidebar, full height.
-- **Grouping:** nav items grouped under small uppercase muted-gray section labels (Overview / Operations / People / Settings) rather than one flat list — the previous build's single unlabeled list was the clearest "basic" signal to fix.
-- **Active state:** translucent moss background pill (`nav-active-bg`) with moss-tinted light text, not the light-mode olive-50/border-left treatment used in the old sidebar.
-- **Identity:** wordmark top (light-on-dark variant), admin name/email + logout in a bottom card, visually separated by a hairline.
+- **Shell:** fixed 240px white sidebar, full height, separated from the content canvas by a 1px border (not a color change) — the sidebar and the surface share the same white.
+- **Grouping:** nav items grouped under small uppercase muted-gray section labels (Overview / Operations / People / Settings) rather than one flat list — the previous build's single unlabeled list was the clearest "basic" signal to fix; kept even after the dark-sidebar reversal since it's independent of light/dark.
+- **Active state:** olive-50 pill background with olive-700 text — the same active-state pairing the customer app's own nav conventions use, now reused here after the dark treatment was reverted.
+- **Identity:** wordmark top, admin name/email + logout in a canvas-toned bottom card, visually separated by a hairline.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep the sidebar dark and the workspace light — never invert this per-page.
+- **Do** keep the whole shell light — sidebar and content canvas both, no dark surfaces.
 - **Do** use moss for exactly one "this is active/primary" signal per view; everything else stays neutral.
 - **Do** use tabular numerals on every data table and stat card.
 - **Do** open every page with the same header grammar: title, one-line context, right-aligned actions.
@@ -213,6 +207,7 @@ Tighter geometry than the customer app: 6px small radius (inputs, badges, button
 - **Do** use a segmented pill filter instead of a `<select>` for any small, enumerable page-level filter.
 
 ### Don't:
+- **Don't** make the sidebar (or any surface) dark — explicitly tried and reverted per user feedback; the whole shell stays light.
 - **Don't** reintroduce the customer app's warm cream/olive-50 card backgrounds here — this surface is deliberately cooler and flatter.
 - **Don't** add a second accent color; ember stays reserved for the one status badge and one button variant.
 - **Don't** use heavy/diffuse shadows — this system is flat-first with hairline borders doing the separation.
