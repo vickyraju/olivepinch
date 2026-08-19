@@ -6,6 +6,7 @@ import { validateBody } from "../../middleware/validate.js"
 import { formatAddress } from "../../lib/address.js"
 import { isPostcodeInActiveZone } from "../../lib/postcode.js"
 import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
+import { PHONE_REGEX } from "../customers.js"
 
 export const adminCustomersRouter = Router()
 adminCustomersRouter.use(requireAdminAuth)
@@ -126,6 +127,7 @@ adminCustomersRouter.post("/:id/reactivate", async (req, res) => {
 })
 
 const updateAddressSchema = z.object({
+  phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number"),
   addressDoorNumber: z.string().min(1),
   addressBuildingName: z.string().optional(),
   addressStreet: z.string().min(1),

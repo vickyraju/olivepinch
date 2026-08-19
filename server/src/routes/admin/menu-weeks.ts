@@ -86,7 +86,7 @@ adminMenuWeeksRouter.get("/:weekStart/pending", async (req, res) => {
         include: {
           customer: {
             select: {
-              id: true, fullName: true, email: true, postcode: true,
+              id: true, fullName: true, email: true, phone: true, postcode: true,
               addressDoorNumber: true, addressBuildingName: true, addressStreet: true, addressArea: true, addressPostcode: true,
             },
           },
@@ -98,7 +98,7 @@ adminMenuWeeksRouter.get("/:weekStart/pending", async (req, res) => {
 
   const bySubscription = new Map<
     string,
-    { subscriptionId: string; customer: { id: string; fullName: string; email: string; address: string | null }; mealsPerDay: number; missingDates: string[] }
+    { subscriptionId: string; customer: { id: string; fullName: string; email: string; phone: string | null; address: string | null }; mealsPerDay: number; missingDates: string[] }
   >()
   for (const order of orders) {
     const key = order.subscriptionId
@@ -106,10 +106,10 @@ adminMenuWeeksRouter.get("/:weekStart/pending", async (req, res) => {
     const entry = bySubscription.get(key)
     if (entry) entry.missingDates.push(date)
     else {
-      const { id, fullName, email, ...addressFields } = order.subscription.customer
+      const { id, fullName, email, phone, ...addressFields } = order.subscription.customer
       bySubscription.set(key, {
         subscriptionId: key,
-        customer: { id, fullName, email, address: formatAddress(addressFields) },
+        customer: { id, fullName, email, phone, address: formatAddress(addressFields) },
         mealsPerDay: order.subscription.mealsPerDay,
         missingDates: [date],
       })

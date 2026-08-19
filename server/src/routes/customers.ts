@@ -40,9 +40,12 @@ customersRouter.post("/link-account", async (req, res) => {
   res.json(safe)
 })
 
+export const PHONE_REGEX = /^[0-9+\-\s()]{7,20}$/
+
 const provisionalSchema = z.object({
   fullName: z.string().min(1),
   email: z.string().email(),
+  phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number"),
   gender: z.string().optional(),
   dateOfBirth: z
     .string()
@@ -73,6 +76,7 @@ customersRouter.post("/provisional", validateBody(provisionalSchema), async (req
     where: { email: body.email },
     update: {
       fullName: body.fullName,
+      phone: body.phone,
       gender: body.gender,
       dateOfBirth: new Date(body.dateOfBirth),
       heightCm: body.heightCm,
@@ -82,6 +86,7 @@ customersRouter.post("/provisional", validateBody(provisionalSchema), async (req
     create: {
       fullName: body.fullName,
       email: body.email,
+      phone: body.phone,
       gender: body.gender,
       dateOfBirth: new Date(body.dateOfBirth),
       heightCm: body.heightCm,
@@ -144,6 +149,7 @@ customersRouter.patch("/me", requireAuth, validateBody(updateMeSchema), async (r
 })
 
 const updateAddressSchema = z.object({
+  phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number"),
   addressDoorNumber: z.string().min(1),
   addressBuildingName: z.string().optional(),
   addressStreet: z.string().min(1),
@@ -151,6 +157,8 @@ const updateAddressSchema = z.object({
   addressPostcode: z.string().min(1),
 })
 
+// Bundles phone in with the address fields — "how to reach and where to deliver to this
+// customer" is one natural edit unit, and this avoids a second mutation endpoint + edit form.
 // Separate from PATCH /me since, unlike the other self-service fields, the postcode here
 // must be re-checked against active delivery zones every time — we only deliver to
 // Birmingham right now, and a customer could otherwise move their account to an
@@ -197,6 +205,7 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
         email: `deleted-${customerId}@olivepinch.invalid`,
         supabaseUserId: null,
         passwordHash: null,
+        phone: null,
         gender: null,
         dateOfBirth: null,
         heightCm: null,
