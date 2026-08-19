@@ -3,11 +3,17 @@ import { SubscribeProvider } from "@/lib/subscribe-context"
 import { ProgressStepper } from "@/components/ui/progress-stepper"
 import { Logo } from "@/components/ui/logo"
 import { PHASES, phaseIndex, stepIndexInPhase } from "./steps"
+import { cn } from "@/lib/utils"
+
+// These two steps run a two-column form-plus-summary layout — the shared
+// single-column max-width leaves both columns cramped, so they get more room.
+const WIDE_STEPS = new Set(["/subscribe/delivery", "/subscribe/payment"])
 
 function SubscribeLayoutInner() {
   const location = useLocation()
   const currentPhase = phaseIndex(location.pathname)
   const currentStep = stepIndexInPhase(location.pathname)
+  const isWide = WIDE_STEPS.has(location.pathname)
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -23,7 +29,7 @@ function SubscribeLayoutInner() {
         </div>
       </header>
       <main className="flex-1 bg-cream">
-        <div className="mx-auto max-w-3xl px-5 sm:px-8 py-10 sm:py-14">
+        <div className={cn("mx-auto px-5 sm:px-8 py-10 sm:py-14", isWide ? "max-w-5xl" : "max-w-3xl")}>
           <Outlet />
         </div>
       </main>

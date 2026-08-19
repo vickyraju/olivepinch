@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { Package, CalendarDays, Repeat } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { FieldError } from "@/components/ui/field-error"
@@ -9,10 +10,10 @@ import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
-const DELIVERY_SLOTS: { value: DeliverySlot; label: string; hint: string }[] = [
-  { value: "Daily", label: "Daily", hint: "A box every day" },
-  { value: "Weekly", label: "Weekly", hint: "One box for the whole week" },
-  { value: "Alternate days", label: "Alternate days", hint: "A box every other day" },
+const DELIVERY_SLOTS: { value: DeliverySlot; label: string; hint: string; icon: typeof Package }[] = [
+  { value: "Daily", label: "Daily", hint: "A box every day", icon: Package },
+  { value: "Weekly", label: "Weekly", hint: "One box, once a week", icon: CalendarDays },
+  { value: "Alternate days", label: "Alternate days", hint: "A box every other day", icon: Repeat },
 ]
 
 function Delivery() {
@@ -26,7 +27,15 @@ function Delivery() {
   const [error, setError] = useState("")
   const [checking, setChecking] = useState(false)
 
-  const canContinue = !!(doorNumber.trim() && street.trim() && area.trim() && postcode.trim())
+  const p = state.profile
+  const canContinue = !!(
+    p.fullName.trim() &&
+    p.phone.trim() &&
+    doorNumber.trim() &&
+    street.trim() &&
+    area.trim() &&
+    postcode.trim()
+  )
 
   async function handleContinue() {
     setError("")
@@ -60,47 +69,79 @@ function Delivery() {
       <p className="text-ink-muted mb-8">Where should we drop off your meals?</p>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft order-2 lg:order-1 space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+        <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft order-2 lg:order-1">
+          <section className="space-y-5">
             <div>
-              <Label htmlFor="doorNumber">Door number</Label>
-              <Input id="doorNumber" autoComplete="address-line1" placeholder="e.g. 12" value={doorNumber} onChange={(e) => setDoorNumber(e.target.value)} />
+              <h2 className="text-lg text-ink mb-1">Your details</h2>
+              <p className="text-sm text-ink-muted">Spot a typo? You can still fix it here.</p>
             </div>
-            <div>
-              <Label htmlFor="buildingName">Building name <span className="text-ink-muted font-normal">(optional)</span></Label>
-              <Input id="buildingName" autoComplete="address-line2" value={buildingName} onChange={(e) => setBuildingName(e.target.value)} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fullName">Full name</Label>
+                <Input
+                  id="fullName"
+                  autoComplete="name"
+                  value={p.fullName}
+                  onChange={(e) => update({ profile: { ...p, fullName: e.target.value } })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  autoComplete="tel"
+                  value={p.phone}
+                  onChange={(e) => update({ profile: { ...p, phone: e.target.value } })}
+                />
+              </div>
             </div>
-          </div>
-          <div>
-            <Label htmlFor="street">Street</Label>
-            <Input id="street" autoComplete="address-line1" value={street} onChange={(e) => setStreet(e.target.value)} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="area">Area</Label>
-              <Input id="area" autoComplete="address-level2" value={area} onChange={(e) => setArea(e.target.value)} />
-            </div>
-            <div>
-              <Label htmlFor="postcode">Postcode</Label>
-              <Input
-                id="postcode"
-                autoComplete="postal-code"
-                value={postcode}
-                onChange={(e) => {
-                  setPostcode(e.target.value)
-                  setError("")
-                }}
-                aria-invalid={!!error}
-              />
-            </div>
-          </div>
-          <FieldError>{error}</FieldError>
+          </section>
 
-          <div>
-            <Label>Delivery frequency</Label>
+          <section className="space-y-5 mt-8 pt-8 border-t border-border">
+            <h2 className="text-lg text-ink">Delivery address</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="doorNumber">Door number</Label>
+                <Input id="doorNumber" autoComplete="address-line1" placeholder="e.g. 12" value={doorNumber} onChange={(e) => setDoorNumber(e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="buildingName">Building name <span className="text-ink-muted font-normal">(optional)</span></Label>
+                <Input id="buildingName" autoComplete="address-line2" value={buildingName} onChange={(e) => setBuildingName(e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="street">Street</Label>
+              <Input id="street" autoComplete="address-line1" value={street} onChange={(e) => setStreet(e.target.value)} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="area">Area</Label>
+                <Input id="area" autoComplete="address-level2" value={area} onChange={(e) => setArea(e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="postcode">Postcode</Label>
+                <Input
+                  id="postcode"
+                  autoComplete="postal-code"
+                  value={postcode}
+                  onChange={(e) => {
+                    setPostcode(e.target.value)
+                    setError("")
+                  }}
+                  aria-invalid={!!error}
+                />
+              </div>
+            </div>
+            <FieldError>{error}</FieldError>
+          </section>
+
+          <section className="space-y-5 mt-8 pt-8 border-t border-border">
+            <h2 className="text-lg text-ink">Delivery frequency</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {DELIVERY_SLOTS.map((d) => {
                 const active = state.deliverySlot === d.value
+                const Icon = d.icon
                 return (
                   <button
                     key={d.value}
@@ -108,17 +149,22 @@ function Delivery() {
                     aria-pressed={active}
                     onClick={() => update({ deliverySlot: d.value })}
                     className={cn(
-                      "rounded-xl border-2 p-4 text-left transition-colors cursor-pointer",
+                      "flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-colors cursor-pointer min-h-23",
                       active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
                     )}
                   >
-                    <div className="font-semibold text-ink">{d.label}</div>
-                    <div className="text-xs text-ink-muted mt-1">{d.hint}</div>
+                    <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", active ? "bg-olive-600" : "bg-cream-100")}>
+                      <Icon className={cn("h-4.5 w-4.5", active ? "text-white" : "text-olive-600")} strokeWidth={1.75} />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-ink text-sm">{d.label}</div>
+                      <div className="text-xs text-ink-muted mt-0.5">{d.hint}</div>
+                    </div>
                   </button>
                 )
               })}
             </div>
-          </div>
+          </section>
         </div>
 
         <div className="order-1 lg:order-2">

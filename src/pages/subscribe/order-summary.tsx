@@ -2,6 +2,15 @@ import { useSubscribe } from "@/lib/subscribe-context"
 import { estimateTotal, formatGBP } from "@/lib/pricing"
 import { computeEndDate, calculateAge } from "@/lib/subscription"
 
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className="text-ink-muted">{label}</dt>
+      <dd className="text-ink font-medium text-right">{value}</dd>
+    </div>
+  )
+}
+
 function OrderSummary() {
   const { state } = useSubscribe()
   const estimate = estimateTotal(state.dayMenus, state.menuItemPrices, state.planDuration, state.mealsPerDay)
@@ -9,22 +18,31 @@ function OrderSummary() {
   const age = state.profile.dateOfBirth ? calculateAge(state.profile.dateOfBirth) : null
 
   return (
-    <div className="rounded-2xl bg-surface border border-border p-6 shadow-soft sticky top-24">
-      <h2 className="text-lg text-ink mb-4">Order summary</h2>
-      <dl className="space-y-2 text-sm">
-        <div className="flex justify-between"><dt className="text-ink-muted">Name</dt><dd className="text-ink font-medium">{state.profile.fullName || "—"}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Age</dt><dd className="text-ink font-medium">{age ?? "—"}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Phone</dt><dd className="text-ink font-medium">{state.profile.phone || "—"}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Email</dt><dd className="text-ink font-medium">{state.profile.email || "—"}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Plan length</dt><dd className="text-ink font-medium">{state.planDuration} days</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Meals/day</dt><dd className="text-ink font-medium">{state.mealsPerDay}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Goal</dt><dd className="text-ink font-medium">{state.goal}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Preferred food</dt><dd className="text-ink font-medium">{state.dietTypes.join(", ") || "—"}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Allergens</dt><dd className="text-ink font-medium">{state.allergens.length ? state.allergens.join(", ") : "None"}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">Start date</dt><dd className="text-ink font-medium">{state.startDate ? new Date(state.startDate).toLocaleDateString("en-GB") : "—"}</dd></div>
-        <div className="flex justify-between"><dt className="text-ink-muted">End date</dt><dd className="text-ink font-medium">{endDate ? new Date(endDate).toLocaleDateString("en-GB") : "—"}</dd></div>
+    <div className="rounded-2xl bg-surface border border-border p-6 shadow-soft lg:sticky lg:top-24 space-y-5 text-sm">
+      <h2 className="text-lg text-ink">Order summary</h2>
+
+      <dl className="space-y-2.5">
+        <Row label="Name" value={state.profile.fullName || "—"} />
+        <Row label="Email" value={state.profile.email || "—"} />
+        <Row label="Phone" value={state.profile.phone || "—"} />
+        <Row label="Age" value={age ? String(age) : "—"} />
       </dl>
-      <div className="border-t border-border mt-4 pt-4">
+
+      <dl className="space-y-2.5 border-t border-border pt-4">
+        <Row label="Plan length" value={`${state.planDuration} days`} />
+        <Row label="Meals/day" value={String(state.mealsPerDay)} />
+        <Row label="Goal" value={state.goal ?? "—"} />
+        <Row label="Preferred food" value={state.dietTypes.join(", ") || "—"} />
+        <Row label="Allergens" value={state.allergens.length ? state.allergens.join(", ") : "None"} />
+      </dl>
+
+      <dl className="space-y-2.5 border-t border-border pt-4">
+        <Row label="Delivery" value={state.deliverySlot} />
+        <Row label="Start date" value={state.startDate ? new Date(state.startDate).toLocaleDateString("en-GB") : "—"} />
+        <Row label="End date" value={endDate ? new Date(endDate).toLocaleDateString("en-GB") : "—"} />
+      </dl>
+
+      <div className="border-t border-border pt-4">
         {estimate ? (
           <div className="flex justify-between items-baseline">
             <span className="text-ink font-semibold">{estimate.isEstimate ? "Estimated total" : "Total"}</span>
