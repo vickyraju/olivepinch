@@ -13,6 +13,7 @@ export type DeliverySlot = "Daily" | "Weekly" | "Alternate days"
 export interface CustomerProfile {
   fullName: string
   email: string
+  phone: string
   gender: Gender | ""
   dateOfBirth: string
   heightCm: string
@@ -55,6 +56,7 @@ export interface SubscribeState {
 const EMPTY_PROFILE: CustomerProfile = {
   fullName: "",
   email: "",
+  phone: "",
   gender: "",
   dateOfBirth: "",
   heightCm: "",

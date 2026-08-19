@@ -14,6 +14,7 @@ function OrderSummary() {
       <dl className="space-y-2 text-sm">
         <div className="flex justify-between"><dt className="text-ink-muted">Name</dt><dd className="text-ink font-medium">{state.profile.fullName || "—"}</dd></div>
         <div className="flex justify-between"><dt className="text-ink-muted">Age</dt><dd className="text-ink font-medium">{age ?? "—"}</dd></div>
+        <div className="flex justify-between"><dt className="text-ink-muted">Phone</dt><dd className="text-ink font-medium">{state.profile.phone || "—"}</dd></div>
         <div className="flex justify-between"><dt className="text-ink-muted">Email</dt><dd className="text-ink font-medium">{state.profile.email || "—"}</dd></div>
         <div className="flex justify-between"><dt className="text-ink-muted">Plan length</dt><dd className="text-ink font-medium">{state.planDuration} days</dd></div>
         <div className="flex justify-between"><dt className="text-ink-muted">Meals/day</dt><dd className="text-ink font-medium">{state.mealsPerDay}</dd></div>

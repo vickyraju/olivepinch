@@ -56,6 +56,7 @@ function AccountSetup() {
       const res = await api.post<{ customerId: string }>("/customers/provisional", {
         fullName: p.fullName.trim(),
         email: email.trim(),
+        phone: p.phone.trim(),
         gender: p.gender || undefined,
         dateOfBirth: p.dateOfBirth,
         heightCm: Number(p.heightCm),

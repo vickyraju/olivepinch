@@ -66,6 +66,7 @@ interface CustomerDetail {
   id: string
   fullName: string
   email: string
+  phone: string | null
   dateOfBirth: string | null
   gender: string | null
   heightCm: number | null
@@ -95,7 +96,7 @@ function calculateAge(dateOfBirth: string): number {
   return age
 }
 
-const emptyAddress = { addressDoorNumber: "", addressBuildingName: "", addressStreet: "", addressArea: "", addressPostcode: "" }
+const emptyAddress = { phone: "", addressDoorNumber: "", addressBuildingName: "", addressStreet: "", addressArea: "", addressPostcode: "" }
 
 function CustomerDetail() {
   const { id } = useParams<{ id: string }>()
@@ -119,6 +120,7 @@ function CustomerDetail() {
     api.get<CustomerDetail>(`/customers/${id}`).then((c) => {
       setCustomer(c)
       setAddressForm({
+        phone: c.phone ?? "",
         addressDoorNumber: c.addressDoorNumber ?? "",
         addressBuildingName: c.addressBuildingName ?? "",
         addressStreet: c.addressStreet ?? "",
@@ -253,14 +255,21 @@ function CustomerDetail() {
 
       <Card>
         <CardHeader className="flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2"><MapPin className="h-4 w-4 text-olive-600" /> Delivery address</CardTitle>
+          <CardTitle className="flex items-center gap-2"><MapPin className="h-4 w-4 text-olive-600" /> Contact &amp; delivery address</CardTitle>
           {!editingAddress && <Button size="sm" variant="outline" onClick={() => setEditingAddress(true)}>Edit</Button>}
         </CardHeader>
         <CardContent>
           {!editingAddress ? (
-            <p className="text-ink">{customer.address ?? "No address on file"}</p>
+            <div className="space-y-1">
+              <p className="text-ink">{customer.phone ?? "No phone number on file"}</p>
+              <p className="text-ink">{customer.address ?? "No address on file"}</p>
+            </div>
           ) : (
             <div className="space-y-3">
+              <div>
+                <Label htmlFor="phone">Phone number</Label>
+                <Input id="phone" type="tel" value={addressForm.phone} onChange={(e) => setAddressForm((a) => ({ ...a, phone: e.target.value }))} />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="doorNumber">Door number</Label>

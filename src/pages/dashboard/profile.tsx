@@ -23,10 +23,13 @@ function Profile() {
   const sub = customer.subscription
   const [editingAddress, setEditingAddress] = useState(false)
   const [addressInput, setAddressInput] = useState<DeliveryAddress>(customer.address)
+  const [phoneInput, setPhoneInput] = useState(customer.phone)
   const [savingAddress, setSavingAddress] = useState(false)
   const [addressError, setAddressError] = useState("")
 
-  const canSaveAddress = !!(addressInput.doorNumber.trim() && addressInput.street.trim() && addressInput.area.trim() && addressInput.postcode.trim())
+  const canSaveAddress = !!(
+    phoneInput.trim() && addressInput.doorNumber.trim() && addressInput.street.trim() && addressInput.area.trim() && addressInput.postcode.trim()
+  )
 
   async function handleSaveAddress() {
     if (!canSaveAddress) return
@@ -40,7 +43,7 @@ function Profile() {
         return
       }
       const cleaned: DeliveryAddress = { ...addressInput, postcode: check.postcode }
-      const result = await updateAddress(cleaned)
+      const result = await updateAddress(cleaned, phoneInput.trim())
       if (result.ok) {
         setEditingAddress(false)
       } else {
@@ -55,6 +58,7 @@ function Profile() {
 
   function cancelEditingAddress() {
     setAddressInput(customer.address)
+    setPhoneInput(customer.phone)
     setEditingAddress(false)
     setAddressError("")
   }
@@ -124,7 +128,7 @@ function Profile() {
       <Card className="p-6 sm:p-8">
         <div className="flex items-center justify-between gap-3 mb-1">
           <h2 className="text-lg text-ink flex items-center gap-2">
-            <MapPin className="h-4.5 w-4.5 text-olive-600" /> Delivery address
+            <MapPin className="h-4.5 w-4.5 text-olive-600" /> Contact &amp; delivery address
           </h2>
           {!editingAddress && (
             <Button type="button" variant="outline" size="sm" onClick={() => setEditingAddress(true)}>
@@ -133,9 +137,21 @@ function Profile() {
           )}
         </div>
         {!editingAddress ? (
-          <p className="text-ink mt-2">{formatAddress(customer.address) || "No address on file"}</p>
+          <div className="mt-2 space-y-1">
+            <p className="text-ink">{customer.phone || "No phone number on file"}</p>
+            <p className="text-ink">{formatAddress(customer.address) || "No address on file"}</p>
+          </div>
         ) : (
           <div className="mt-3 space-y-3">
+            <div>
+              <Label htmlFor="phone">Phone number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="doorNumber">Door number</Label>

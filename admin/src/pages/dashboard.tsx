@@ -25,7 +25,7 @@ interface RevenueResponse {
 
 interface PendingEntry {
   subscriptionId: string
-  customer: { id: string; fullName: string; email: string; address: string | null }
+  customer: { id: string; fullName: string; email: string; phone: string | null; address: string | null }
   missingDates: string[]
 }
 
@@ -156,25 +156,38 @@ function Dashboard() {
         <Card>
           <CardHeader><CardTitle>Customers yet to choose menu for next week</CardTitle></CardHeader>
           <CardContent className="p-0">
-            <ul className="divide-y divide-border">
-              {pending.map((entry) => (
-                <li key={entry.subscriptionId} className="flex items-center justify-between gap-3 flex-wrap px-5 py-3.5">
-                  <div className="flex items-center gap-3">
-                    <Avatar name={entry.customer.fullName} />
-                    <div>
-                      <p className="text-sm font-medium text-ink">{entry.customer.fullName}</p>
-                      <p className="text-xs text-ink-muted">{entry.customer.address ?? "No address on file"}</p>
-                    </div>
-                  </div>
-                  <Link
-                    to={`/menu-weeks?subscriptionId=${entry.subscriptionId}&week=${nextWeekStart}`}
-                    className={buttonVariants({ variant: "outline", size: "sm" })}
-                  >
-                    Choose menu
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-ink-muted bg-canvas/60">
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Name</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Phone</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider">Address</th>
+                  <th className="px-5 py-2.5 font-semibold text-[11px] uppercase tracking-wider" />
+                </tr>
+              </thead>
+              <tbody>
+                {pending.map((entry) => (
+                  <tr key={entry.subscriptionId} className="border-b border-border last:border-0 hover:bg-canvas/60">
+                    <td className="px-5 py-2.5">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar name={entry.customer.fullName} />
+                        <span className="font-medium text-ink">{entry.customer.fullName}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-2.5 text-ink-muted">{entry.customer.phone ?? "—"}</td>
+                    <td className="px-5 py-2.5 text-ink-muted">{entry.customer.address ?? "No address on file"}</td>
+                    <td className="px-5 py-2.5 text-right">
+                      <Link
+                        to={`/menu-weeks?subscriptionId=${entry.subscriptionId}&week=${nextWeekStart}`}
+                        className={buttonVariants({ variant: "outline", size: "sm" })}
+                      >
+                        Choose menu
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </CardContent>
         </Card>
       )}

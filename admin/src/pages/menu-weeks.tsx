@@ -24,7 +24,7 @@ interface WeekSummary {
 
 interface PendingEntry {
   subscriptionId: string
-  customer: { id: string; fullName: string; email: string; address: string | null }
+  customer: { id: string; fullName: string; email: string; phone: string | null; address: string | null }
   mealsPerDay: number
   missingDates: string[]
 }
@@ -300,7 +300,9 @@ function MenuWeeks() {
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <p className="text-sm font-medium text-ink">{entry.customer.fullName}</p>
-                      <p className="text-xs text-ink-muted">{entry.customer.address ?? entry.customer.email} · missing {entry.missingDates.length} day{entry.missingDates.length === 1 ? "" : "s"}</p>
+                      <p className="text-xs text-ink-muted">
+                        {[entry.customer.phone, entry.customer.address ?? entry.customer.email].filter(Boolean).join(" · ")} · missing {entry.missingDates.length} day{entry.missingDates.length === 1 ? "" : "s"}
+                      </p>
                     </div>
                     {overridingId !== entry.subscriptionId && (
                       <Button size="sm" variant="outline" onClick={() => startOverride(entry)}>Set menu</Button>

@@ -43,6 +43,7 @@ export interface Subscription {
 export interface DashboardCustomer {
   name: string
   email: string
+  phone: string
   dateOfBirth: string
   address: DeliveryAddress
   marketingOptIn: boolean
@@ -108,7 +109,7 @@ interface DashboardContextValue {
   renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
-  updateAddress: (address: DeliveryAddress) => Promise<{ ok: boolean; reason?: string }>
+  updateAddress: (address: DeliveryAddress, phone: string) => Promise<{ ok: boolean; reason?: string }>
   chooseMenuWeek: (weekStart: string, dayItems: { date: string; items: string[] }[]) => Promise<{ ok: boolean; reason?: string }>
   deleteAccount: () => Promise<void>
   endDate: string
@@ -216,16 +217,17 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
     setCustomer((c) => ({ ...c, marketingOptIn: value }))
   }, [])
 
-  const updateAddress = useCallback(async (address: DeliveryAddress) => {
+  const updateAddress = useCallback(async (address: DeliveryAddress, phone: string) => {
     try {
       await api.patch("/customers/me/address", {
+        phone,
         addressDoorNumber: address.doorNumber,
         addressBuildingName: address.buildingName || undefined,
         addressStreet: address.street,
         addressArea: address.area,
         addressPostcode: address.postcode,
       })
-      setCustomer((c) => ({ ...c, address }))
+      setCustomer((c) => ({ ...c, address, phone }))
       return { ok: true }
     } catch (err) {
       return { ok: false, reason: err instanceof ApiError ? err.message : "Couldn't save your address — try again." }
@@ -271,6 +273,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       api.get<{
         fullName: string
         email: string
+        phone: string | null
         dateOfBirth: string | null
         addressDoorNumber: string | null
         addressBuildingName: string | null
@@ -291,6 +294,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     return {
       name: me.fullName,
       email: me.email,
+      phone: me.phone ?? "",
       dateOfBirth: me.dateOfBirth?.slice(0, 10) ?? "",
       address: {
         doorNumber: me.addressDoorNumber ?? "",

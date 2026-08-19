@@ -31,6 +31,7 @@ function Profile() {
 
   const canContinue =
     p.fullName.trim().length > 1 &&
+    p.phone.trim().length > 0 &&
     p.gender !== "" &&
     dobValid &&
     hasHealthData &&
@@ -49,6 +50,17 @@ function Profile() {
             autoComplete="name"
             value={p.fullName}
             onChange={(e) => update({ profile: { ...p, fullName: e.target.value } })}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="phone">Phone number</Label>
+          <Input
+            id="phone"
+            type="tel"
+            autoComplete="tel"
+            value={p.phone}
+            onChange={(e) => update({ profile: { ...p, phone: e.target.value } })}
           />
         </div>
 

@@ -37,7 +37,7 @@ export const PENDING_SOCIAL_SIGNUP_KEY = "olivepinch.pendingSocialSignup"
 
 interface PendingSubscribeState {
   postcode: string
-  profile: { fullName: string; gender: string; dateOfBirth: string; heightCm: string; weightKg: string; email: string }
+  profile: { fullName: string; phone: string; gender: string; dateOfBirth: string; heightCm: string; weightKg: string; email: string }
   goal: string | null
   dietTypes: string[]
   allergens: string[]
@@ -52,13 +52,14 @@ async function completePendingSubscribeSignup(email: string): Promise<void> {
   if (!raw) throw new Error("No in-progress plan found for this email — start your plan first.")
   const state = JSON.parse(raw) as PendingSubscribeState
   const p = state.profile
-  if (!p?.fullName || !p.dateOfBirth || !p.heightCm || !p.weightKg || !state.goal || !state.dietTypes?.length) {
+  if (!p?.fullName || !p.phone || !p.dateOfBirth || !p.heightCm || !p.weightKg || !state.goal || !state.dietTypes?.length) {
     throw new Error("Your plan details aren't ready yet — go back and finish the earlier steps.")
   }
 
   const { customerId } = await api.post<{ customerId: string }>("/customers/provisional", {
     fullName: p.fullName.trim(),
     email,
+    phone: p.phone.trim(),
     gender: p.gender || undefined,
     dateOfBirth: p.dateOfBirth,
     heightCm: Number(p.heightCm),
