@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import {
-  Download, TrendingUp, CreditCard, CalendarClock, ArrowRight, UserPlus, History,
+  Download, TrendingUp, CreditCard, ArrowRight, UserPlus, History,
   Truck, CalendarRange, Users, MapPin, AlertTriangle,
 } from "lucide-react"
 import { api } from "@/lib/api"
@@ -10,6 +10,7 @@ import { downloadCsv } from "@/lib/csv"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Avatar } from "@/components/ui/avatar"
 import { PageHeader } from "@/components/ui/page-header"
 import { StatusBreakdown } from "@/components/ui/status-breakdown"
 import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, SUBSCRIPTION_STATUS_LABELS } from "@/lib/status-styles"
@@ -24,7 +25,7 @@ interface RevenueResponse {
 
 interface PendingEntry {
   subscriptionId: string
-  customer: { id: string; fullName: string; email: string }
+  customer: { id: string; fullName: string; email: string; address: string | null }
   missingDates: string[]
 }
 
@@ -77,7 +78,7 @@ function MiniTrend({ series }: { series: { date: string; total: number }[] }) {
   )
 }
 
-function AlertRow({ icon: Icon, title, subtitle, to, cta }: { icon: typeof CalendarClock; title: string; subtitle?: string; to: string; cta: string }) {
+function AlertRow({ icon: Icon, title, subtitle, to, cta }: { icon: typeof AlertTriangle; title: string; subtitle?: string; to: string; cta: string }) {
   return (
     <div className="flex items-center justify-between gap-3 flex-wrap px-5 py-3.5 first:pt-4 last:pb-4">
       <div className="flex items-center gap-3">
@@ -123,7 +124,7 @@ function Dashboard() {
   }, [])
 
   const attemptedToday = summary?.ordersTodayByStatus.find((o) => o.status === "ATTEMPTED")?.count ?? 0
-  const hasAlerts = (pending && pending.length > 0) || attemptedToday > 0
+  const nextWeekStart = nextMondayIso()
 
   return (
     <div className="space-y-6">
@@ -137,27 +138,43 @@ function Dashboard() {
         ))}
       </div>
 
-      {hasAlerts && (
+      {attemptedToday > 0 && (
         <Card>
           <CardHeader><CardTitle>Needs attention</CardTitle></CardHeader>
-          <CardContent className="p-0 divide-y divide-border">
-            {pending && pending.length > 0 && (
-              <AlertRow
-                icon={CalendarClock}
-                title={`${pending.length} customer${pending.length === 1 ? "" : "s"} haven't chosen next week's menu`}
-                subtitle={`${pending.slice(0, 3).map((p) => p.customer.fullName).join(", ")}${pending.length > 3 ? `, +${pending.length - 3} more` : ""}`}
-                to="/menu-weeks"
-                cta="Set it for them"
-              />
-            )}
-            {attemptedToday > 0 && (
-              <AlertRow
-                icon={AlertTriangle}
-                title={`${attemptedToday} ${attemptedToday === 1 ? "delivery" : "deliveries"} attempted but not completed today`}
-                to="/orders"
-                cta="View orders"
-              />
-            )}
+          <CardContent className="p-0">
+            <AlertRow
+              icon={AlertTriangle}
+              title={`${attemptedToday} ${attemptedToday === 1 ? "delivery" : "deliveries"} attempted but not completed today`}
+              to="/orders"
+              cta="View orders"
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {pending && pending.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Customers yet to choose menu for next week</CardTitle></CardHeader>
+          <CardContent className="p-0">
+            <ul className="divide-y divide-border">
+              {pending.map((entry) => (
+                <li key={entry.subscriptionId} className="flex items-center justify-between gap-3 flex-wrap px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <Avatar name={entry.customer.fullName} />
+                    <div>
+                      <p className="text-sm font-medium text-ink">{entry.customer.fullName}</p>
+                      <p className="text-xs text-ink-muted">{entry.customer.address ?? "No address on file"}</p>
+                    </div>
+                  </div>
+                  <Link
+                    to={`/menu-weeks?subscriptionId=${entry.subscriptionId}&week=${nextWeekStart}`}
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
+                  >
+                    Choose menu
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </CardContent>
         </Card>
       )}

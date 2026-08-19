@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 import { api, ApiError } from "@/lib/api"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -23,7 +24,7 @@ interface WeekSummary {
 
 interface PendingEntry {
   subscriptionId: string
-  customer: { id: string; fullName: string; email: string }
+  customer: { id: string; fullName: string; email: string; address: string | null }
   mealsPerDay: number
   missingDates: string[]
 }
@@ -41,6 +42,8 @@ function isMonday(iso: string): boolean {
 }
 
 function MenuWeeks() {
+  const [searchParams] = useSearchParams()
+  const deepLinkHandled = useRef(false)
   const [weeks, setWeeks] = useState<WeekSummary[]>([])
   const [allItems, setAllItems] = useState<MenuItem[]>([])
 
@@ -51,7 +54,8 @@ function MenuWeeks() {
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
 
-  const [pendingWeek, setPendingWeek] = useState(nextMondayIso())
+  const deepLinkWeek = searchParams.get("week")
+  const [pendingWeek, setPendingWeek] = useState(deepLinkWeek && isMonday(deepLinkWeek) ? deepLinkWeek : nextMondayIso())
   const [pendingList, setPendingList] = useState<PendingEntry[] | null>(null)
   const [pendingWeekItems, setPendingWeekItems] = useState<MenuItem[]>([])
   const [overridingId, setOverridingId] = useState<string | null>(null)
@@ -67,8 +71,24 @@ function MenuWeeks() {
     loadWeeks()
     api.get<MenuItem[]>("/menu-items").then(setAllItems)
     loadComposerWeek(composerWeek)
+    if (searchParams.get("subscriptionId")) loadPending(pendingWeek)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Deep-linked from the dashboard's "Choose menu" button — auto-open the matching
+  // customer's override form and scroll to it once the pending list arrives. Guarded by
+  // a ref so re-loading the list after a save doesn't keep re-triggering this.
+  useEffect(() => {
+    if (deepLinkHandled.current || !pendingList) return
+    deepLinkHandled.current = true
+    const subscriptionId = searchParams.get("subscriptionId")
+    const entry = pendingList.find((e) => e.subscriptionId === subscriptionId)
+    if (entry) {
+      startOverride(entry)
+      document.getElementById(`pending-${entry.subscriptionId}`)?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingList])
 
   function loadComposerWeek(weekStart: string) {
     setComposerWeek(weekStart)
@@ -125,12 +145,12 @@ function MenuWeeks() {
     }
   }
 
-  async function loadPending() {
+  async function loadPending(weekStart: string = pendingWeek) {
     setOverridingId(null)
     setPendingList(null)
     const [list, week] = await Promise.all([
-      api.get<PendingEntry[]>(`/menu-weeks/${pendingWeek}/pending`),
-      api.get<{ items: MenuItem[] }>(`/menu-weeks/${pendingWeek}`),
+      api.get<PendingEntry[]>(`/menu-weeks/${weekStart}/pending`),
+      api.get<{ items: MenuItem[] }>(`/menu-weeks/${weekStart}`),
     ])
     setPendingList(list)
     setPendingWeekItems(week.items)
@@ -268,7 +288,7 @@ function MenuWeeks() {
               <Label htmlFor="pending-week">Week start (Monday)</Label>
               <Input id="pending-week" type="date" value={pendingWeek} onChange={(e) => setPendingWeek(e.target.value)} />
             </div>
-            <Button onClick={loadPending} disabled={!isMonday(pendingWeek)}>Load</Button>
+            <Button onClick={() => loadPending()} disabled={!isMonday(pendingWeek)}>Load</Button>
           </div>
 
           {pendingList && pendingList.length === 0 && <p className="text-sm text-ink-muted">Everyone with a delivery that week has already chosen.</p>}
@@ -276,11 +296,11 @@ function MenuWeeks() {
           {pendingList && pendingList.length > 0 && (
             <ul className="divide-y divide-border">
               {pendingList.map((entry) => (
-                <li key={entry.subscriptionId} className="py-3">
+                <li key={entry.subscriptionId} id={`pending-${entry.subscriptionId}`} className="py-3 scroll-mt-4">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <p className="text-sm font-medium text-ink">{entry.customer.fullName}</p>
-                      <p className="text-xs text-ink-muted">{entry.customer.email} · missing {entry.missingDates.length} day{entry.missingDates.length === 1 ? "" : "s"}</p>
+                      <p className="text-xs text-ink-muted">{entry.customer.address ?? entry.customer.email} · missing {entry.missingDates.length} day{entry.missingDates.length === 1 ? "" : "s"}</p>
                     </div>
                     {overridingId !== entry.subscriptionId && (
                       <Button size="sm" variant="outline" onClick={() => startOverride(entry)}>Set menu</Button>
