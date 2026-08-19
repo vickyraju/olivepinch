@@ -4,6 +4,7 @@ import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
 import { assertMonday, applyWeekSelection } from "../../lib/menu-week.js"
+import { formatAddress } from "../../lib/address.js"
 
 export const adminMenuWeeksRouter = Router()
 adminMenuWeeksRouter.use(requireAdminAuth)
@@ -80,20 +81,39 @@ adminMenuWeeksRouter.get("/:weekStart/pending", async (req, res) => {
       menuChosenAt: null,
       subscription: { status: "ACTIVE" },
     },
-    include: { subscription: { include: { customer: { select: { id: true, fullName: true, email: true } } } } },
+    include: {
+      subscription: {
+        include: {
+          customer: {
+            select: {
+              id: true, fullName: true, email: true, postcode: true,
+              addressDoorNumber: true, addressBuildingName: true, addressStreet: true, addressArea: true, addressPostcode: true,
+            },
+          },
+        },
+      },
+    },
     orderBy: { deliveryDate: "asc" },
   })
 
   const bySubscription = new Map<
     string,
-    { subscriptionId: string; customer: { id: string; fullName: string; email: string }; mealsPerDay: number; missingDates: string[] }
+    { subscriptionId: string; customer: { id: string; fullName: string; email: string; address: string | null }; mealsPerDay: number; missingDates: string[] }
   >()
   for (const order of orders) {
     const key = order.subscriptionId
     const date = order.deliveryDate.toISOString().slice(0, 10)
     const entry = bySubscription.get(key)
     if (entry) entry.missingDates.push(date)
-    else bySubscription.set(key, { subscriptionId: key, customer: order.subscription.customer, mealsPerDay: order.subscription.mealsPerDay, missingDates: [date] })
+    else {
+      const { id, fullName, email, ...addressFields } = order.subscription.customer
+      bySubscription.set(key, {
+        subscriptionId: key,
+        customer: { id, fullName, email, address: formatAddress(addressFields) },
+        mealsPerDay: order.subscription.mealsPerDay,
+        missingDates: [date],
+      })
+    }
   }
   res.json([...bySubscription.values()])
 })
