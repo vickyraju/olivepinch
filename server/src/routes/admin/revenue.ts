@@ -28,6 +28,10 @@ adminRevenueRouter.get("/", async (req, res) => {
   }
 
   const buckets = new Map<string, number>()
+  const step = req.query.range === "weekly" ? 7 : 1
+  for (let cursor = new Date(since); cursor <= new Date(); cursor.setDate(cursor.getDate() + step)) {
+    buckets.set(bucketKey(cursor), 0)
+  }
   for (const payment of payments) {
     const key = bucketKey(payment.paidAt!)
     buckets.set(key, (buckets.get(key) ?? 0) + Number(payment.amount))
