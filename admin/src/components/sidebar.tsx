@@ -5,6 +5,7 @@ const navItems = [
   { path: "/", label: "Dashboard", icon: "dashboard" },
   { path: "/orders", label: "Order Board", icon: "list_alt" },
   { path: "/menu", label: "Menu Control", icon: "restaurant_menu" },
+  { path: "/menu-weeks", label: "Weekly Menu", icon: "calendar_month" },
   { path: "/plans", label: "Plans", icon: "sell" },
   { path: "/customers", label: "Customers", icon: "group" },
   { path: "/zones", label: "Zones", icon: "storefront" },
@@ -21,7 +22,10 @@ export function Sidebar() {
       </div>
       <nav className="flex-1 overflow-y-auto py-6 flex flex-col gap-1">
         {navItems.map((item) => {
-          const isActive = item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path)
+          const isActive =
+            item.path === "/"
+              ? location.pathname === "/"
+              : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`)
           return (
             <Link
               key={item.path}

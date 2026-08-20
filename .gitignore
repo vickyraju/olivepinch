@@ -4,3 +4,8 @@ dist-ssr
 *.local
 .DS_Store
 .vercel
+.env
+.mcp*
+.impeccable/
+.playwright-mcp/
+.serena/
