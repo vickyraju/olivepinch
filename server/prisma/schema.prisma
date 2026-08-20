@@ -138,9 +138,6 @@ model MenuItem {
   goalTags      Goal[]
   kcal          Int
   protein       Int
-  price         Decimal     @db.Decimal(6, 2)
-  premium       Boolean     @default(false)
-  dailyCapacity Int?
 
   orderItems    OrderItem[]
   weekItems     MenuWeekItem[]

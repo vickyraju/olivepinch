@@ -6,7 +6,6 @@ interface Bucket {
   slot: string
   itemName: string
   portionsNeeded: number
-  dailyCapacity: number | null
 }
 
 const SLOT_FILL: Record<string, string> = {
@@ -14,7 +13,6 @@ const SLOT_FILL: Record<string, string> = {
   LUNCH: "FFD6E4F0", // pale blue
   DINNER: "FFE6DCF0", // pale lavender
 }
-const OVER_CAPACITY_FILL = "FFF5C6C6" // coral
 
 // Manual Map-bucketing rather than a Prisma groupBy, matching this codebase's existing
 // aggregation style (see revenue.ts) — a relation-filtered groupBy has zero precedent here.
@@ -41,7 +39,6 @@ async function aggregate(from: string, to: string): Promise<Bucket[]> {
           slot: item.slot,
           itemName: item.menuItem.name,
           portionsNeeded: 1,
-          dailyCapacity: item.menuItem.dailyCapacity,
         })
       }
     }
@@ -60,8 +57,6 @@ export async function buildKitchenExportWorkbook(from: string, to: string): Prom
     { header: "Meal Slot", key: "slot", width: 14 },
     { header: "Item", key: "item", width: 32 },
     { header: "Portions Needed", key: "portions", width: 18 },
-    { header: "Daily Capacity", key: "capacity", width: 16 },
-    { header: "Status", key: "flag", width: 16 },
   ]
 
   const headerRow = sheet.getRow(1)
@@ -71,16 +66,13 @@ export async function buildKitchenExportWorkbook(from: string, to: string): Prom
   })
 
   for (const row of rows) {
-    const overCapacity = row.dailyCapacity != null && row.portionsNeeded > row.dailyCapacity
     const excelRow = sheet.addRow({
       date: row.date,
       slot: row.slot,
       item: row.itemName,
       portions: row.portionsNeeded,
-      capacity: row.dailyCapacity ?? "—",
-      flag: overCapacity ? "Over capacity" : "",
     })
-    const fill = overCapacity ? OVER_CAPACITY_FILL : SLOT_FILL[row.slot]
+    const fill = SLOT_FILL[row.slot]
     if (fill) {
       excelRow.eachCell((cell) => {
         cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fill } }

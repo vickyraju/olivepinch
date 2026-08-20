@@ -9,9 +9,8 @@ import { buildKitchenExportWorkbook } from "../../lib/kitchen-export.js"
 export const adminOrdersRouter = Router()
 adminOrdersRouter.use(requireAdminAuth)
 
-// Styled .xlsx for the kitchen: portions needed per item per day, colored by meal slot, with
-// an over-capacity flag against MenuItem.dailyCapacity. A single-day export is just this same
-// query with from === to, not a separate code path.
+// Styled .xlsx for the kitchen: portions needed per item per day, colored by meal slot. A
+// single-day export is just this same query with from === to, not a separate code path.
 adminOrdersRouter.get("/kitchen-export", async (req, res) => {
   const today = new Date().toISOString().slice(0, 10)
   const from = String(req.query.from ?? today)
