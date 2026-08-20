@@ -3,6 +3,7 @@ import type { FormEvent } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/lib/auth"
 import { ApiError } from "@/lib/api"
+import { Logo } from "@/components/logo"
 
 function Login() {
   const navigate = useNavigate()
@@ -31,7 +32,7 @@ function Login() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-page-bg">
       <div className="w-full max-w-[420px] bg-white rounded-[16px] shadow-lg p-[48px] border border-gray-200">
         <div className="flex flex-col items-center">
-          <span className="font-bold text-brand-green text-[28px] leading-none">OlivePinch</span>
+          <Logo className="text-[28px]" />
           <span className="mt-2 text-[11px] font-semibold text-gray-500 uppercase tracking-[1px]">Admin Panel</span>
         </div>
         <div className="h-px w-full bg-gray-200 my-6" />

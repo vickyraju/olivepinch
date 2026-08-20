@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "@/lib/auth"
+import { Logo } from "@/components/logo"
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: "dashboard" },
@@ -18,7 +19,7 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-full w-[260px] bg-white border-r border-gray-200 flex flex-col z-20">
       <div className="h-[80px] flex items-center px-6 border-b border-gray-100">
-        <span className="font-bold text-brand-green text-[22px] leading-none">OlivePinch</span>
+        <Logo />
       </div>
       <nav className="flex-1 overflow-y-auto py-6 flex flex-col gap-1">
         {navItems.map((item) => {
