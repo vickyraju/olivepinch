@@ -130,7 +130,6 @@ function Dashboard() {
 
   const activeSubscriptions = summary?.subscriptionStatusBreakdown.find((s) => s.status === "ACTIVE")?.count ?? 0
   const ordersToday = summary?.ordersTodayByStatus.reduce((sum, s) => sum + s.count, 0) ?? 0
-  const refundRatePct = summary ? `${(summary.refunds.refundRate * 100).toFixed(1)}%` : "—"
 
   const nextWeekEntry = weeksQuery.data?.find((w) => w.weekStart === nextMonday)
   const nextWeekPublished = nextWeekEntry?.published ?? false
@@ -164,13 +163,11 @@ function Dashboard() {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-[16px]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
           <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label={`Revenue (${range === "daily" ? "30d" : "90d"})`} value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
-          <KpiCard icon="receipt_long" iconBg="bg-blue-50" iconColor="text-status-blue" label="Payments" value={data ? String(data.paymentCount) : "—"} loading={revenueQuery.isLoading} />
           <KpiCard icon="person_add" iconBg="bg-purple-50" iconColor="text-purple-600" label="New Customers (7d)" value={summary ? String(summary.newCustomersThisWeek) : "—"} loading={summaryQuery.isLoading} />
           <KpiCard icon="verified" iconBg="bg-green-50" iconColor="text-primary" label="Active Subscriptions" value={summary ? String(activeSubscriptions) : "—"} loading={summaryQuery.isLoading} />
           <KpiCard icon="local_shipping" iconBg="bg-amber-50" iconColor="text-amber-600" label="Orders Today" value={summary ? String(ordersToday) : "—"} loading={summaryQuery.isLoading} />
-          <KpiCard icon="undo" iconBg="bg-red-50" iconColor="text-status-red" label="Refund Rate" value={refundRatePct} loading={summaryQuery.isLoading} />
         </div>
 
         {showAlerts && (
