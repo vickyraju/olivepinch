@@ -1,11 +1,13 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { Link } from "react-router-dom"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
 import { TrendLineChart } from "@/components/trend-line-chart"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { downloadCsv } from "@/lib/csv"
+import { ORDER_STATUS_STYLES, ACCOUNT_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES } from "@/lib/status-styles"
 
 interface RevenueResponse {
   series: { date: string; total: number }[]
@@ -13,16 +15,127 @@ interface RevenueResponse {
   paymentCount: number
 }
 
+interface StatusCount {
+  status: string
+  count: number
+}
+
+interface DashboardSummary {
+  newCustomersThisWeek: number
+  accountStatusBreakdown: StatusCount[]
+  subscriptionStatusBreakdown: StatusCount[]
+  ordersTodayByStatus: StatusCount[]
+  zoneDistribution: { zone: string; count: number }[]
+  refunds: { succeeded: number; refunded: number; refundRate: number }
+  recentActivity: {
+    id: string
+    action: string
+    detail: string | null
+    createdAt: string
+    adminName: string
+    customerId: string | null
+    customerName: string | null
+  }[]
+}
+
+interface WeekSummary {
+  weekStart: string
+  published: boolean
+  itemCount: number
+}
+
+function nextMondayIso(): string {
+  const d = new Date()
+  const day = d.getUTCDay()
+  const daysUntilMonday = day === 1 ? 7 : ((8 - day) % 7)
+  d.setUTCDate(d.getUTCDate() + (daysUntilMonday || 7))
+  return d.toISOString().slice(0, 10)
+}
+
+function formatActionLabel(action: string): string {
+  const words = action.replace(/-/g, " ")
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
+function KpiCard({ icon, iconBg, iconColor, label, value, loading }: { icon: string; iconBg: string; iconColor: string; label: string; value: string; loading: boolean }) {
+  return (
+    <div className="bg-white p-[20px] border border-gray-200 rounded-[12px] flex flex-col justify-between hover:border-gray-300 transition-colors">
+      <div className="flex justify-between items-start mb-3">
+        <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">{label}</span>
+        <div className={`p-2 rounded-lg ${iconBg} ${iconColor}`}>
+          <span className="material-symbols-outlined text-sm">{icon}</span>
+        </div>
+      </div>
+      {loading ? <Skeleton className="h-7 w-20" /> : <span className="text-[24px] font-bold text-gray-900 tracking-tight">{value}</span>}
+    </div>
+  )
+}
+
+function DistributionRows({ rows, styles, loading, emptyText }: { rows: StatusCount[]; styles: Record<string, { label: string; className: string }>; loading: boolean; emptyText: string }) {
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-6 w-full" />
+        ))}
+      </div>
+    )
+  }
+  if (!rows.length) return <p className="text-sm text-gray-400">{emptyText}</p>
+  const max = Math.max(...rows.map((r) => r.count), 1)
+  return (
+    <div className="space-y-3">
+      {rows.map((row) => {
+        const style = styles[row.status] ?? { label: row.status, className: "bg-gray-100 text-gray-600 border-gray-200" }
+        return (
+          <div key={row.status} className="flex items-center gap-3">
+            <span className={`shrink-0 w-[130px] truncate text-xs font-semibold px-2 py-1 rounded-full border text-center ${style.className}`}>
+              {style.label}
+            </span>
+            <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full" style={{ width: `${(row.count / max) * 100}%` }} />
+            </div>
+            <span className="w-8 text-right text-sm font-bold text-gray-900">{row.count}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function Dashboard() {
   const [range, setRange] = useState<"daily" | "weekly">("daily")
+  const nextMonday = nextMondayIso()
 
   const revenueQuery = useQuery({
     queryKey: ["revenue", range],
     queryFn: () => api.get<RevenueResponse>(`/revenue?range=${range}`),
   })
-  const data = revenueQuery.data
+  const summaryQuery = useQuery({
+    queryKey: ["dashboard-summary"],
+    queryFn: () => api.get<DashboardSummary>("/dashboard/summary"),
+  })
+  const weeksQuery = useQuery({
+    queryKey: ["menu-weeks"],
+    queryFn: () => api.get<WeekSummary[]>("/menu-weeks"),
+  })
+  const pendingQuery = useQuery({
+    queryKey: ["menu-weeks-pending", nextMonday],
+    queryFn: () => api.get<{ subscriptionId: string }[]>(`/menu-weeks/${nextMonday}/pending`),
+  })
 
+  const data = revenueQuery.data
+  const summary = summaryQuery.data
   const trendData = (data?.series ?? []).map((s) => ({ label: s.date.slice(5), value: s.total }))
+
+  const activeSubscriptions = summary?.subscriptionStatusBreakdown.find((s) => s.status === "ACTIVE")?.count ?? 0
+  const ordersToday = summary?.ordersTodayByStatus.reduce((sum, s) => sum + s.count, 0) ?? 0
+  const refundRatePct = summary ? `${(summary.refunds.refundRate * 100).toFixed(1)}%` : "—"
+
+  const nextWeekEntry = weeksQuery.data?.find((w) => w.weekStart === nextMonday)
+  const nextWeekPublished = nextWeekEntry?.published ?? false
+  const pendingCount = pendingQuery.data?.length ?? 0
+  const showAlerts = !weeksQuery.isLoading && !pendingQuery.isLoading && (pendingCount > 0 || !nextWeekPublished)
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
@@ -51,41 +164,43 @@ function Dashboard() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[24px]">
-          <div className="bg-white p-[24px] border border-gray-200 rounded-[12px] flex flex-col justify-between hover:border-gray-300 transition-colors">
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                Total Revenue ({range === "daily" ? "30d" : "90d"})
-              </span>
-              <div className="p-2 bg-green-50 rounded-lg text-primary">
-                <span className="material-symbols-outlined text-sm">payments</span>
-              </div>
-            </div>
-            {revenueQuery.isLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              <span className="text-[28px] font-bold text-gray-900 tracking-tight">
-                {data ? formatGBP(data.grandTotal) : "—"}
-              </span>
-            )}
-          </div>
-
-          <div className="bg-white p-[24px] border border-gray-200 rounded-[12px] flex flex-col justify-between hover:border-gray-300 transition-colors">
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                Successful Payments
-              </span>
-              <div className="p-2 bg-blue-50 rounded-lg text-status-blue">
-                <span className="material-symbols-outlined text-sm">receipt_long</span>
-              </div>
-            </div>
-            {revenueQuery.isLoading ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <span className="text-[28px] font-bold text-gray-900 tracking-tight">{data?.paymentCount ?? "—"}</span>
-            )}
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-[16px]">
+          <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label={`Revenue (${range === "daily" ? "30d" : "90d"})`} value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
+          <KpiCard icon="receipt_long" iconBg="bg-blue-50" iconColor="text-status-blue" label="Payments" value={data ? String(data.paymentCount) : "—"} loading={revenueQuery.isLoading} />
+          <KpiCard icon="person_add" iconBg="bg-purple-50" iconColor="text-purple-600" label="New Customers (7d)" value={summary ? String(summary.newCustomersThisWeek) : "—"} loading={summaryQuery.isLoading} />
+          <KpiCard icon="verified" iconBg="bg-green-50" iconColor="text-primary" label="Active Subscriptions" value={summary ? String(activeSubscriptions) : "—"} loading={summaryQuery.isLoading} />
+          <KpiCard icon="local_shipping" iconBg="bg-amber-50" iconColor="text-amber-600" label="Orders Today" value={summary ? String(ordersToday) : "—"} loading={summaryQuery.isLoading} />
+          <KpiCard icon="undo" iconBg="bg-red-50" iconColor="text-status-red" label="Refund Rate" value={refundRatePct} loading={summaryQuery.isLoading} />
         </div>
+
+        {showAlerts && (
+          <div className="space-y-2">
+            {pendingCount > 0 && (
+              <Link
+                to={`/menu-weeks?week=${nextMonday}`}
+                className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-[12px] px-5 py-3 hover:bg-amber-100 transition-colors"
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+                  <span className="material-symbols-outlined text-[18px]">schedule</span>
+                  {pendingCount} customer{pendingCount === 1 ? "" : "s"} haven't picked next week's menu ({nextMonday})
+                </span>
+                <span className="text-xs font-semibold text-amber-700">Resolve →</span>
+              </Link>
+            )}
+            {!nextWeekPublished && (
+              <Link
+                to={`/menu-weeks?week=${nextMonday}`}
+                className="flex items-center justify-between bg-red-50 border border-red-200 rounded-[12px] px-5 py-3 hover:bg-red-100 transition-colors"
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold text-red-800">
+                  <span className="material-symbols-outlined text-[18px]">warning</span>
+                  Next week's menu ({nextMonday}) isn't published yet
+                </span>
+                <span className="text-xs font-semibold text-red-700">Publish →</span>
+              </Link>
+            )}
+          </div>
+        )}
 
         <div className="bg-white p-[24px] border border-gray-200 rounded-[12px] flex flex-col">
           <div className="flex justify-between items-center mb-6">
@@ -103,35 +218,89 @@ function Dashboard() {
           )}
         </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px]">
+          <div className="bg-white p-[24px] border border-gray-200 rounded-[12px]">
+            <h2 className="text-[16px] font-bold text-gray-900 mb-5">Today's Orders</h2>
+            <DistributionRows rows={summary?.ordersTodayByStatus ?? []} styles={ORDER_STATUS_STYLES} loading={summaryQuery.isLoading} emptyText="No orders scheduled today." />
+          </div>
+          <div className="bg-white p-[24px] border border-gray-200 rounded-[12px] space-y-6">
+            <div>
+              <h2 className="text-[16px] font-bold text-gray-900 mb-5">Subscriptions</h2>
+              <DistributionRows rows={summary?.subscriptionStatusBreakdown ?? []} styles={SUBSCRIPTION_STATUS_STYLES} loading={summaryQuery.isLoading} emptyText="No subscriptions yet." />
+            </div>
+            <div>
+              <h2 className="text-[16px] font-bold text-gray-900 mb-5">Customer Accounts</h2>
+              <DistributionRows rows={summary?.accountStatusBreakdown ?? []} styles={ACCOUNT_STATUS_STYLES} loading={summaryQuery.isLoading} emptyText="No customers yet." />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-[24px] border border-gray-200 rounded-[12px]">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-[16px] font-bold text-gray-900">Delivery Zone Coverage</h2>
+            <Link to="/zones" className="text-xs font-semibold text-primary hover:underline">Manage zones →</Link>
+          </div>
+          {summaryQuery.isLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-6 w-full" />
+              ))}
+            </div>
+          ) : !summary?.zoneDistribution.length ? (
+            <p className="text-sm text-gray-400">No customers yet.</p>
+          ) : (
+            (() => {
+              const rows = summary.zoneDistribution
+              const max = Math.max(...rows.map((r) => r.count), 1)
+              return (
+                <div className="space-y-3">
+                  {rows.map((row) => (
+                    <div key={row.zone} className="flex items-center gap-3">
+                      <span className="shrink-0 w-[130px] truncate text-sm text-gray-700">{row.zone}</span>
+                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-status-blue rounded-full" style={{ width: `${(row.count / max) * 100}%` }} />
+                      </div>
+                      <span className="w-8 text-right text-sm font-bold text-gray-900">{row.count}</span>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()
+          )}
+        </div>
+
         <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-[16px] font-bold text-gray-900">{range === "daily" ? "Daily" : "Weekly"} breakdown</h2>
+            <h2 className="text-[16px] font-bold text-gray-900">Recent Activity</h2>
           </div>
-          {revenueQuery.isLoading ? (
+          {summaryQuery.isLoading ? (
             <div className="p-6 space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <Skeleton key={i} className="h-5 w-full" />
               ))}
             </div>
-          ) : !data?.series.length ? (
-            <p className="p-6 text-sm text-gray-400">No payments in this range yet.</p>
+          ) : !summary?.recentActivity.length ? (
+            <p className="p-6 text-sm text-gray-400">No admin activity yet.</p>
           ) : (
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Period starting</th>
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Revenue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {[...data.series].reverse().map((row) => (
-                  <tr key={row.date}>
-                    <td className="py-3 px-6 text-gray-900">{row.date}</td>
-                    <td className="py-3 px-6 text-gray-900 text-right font-semibold">{formatGBP(row.total)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ul className="divide-y divide-gray-100">
+              {summary.recentActivity.map((entry) => (
+                <li key={entry.id} className="px-6 py-3 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-900">
+                      <span className="font-semibold">{entry.adminName}</span> {formatActionLabel(entry.action).toLowerCase()}
+                      {entry.customerId && entry.customerName && (
+                        <>
+                          {" — "}
+                          <Link to={`/customers/${entry.customerId}`} className="text-primary hover:underline">{entry.customerName}</Link>
+                        </>
+                      )}
+                    </p>
+                    {entry.detail && <p className="text-xs text-gray-500 truncate">{entry.detail}</p>}
+                  </div>
+                  <span className="shrink-0 text-xs text-gray-400">{new Date(entry.createdAt).toLocaleString("en-GB")}</span>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </div>

@@ -13,6 +13,12 @@ export const ACCOUNT_STATUS_STYLES: Record<string, { label: string; className: s
   DELETED: { label: "Deleted", className: "bg-red-50 text-red-700 border-red-200" },
 }
 
+export const SUBSCRIPTION_STATUS_STYLES: Record<string, { label: string; className: string }> = {
+  PENDING_PAYMENT: { label: "Pending Payment", className: "bg-amber-50 text-amber-700 border-amber-200" },
+  ACTIVE: { label: "Active", className: "bg-green-50 text-green-700 border-green-200" },
+  EXPIRED: { label: "Expired", className: "bg-gray-100 text-gray-600 border-gray-200" },
+}
+
 export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
   const first = parts[0]?.[0] ?? ""
