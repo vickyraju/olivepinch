@@ -49,6 +49,13 @@ function nextMondayIso(): string {
   return d.toISOString().slice(0, 10)
 }
 
+const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+function formatChartDate(isoDate: string): string {
+  const [, month, day] = isoDate.split("-").map(Number)
+  return `${MONTH_LABELS[month - 1]} ${day}`
+}
+
 function formatActionLabel(action: string): string {
   const words = action.replace(/-/g, " ")
   return words.charAt(0).toUpperCase() + words.slice(1)
@@ -122,7 +129,10 @@ function Dashboard() {
 
   const data = revenueQuery.data
   const summary = summaryQuery.data
-  const trendData = (data?.series ?? []).map((s) => ({ label: s.date.slice(5), value: s.total }))
+  const trendData = (data?.series ?? []).map((s) => ({ label: formatChartDate(s.date), value: s.total }))
+
+  const activeSubscriptions = summary?.subscriptionStatusBreakdown.find((s) => s.status === "ACTIVE")?.count ?? 0
+  const ordersToday = summary?.ordersTodayByStatus.reduce((sum, s) => sum + s.count, 0) ?? 0
 
   const nextWeekEntry = weeksQuery.data?.find((w) => w.weekStart === nextMonday)
   const nextWeekPublished = nextWeekEntry?.published ?? false
@@ -133,9 +143,11 @@ function Dashboard() {
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
       <Header title="Dashboard Overview" />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
-        <div className="grid grid-cols-2 gap-[16px]">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
           <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label="Revenue (30d)" value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
           <KpiCard icon="person_add" iconBg="bg-purple-50" iconColor="text-purple-600" label="New Customers (7d)" value={summary ? String(summary.newCustomersThisWeek) : "—"} loading={summaryQuery.isLoading} />
+          <KpiCard icon="verified" iconBg="bg-green-50" iconColor="text-primary" label="Active Subscriptions" value={summary ? String(activeSubscriptions) : "—"} loading={summaryQuery.isLoading} />
+          <KpiCard icon="local_shipping" iconBg="bg-amber-50" iconColor="text-amber-600" label="Orders Today" value={summary ? String(ordersToday) : "—"} loading={summaryQuery.isLoading} />
         </div>
 
         {showAlerts && (
