@@ -10,6 +10,8 @@ interface CustomerRow {
   id: string
   fullName: string
   email: string
+  phone: string | null
+  address: string | null
   postcode: string | null
   accountStatus: string
   createdAt: string
@@ -57,13 +59,15 @@ function Customers() {
                 <tr className="bg-gray-50 border-b border-gray-200">
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Name</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Postcode</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Address</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {customersQuery.isLoading ? <TableSkeleton columns={5} /> : null}
+                {customersQuery.isLoading ? <TableSkeleton columns={7} /> : null}
                 {!customersQuery.isLoading &&
                   (data?.customers ?? []).map((c) => {
                     const style = ACCOUNT_STATUS_STYLES[c.accountStatus]
@@ -75,17 +79,29 @@ function Customers() {
                           </Link>
                         </td>
                         <td className="py-4 px-6 text-gray-600">{c.email}</td>
-                        <td className="py-4 px-6 text-gray-600">{c.postcode ?? "—"}</td>
+                        <td className="py-4 px-6 text-gray-600">{c.phone ?? "—"}</td>
+                        <td className="py-4 px-6 text-gray-600 max-w-[220px] truncate" title={c.address ?? undefined}>
+                          {c.address ?? c.postcode ?? "—"}
+                        </td>
                         <td className="py-4 px-6">
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>{style.label}</span>
                         </td>
                         <td className="py-4 px-6 text-gray-600">{new Date(c.createdAt).toLocaleDateString("en-GB")}</td>
+                        <td className="py-4 px-6 text-right">
+                          <Link
+                            to={`/customers/${c.id}`}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            View more details
+                            <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                          </Link>
+                        </td>
                       </tr>
                     )
                   })}
                 {!customersQuery.isLoading && (data?.customers ?? []).length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-sm text-gray-400">
+                    <td colSpan={7} className="py-10 text-center text-sm text-gray-400">
                       No customers found.
                     </td>
                   </tr>

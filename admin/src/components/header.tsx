@@ -1,4 +1,5 @@
 import { useAuth } from "@/lib/auth"
+import { Logo } from "@/components/logo"
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
@@ -12,7 +13,11 @@ export function Header({ title }: { title: string }) {
 
   return (
     <header className="h-[72px] bg-white/80 backdrop-blur-md border-b border-gray-200 flex justify-between items-center px-[32px] shrink-0 z-40 sticky top-0">
-      <h1 className="text-[22px] font-bold text-[#111827] tracking-tight">{title}</h1>
+      <div className="flex items-center gap-4">
+        <Logo className="text-lg" />
+        <span className="h-6 w-px bg-gray-200" />
+        <h1 className="text-[22px] font-bold text-[#111827] tracking-tight">{title}</h1>
+      </div>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
           <div className="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white">

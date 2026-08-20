@@ -9,7 +9,7 @@ const navItems = [
   { path: "/menu-weeks", label: "Weekly Menu", icon: "calendar_month" },
   { path: "/plans", label: "Plans", icon: "sell" },
   { path: "/customers", label: "Customers", icon: "group" },
-  { path: "/zones", label: "Zones", icon: "storefront" },
+  { path: "/zones", label: "Zones", icon: "location_on" },
 ]
 
 export function Sidebar() {

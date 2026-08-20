@@ -4,7 +4,20 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { api, ApiError } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
-import { ACCOUNT_STATUS_STYLES } from "@/lib/status-styles"
+import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES } from "@/lib/status-styles"
+
+interface OrderItemRow {
+  slot: string
+  menuItem: { name: string }
+}
+
+interface OrderRow {
+  id: string
+  deliveryDate: string
+  status: string
+  menuChosenAt: string | null
+  items: OrderItemRow[]
+}
 
 interface Subscription {
   id: string
@@ -14,6 +27,7 @@ interface Subscription {
   status: string
   pausedDates: string[]
   createdAt: string
+  orders: OrderRow[]
 }
 
 interface Payment {
@@ -27,6 +41,7 @@ interface CustomerDetail {
   id: string
   fullName: string
   email: string
+  phone: string | null
   age: number | null
   postcode: string | null
   address: string | null
@@ -47,6 +62,72 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
   "pause-override": "Pause override",
   refund: "Refund",
   reactivate: "Reactivate",
+}
+
+const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Breakfast", LUNCH: "Lunch", DINNER: "Dinner" }
+const WEEKDAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+function mondayOf(date: Date): Date {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
+  const day = d.getUTCDay()
+  d.setUTCDate(d.getUTCDate() + (day === 0 ? -6 : 1 - day))
+  return d
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d
+}
+
+function ordersInWeek(orders: OrderRow[], weekStart: Date): OrderRow[] {
+  const weekEnd = addDays(weekStart, 6)
+  return orders
+    .filter((o) => {
+      const d = new Date(o.deliveryDate)
+      return d >= weekStart && d <= weekEnd
+    })
+    .sort((a, b) => a.deliveryDate.localeCompare(b.deliveryDate))
+}
+
+function WeekMenuCard({ title, weekStart, orders }: { title: string; weekStart: Date; orders: OrderRow[] }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h3 className="text-[16px] font-bold text-gray-900">{title}</h3>
+        <span className="text-xs text-gray-500">
+          {weekStart.toLocaleDateString("en-GB")} – {addDays(weekStart, 6).toLocaleDateString("en-GB")}
+        </span>
+      </div>
+      {orders.length === 0 ? (
+        <p className="px-6 py-6 text-sm text-gray-400">No delivery scheduled this week.</p>
+      ) : (
+        <ul className="divide-y divide-gray-100">
+          {orders.map((o) => (
+            <li key={o.id} className="px-6 py-3 flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  {WEEKDAY_LABELS[new Date(o.deliveryDate).getUTCDay()]} · {new Date(o.deliveryDate).toLocaleDateString("en-GB")}
+                </p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {o.items.length === 0
+                    ? "No items assigned"
+                    : o.items.map((i) => `${SLOT_LABELS[i.slot] ?? i.slot}: ${i.menuItem.name}`).join(" · ")}
+                </p>
+              </div>
+              <span
+                className={`px-2.5 py-0.5 h-fit rounded-full text-xs font-semibold border shrink-0 ${
+                  o.menuChosenAt ? "bg-[#F0F7F3] text-[#2E6B3E] border-[#cfe6d7]" : "bg-gray-100 text-gray-600 border-gray-200"
+                }`}
+              >
+                {o.menuChosenAt ? "Chosen" : "Default"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
 function CustomerDetail() {
@@ -108,6 +189,13 @@ function CustomerDetail() {
   const style = ACCOUNT_STATUS_STYLES[customer.accountStatus]
   const activeSub = customer.subscriptions.find((s) => s.status === "ACTIVE" || s.status === "PENDING_PAYMENT")
 
+  const allOrders = customer.subscriptions.flatMap((s) => s.orders)
+  const orderHistory = [...allOrders].sort((a, b) => b.deliveryDate.localeCompare(a.deliveryDate))
+  const thisWeekStart = mondayOf(new Date())
+  const nextWeekStart = addDays(thisWeekStart, 7)
+  const thisWeekOrders = ordersInWeek(allOrders, thisWeekStart)
+  const nextWeekOrders = ordersInWeek(allOrders, nextWeekStart)
+
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
       <Header title={customer.fullName} />
@@ -134,10 +222,14 @@ function CustomerDetail() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-4">
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Age</p>
             <p className="text-gray-900 font-semibold">{customer.age ?? "—"}</p>
+          </div>
+          <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
+            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Phone</p>
+            <p className="text-gray-900 font-semibold">{customer.phone ?? "—"}</p>
           </div>
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Postcode</p>
@@ -145,7 +237,9 @@ function CustomerDetail() {
           </div>
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Address</p>
-            <p className="text-gray-900 font-semibold truncate">{customer.address ?? "—"}</p>
+            <p className="text-gray-900 font-semibold truncate" title={customer.address ?? undefined}>
+              {customer.address ?? "—"}
+            </p>
           </div>
         </div>
 
@@ -177,6 +271,57 @@ function CustomerDetail() {
                 <tr>
                   <td colSpan={5} className="py-8 text-center text-sm text-gray-400">
                     No subscriptions yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <WeekMenuCard title="This Week's Menu" weekStart={thisWeekStart} orders={thisWeekOrders} />
+          <WeekMenuCard title="Next Week's Menu" weekStart={nextWeekStart} orders={nextWeekOrders} />
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-[16px] font-bold text-gray-900">Order History</h3>
+          </div>
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Delivery Date</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Items</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Menu</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {orderHistory.map((o) => {
+                const orderStyle = ORDER_STATUS_STYLES[o.status]
+                return (
+                  <tr key={o.id}>
+                    <td className="py-3 px-6 text-gray-900">{new Date(o.deliveryDate).toLocaleDateString("en-GB")}</td>
+                    <td className="py-3 px-6 text-gray-600">
+                      {o.items.length === 0 ? "—" : o.items.map((i) => `${SLOT_LABELS[i.slot] ?? i.slot}: ${i.menuItem.name}`).join(", ")}
+                    </td>
+                    <td className="py-3 px-6">
+                      {orderStyle ? (
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${orderStyle.className}`}>
+                          {orderStyle.label}
+                        </span>
+                      ) : (
+                        o.status
+                      )}
+                    </td>
+                    <td className="py-3 px-6 text-gray-600">{o.menuChosenAt ? "Chosen" : "Default"}</td>
+                  </tr>
+                )
+              })}
+              {orderHistory.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
+                    No orders yet.
                   </td>
                 </tr>
               ) : null}
