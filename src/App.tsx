@@ -17,7 +17,6 @@ import Menu from '@/pages/subscribe/menu'
 import SubscribeProfile from '@/pages/subscribe/profile'
 import AccountSetup from '@/pages/subscribe/account-setup'
 import SubscribeDelivery from '@/pages/subscribe/delivery'
-import Payment from '@/pages/subscribe/payment'
 import PaymentReturn from '@/pages/subscribe/payment-return'
 import Account from '@/pages/subscribe/account'
 import DashboardLayout from '@/pages/dashboard/layout'
@@ -49,7 +48,6 @@ function App() {
         <Route path="profile" element={<SubscribeProfile />} />
         <Route path="account-setup" element={<AccountSetup />} />
         <Route path="delivery" element={<SubscribeDelivery />} />
-        <Route path="payment" element={<Payment />} />
         <Route path="payment/return" element={<PaymentReturn />} />
         <Route path="account" element={<Account />} />
       </Route>

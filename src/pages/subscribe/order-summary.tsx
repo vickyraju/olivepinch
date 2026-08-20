@@ -1,6 +1,9 @@
+import { formatPhoneNumberIntl } from "react-phone-number-input"
+import { Lock } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
-import { estimateTotal, formatGBP } from "@/lib/pricing"
+import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { computeEndDate, calculateAge } from "@/lib/subscription"
+import { Button } from "@/components/ui/button"
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -11,11 +14,22 @@ function Row({ label, value }: { label: string; value: string }) {
   )
 }
 
-function OrderSummary() {
+function OrderSummary({
+  onPay,
+  payLabel = "Continue to Payment",
+  payDisabled = false,
+}: {
+  onPay?: () => void
+  payLabel?: string
+  payDisabled?: boolean
+} = {}) {
   const { state } = useSubscribe()
-  const estimate = estimateTotal(state.dayMenus, state.menuItemPrices, state.planDuration, state.mealsPerDay)
+  const plans = usePlans()
+  const total = priceFor(plans, state.goal, state.planDuration)
   const endDate = state.startDate ? computeEndDate(state.startDate, state.planDuration, []) : null
   const age = state.profile.dateOfBirth ? calculateAge(state.profile.dateOfBirth) : null
+  const totalMeals = state.planDuration * state.mealsPerDay
+  const perMeal = total !== null && totalMeals > 0 ? total / totalMeals : null
 
   return (
     <div className="rounded-2xl bg-surface border border-border p-6 shadow-soft lg:sticky lg:top-24 space-y-5 text-sm">
@@ -24,7 +38,7 @@ function OrderSummary() {
       <dl className="space-y-2.5">
         <Row label="Name" value={state.profile.fullName || "—"} />
         <Row label="Email" value={state.profile.email || "—"} />
-        <Row label="Phone" value={state.profile.phone || "—"} />
+        <Row label="Phone" value={state.profile.phone ? formatPhoneNumberIntl(state.profile.phone) : "—"} />
         <Row label="Age" value={age ? String(age) : "—"} />
       </dl>
 
@@ -43,16 +57,25 @@ function OrderSummary() {
       </dl>
 
       <div className="border-t border-border pt-4">
-        {estimate ? (
+        {total !== null ? (
           <div className="flex justify-between items-baseline">
-            <span className="text-ink font-semibold">{estimate.isEstimate ? "Estimated total" : "Total"}</span>
-            <span className="font-display text-2xl font-bold text-ink">{formatGBP(estimate.total)}</span>
+            <span className="text-ink font-semibold">Total</span>
+            <span className="font-display text-2xl font-bold text-ink">{formatGBP(total)}</span>
           </div>
         ) : (
           <p className="text-sm text-ink-muted">Your exact price will be confirmed at checkout.</p>
         )}
-        {estimate?.isEstimate && <p className="text-xs text-ink-muted mt-1">Confirmed at checkout, once every day's meals are set.</p>}
+        {perMeal !== null && <p className="text-xs text-ink-muted mt-1 text-right">{formatGBP(perMeal)} per meal</p>}
       </div>
+
+      {onPay && (
+        <div className="border-t border-border pt-4">
+          <Button type="button" variant="accent" size="lg" className="w-full" disabled={payDisabled} onClick={onPay}>
+            <Lock className="h-4 w-4" />
+            {payLabel}
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

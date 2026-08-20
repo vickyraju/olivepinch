@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { Calendar } from "@/components/ui/calendar"
 import { useSubscribe, type PlanDuration } from "@/lib/subscribe-context"
 import { toDateKey, fromDateKey } from "@/lib/subscription"
+import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
@@ -22,6 +23,7 @@ function Plan() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
   const min = minStartDate()
+  const plans = usePlans()
 
   return (
     <div>
@@ -31,6 +33,7 @@ function Plan() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
         {DURATIONS.map((d) => {
           const active = state.planDuration === d.value
+          const total = priceFor(plans, state.goal, d.value)
           return (
             <button
               key={d.value}
@@ -44,6 +47,12 @@ function Plan() {
             >
               <div className="font-display text-2xl font-bold text-ink">{d.label}</div>
               <div className="text-sm text-ink-muted mt-1">{d.hint}</div>
+              {total !== null && (
+                <div className="mt-3 pt-3 border-t border-border/60 flex items-baseline justify-between">
+                  <span className="text-lg font-semibold text-ink">{formatGBP(total)}</span>
+                  <span className="text-xs text-ink-muted">{formatGBP(total / d.value)}/day</span>
+                </div>
+              )}
             </button>
           )
         })}

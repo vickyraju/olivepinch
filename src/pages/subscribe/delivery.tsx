@@ -1,14 +1,16 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { Package, CalendarDays, Repeat } from "lucide-react"
+import { useEffect, useState } from "react"
+import { useNavigate, useSearchParams } from "react-router-dom"
+import { Package, CalendarDays, Repeat, AlertCircle, ShieldCheck } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe, type DeliverySlot } from "@/lib/subscribe-context"
-import { api } from "@/lib/api"
+import { api, ApiError } from "@/lib/api"
+import { DELIVERY_SLOT_TO_ENUM } from "@/lib/enum-map"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
-import { cn } from "@/lib/utils"
+import { cn, splitFullName, joinFullName } from "@/lib/utils"
 
 const DELIVERY_SLOTS: { value: DeliverySlot; label: string; hint: string; icon: typeof Package }[] = [
   { value: "Daily", label: "Daily", hint: "A box every day", icon: Package },
@@ -19,17 +21,30 @@ const DELIVERY_SLOTS: { value: DeliverySlot; label: string; hint: string; icon: 
 function Delivery() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [doorNumber, setDoorNumber] = useState(state.deliveryAddress.doorNumber)
   const [buildingName, setBuildingName] = useState(state.deliveryAddress.buildingName)
   const [street, setStreet] = useState(state.deliveryAddress.street)
   const [area, setArea] = useState(state.deliveryAddress.area || "Birmingham")
   const [postcode, setPostcode] = useState(state.deliveryAddress.postcode || state.postcode)
   const [error, setError] = useState("")
-  const [checking, setChecking] = useState(false)
+  const [status, setStatus] = useState<"idle" | "checking" | "processing" | "failed">("idle")
+  const [declineMessage, setDeclineMessage] = useState("")
+
+  // Worldpay redirects back here on a declined/failed/cancelled payment — same failure UI
+  // whether it's a real decline or a manual test visit to /subscribe/delivery?declined=1.
+  useEffect(() => {
+    if (searchParams.get("declined")) {
+      setDeclineMessage("Your card issuer declined this payment. Nothing else has changed — check your details and try again.")
+      setStatus("failed")
+    }
+  }, [searchParams])
 
   const p = state.profile
+  const { firstName, lastName } = splitFullName(p.fullName)
   const canContinue = !!(
-    p.fullName.trim() &&
+    firstName.trim() &&
+    lastName.trim() &&
     p.phone.trim() &&
     doorNumber.trim() &&
     street.trim() &&
@@ -37,29 +52,60 @@ function Delivery() {
     postcode.trim()
   )
 
-  async function handleContinue() {
+  async function handlePay() {
     setError("")
-    setChecking(true)
+    setDeclineMessage("")
+    setStatus("checking")
     try {
       const res = await api.post<{ valid: boolean; postcode: string }>("/postcode/check", { postcode })
       if (!res.valid) {
         setError("We don't currently deliver to that postcode — we're only piloting in Birmingham right now.")
-        setChecking(false)
+        setStatus("idle")
         return
       }
-      update({
-        deliveryAddress: {
-          doorNumber: doorNumber.trim(),
-          buildingName: buildingName.trim(),
-          street: street.trim(),
-          area: area.trim(),
-          postcode: res.postcode,
-        },
+      const deliveryAddress = {
+        doorNumber: doorNumber.trim(),
+        buildingName: buildingName.trim(),
+        street: street.trim(),
+        area: area.trim(),
+        postcode: res.postcode,
+      }
+      update({ deliveryAddress })
+
+      setStatus("processing")
+      if (!state.customerId) throw new Error("Missing your profile — go back and complete the earlier steps.")
+
+      const subscription = await api.post<{ subscriptionId: string }>("/subscriptions", {
+        customerId: state.customerId,
+        planDuration: state.planDuration,
+        startDate: state.startDate,
+        mealsPerDay: state.mealsPerDay,
+        addressDoorNumber: deliveryAddress.doorNumber,
+        addressBuildingName: deliveryAddress.buildingName || undefined,
+        addressStreet: deliveryAddress.street,
+        addressArea: deliveryAddress.area,
+        addressPostcode: deliveryAddress.postcode,
+        deliverySlot: DELIVERY_SLOT_TO_ENUM[state.deliverySlot],
+        dayMenus: state.dayMenus,
       })
-      navigate("/subscribe/payment")
-    } catch {
-      setError("Couldn't check that postcode — try again.")
-      setChecking(false)
+      update({ subscriptionId: subscription.subscriptionId })
+
+      const intent = await api.post<{ devMode?: boolean; redirectUrl?: string }>("/payments/intent", {
+        subscriptionId: subscription.subscriptionId,
+      })
+
+      if (intent.devMode) {
+        await api.post("/payments/confirm", { subscriptionId: subscription.subscriptionId })
+        navigate("/subscribe/account")
+        return
+      }
+
+      // Leaves the site — Worldpay's hosted page collects card details, then redirects
+      // back to /subscribe/payment/return, which resolves the outcome server-side.
+      window.location.href = intent.redirectUrl!
+    } catch (err) {
+      setDeclineMessage(err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Something went wrong processing your payment — please try again.")
+      setStatus("failed")
     }
   }
 
@@ -77,24 +123,31 @@ function Delivery() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="fullName">Full name</Label>
+                <Label htmlFor="firstName">First name</Label>
                 <Input
-                  id="fullName"
-                  autoComplete="name"
-                  value={p.fullName}
-                  onChange={(e) => update({ profile: { ...p, fullName: e.target.value } })}
+                  id="firstName"
+                  autoComplete="given-name"
+                  value={firstName}
+                  onChange={(e) => update({ profile: { ...p, fullName: joinFullName(e.target.value, lastName) } })}
                 />
               </div>
               <div>
-                <Label htmlFor="phone">Phone number</Label>
+                <Label htmlFor="lastName">Last name</Label>
                 <Input
-                  id="phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={p.phone}
-                  onChange={(e) => update({ profile: { ...p, phone: e.target.value } })}
+                  id="lastName"
+                  autoComplete="family-name"
+                  value={lastName}
+                  onChange={(e) => update({ profile: { ...p, fullName: joinFullName(firstName, e.target.value) } })}
                 />
               </div>
+            </div>
+            <div>
+              <Label htmlFor="phone">Phone number</Label>
+              <PhoneInput
+                id="phone"
+                value={p.phone}
+                onChange={(v) => update({ profile: { ...p, phone: v } })}
+              />
             </div>
           </section>
 
@@ -165,19 +218,37 @@ function Delivery() {
               })}
             </div>
           </section>
+
+          <div className="mt-8 pt-8 border-t border-border space-y-4">
+            <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
+              <ShieldCheck className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+              <p className="text-sm text-ink-muted">
+                You'll be redirected to Worldpay's secure payment page to enter your card details — we never see or store your card number.
+              </p>
+            </div>
+
+            {status === "failed" && (
+              <div role="alert" className="rounded-lg bg-coral-50 p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-coral-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-coral-600">Payment declined</p>
+                  <p className="text-sm text-ink-muted mt-0.5">{declineMessage}</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="order-1 lg:order-2">
-          <OrderSummary />
+          <OrderSummary
+            onPay={handlePay}
+            payDisabled={!canContinue || status === "checking" || status === "processing"}
+            payLabel={status === "checking" ? "Checking postcode…" : status === "processing" ? "Processing…" : "Continue to Payment"}
+          />
         </div>
       </div>
 
-      <StepNav
-        backTo="/subscribe/account-setup"
-        continueDisabled={!canContinue || checking}
-        continueLabel={checking ? "Checking…" : "Continue"}
-        onContinue={handleContinue}
-      />
+      <StepNav backTo="/subscribe/account-setup" hideContinue />
     </div>
   )
 }

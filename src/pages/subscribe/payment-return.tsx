@@ -19,7 +19,7 @@ function PaymentReturn() {
 
     const subscriptionId = searchParams.get("subscriptionId") ?? state.subscriptionId
     if (!subscriptionId) {
-      navigate("/subscribe/payment?declined=1")
+      navigate("/subscribe/delivery?declined=1")
       return
     }
 
@@ -28,7 +28,7 @@ function PaymentReturn() {
       .then(() => navigate("/subscribe/account"))
       .catch((err) => {
         console.error(err instanceof ApiError ? err.message : err)
-        navigate("/subscribe/payment?declined=1")
+        navigate("/subscribe/delivery?declined=1")
       })
   }, [searchParams, state.subscriptionId, navigate])
 

@@ -31,7 +31,6 @@ export const PHASES: Phase[] = [
   {
     name: "Confirm",
     steps: [
-      { path: "/subscribe/payment", label: "Payment" },
       { path: "/subscribe/account", label: "Verify" },
     ],
   },

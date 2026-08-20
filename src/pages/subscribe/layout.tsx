@@ -5,9 +5,9 @@ import { Logo } from "@/components/ui/logo"
 import { PHASES, phaseIndex, stepIndexInPhase } from "./steps"
 import { cn } from "@/lib/utils"
 
-// These two steps run a two-column form-plus-summary layout — the shared
-// single-column max-width leaves both columns cramped, so they get more room.
-const WIDE_STEPS = new Set(["/subscribe/delivery", "/subscribe/payment"])
+// This step runs a two-column form-plus-summary layout — the shared
+// single-column max-width leaves both columns cramped, so it gets more room.
+const WIDE_STEPS = new Set(["/subscribe/delivery"])
 
 function SubscribeLayoutInner() {
   const location = useLocation()
