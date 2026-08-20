@@ -9,6 +9,7 @@ import { api } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { PhoneInput } from "@/components/ui/phone-input"
 import { Label } from "@/components/ui/label"
 import { FieldError } from "@/components/ui/field-error"
 
@@ -145,11 +146,10 @@ function Profile() {
           <div className="mt-3 space-y-3">
             <div>
               <Label htmlFor="phone">Phone number</Label>
-              <Input
+              <PhoneInput
                 id="phone"
-                type="tel"
                 value={phoneInput}
-                onChange={(e) => setPhoneInput(e.target.value)}
+                onChange={setPhoneInput}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">

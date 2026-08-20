@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, UtensilsCrossed, CalendarRange, MapPin, Users, Truck, LogOut, ShieldCheck } from "lucide-react"
+import { LayoutDashboard, UtensilsCrossed, CalendarRange, MapPin, Users, Truck, LogOut, ShieldCheck, Tag } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { Logo } from "@/components/ui/logo"
@@ -15,6 +15,7 @@ const NAV_GROUPS = [
       { path: "/orders", label: "Order Board", icon: Truck },
       { path: "/menu", label: "Menu Control", icon: UtensilsCrossed },
       { path: "/menu-weeks", label: "Weekly Menu", icon: CalendarRange },
+      { path: "/plans", label: "Plans", icon: Tag },
     ],
   },
   {

@@ -36,7 +36,7 @@ function SelectContent({ className, children, ...props }: React.ComponentProps<t
         sideOffset={4}
         {...props}
       >
-        <SelectPrimitive.Viewport className="p-1 min-w-[var(--radix-select-trigger-width)]">
+        <SelectPrimitive.Viewport className="p-1 min-w-[var(--radix-select-trigger-width)] max-h-[min(300px,var(--radix-select-content-available-height))] overflow-y-auto">
           {children}
         </SelectPrimitive.Viewport>
       </SelectPrimitive.Content>

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
-import { GOALS, DIET_TYPES, ALLERGENS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal, type DietType } from "@/data/menu"
+import { GOALS, DIET_TYPES, ALLERGENS, type Goal, type DietType } from "@/data/menu"
 import type { DeliverySlot } from "@/lib/subscribe-context"
-import { formatGBP } from "@/lib/pricing"
+import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,14 +18,6 @@ const DELIVERY_SLOTS: { value: DeliverySlot; hint: string }[] = [
   { value: "Weekly", hint: "One box for the whole week" },
   { value: "Alternate days", hint: "A box every other day" },
 ]
-
-function estimateTotal(duration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[]) {
-  const perDay = SLOTS_BY_MEALS_PER_DAY[mealsPerDay].reduce(
-    (sum, slot) => sum + defaultMenuFor(goal, dietTypes, allergens, slot).price,
-    0
-  )
-  return perDay * duration
-}
 
 function Subscription() {
   const { customer, endDate, renew, confirmRenewal } = useDashboard()
@@ -41,8 +33,9 @@ function Subscription() {
   const [error, setError] = useState("")
   const [searchParams, setSearchParams] = useSearchParams()
 
+  const plans = usePlans()
   const isExpired = sub.status === "expired"
-  const total = estimateTotal(duration, sub.mealsPerDay, goal, dietTypes, allergens)
+  const total = priceFor(plans, goal, duration)
 
   function toggleDietType(diet: DietType, checked: boolean) {
     setDietTypes((prev) => (checked ? [...prev, diet] : prev.filter((d) => d !== diet)))
@@ -301,8 +294,8 @@ function Subscription() {
             <div role="alert" className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600 font-medium">{error}</div>
           )}
 
-          <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing}>
-            {renewing ? "Renewing…" : `Confirm & renew · ${formatGBP(total)}`}
+          <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing || total === null}>
+            {renewing ? "Renewing…" : total !== null ? `Confirm & renew · ${formatGBP(total)}` : "Confirm & renew"}
           </Button>
         </Card>
       </form>

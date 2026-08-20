@@ -8,9 +8,8 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { GOALS, GOAL_PHOTOS, DIET_TYPES, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal, type DietType } from "@/data/menu"
-import type { MealsPerDay } from "@/lib/subscribe-context"
-import { formatGBP } from "@/lib/pricing"
+import { GOALS, GOAL_PHOTOS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal } from "@/data/menu"
+import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { cn } from "@/lib/utils"
 
 const TEASER_META: Record<Goal, { kcal: string; protein: string; from: string }> = {
@@ -21,7 +20,6 @@ const TEASER_META: Record<Goal, { kcal: string; protein: string; from: string }>
 }
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
-const MEALS: MealsPerDay[] = [1, 2, 3]
 
 function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }) {
   const [expanded, setExpanded] = useState(false)
@@ -71,58 +69,23 @@ function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }
 
 function PriceEstimator() {
   const [goal, setGoal] = useState<Goal>("Muscle Building")
-  const [dietType, setDietType] = useState<DietType>("Meat")
-  const [mealsPerDay, setMealsPerDay] = useState<MealsPerDay>(2)
   const [planDuration, setPlanDuration] = useState<7 | 14 | 28>(14)
-
-  const slots = SLOTS_BY_MEALS_PER_DAY[mealsPerDay]
-  const perDay = slots.reduce((sum, slot) => sum + defaultMenuFor(goal, [dietType], [], slot).price, 0)
-  const estimate = perDay * planDuration
+  const plans = usePlans()
+  const total = priceFor(plans, goal, planDuration)
 
   return (
     <Card className="p-6 sm:p-8">
-      <h2 className="text-xl text-ink mb-1">Estimate your price</h2>
-      <p className="text-sm text-ink-muted mb-6">A rough guide — allergen exclusions and menu swaps can change the exact total.</p>
+      <h2 className="text-xl text-ink mb-1">See your price</h2>
+      <p className="text-sm text-ink-muted mb-6">Pricing is set by your goal and plan length — pick both to see the exact total.</p>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className="text-sm font-medium text-ink block mb-1.5">Goal</label>
-          <Select value={goal} onValueChange={(v) => setGoal(v as Goal)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {GOALS.map((g) => <SelectItem key={g.id} value={g.id}>{g.id}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-sm font-medium text-ink block mb-1.5">Diet type</label>
-          <Select value={dietType} onValueChange={(v) => setDietType(v as DietType)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {DIET_TYPES.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="mt-5">
-        <label className="text-sm font-medium text-ink block mb-1.5">Meals per day</label>
-        <div className="grid grid-cols-3 gap-2.5">
-          {MEALS.map((m) => (
-            <button
-              key={m}
-              type="button"
-              aria-pressed={mealsPerDay === m}
-              onClick={() => setMealsPerDay(m)}
-              className={cn(
-                "rounded-lg border-2 py-2.5 text-sm font-semibold transition-colors cursor-pointer",
-                mealsPerDay === m ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
-              )}
-            >
-              {m} meal{m > 1 ? "s" : ""}
-            </button>
-          ))}
-        </div>
+      <div>
+        <label className="text-sm font-medium text-ink block mb-1.5">Goal</label>
+        <Select value={goal} onValueChange={(v) => setGoal(v as Goal)}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {GOALS.map((g) => <SelectItem key={g.id} value={g.id}>{g.id}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="mt-5">
@@ -146,12 +109,12 @@ function PriceEstimator() {
       </div>
 
       <div className="mt-6 flex items-center justify-between rounded-lg bg-olive-50 px-5 py-4">
-        <span className="text-sm text-ink-muted">Estimated total</span>
-        <span className="font-display text-2xl font-bold text-ink">{formatGBP(estimate)}</span>
+        <span className="text-sm text-ink-muted">Total</span>
+        <span className="font-display text-2xl font-bold text-ink">{total !== null ? formatGBP(total) : "—"}</span>
       </div>
 
       <Button asChild variant="primary" size="lg" className="w-full mt-5">
-        <Link to="/subscribe">Get exact pricing <ArrowRight className="h-4 w-4" /></Link>
+        <Link to="/subscribe">Get started <ArrowRight className="h-4 w-4" /></Link>
       </Button>
     </Card>
   )
