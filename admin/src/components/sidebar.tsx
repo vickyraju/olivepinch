@@ -5,6 +5,7 @@ const navItems = [
   { path: "/", label: "Dashboard", icon: "dashboard" },
   { path: "/orders", label: "Order Board", icon: "list_alt" },
   { path: "/menu", label: "Menu Control", icon: "restaurant_menu" },
+  { path: "/plans", label: "Plans", icon: "sell" },
   { path: "/customers", label: "Customers", icon: "group" },
   { path: "/zones", label: "Zones", icon: "storefront" },
 ]
