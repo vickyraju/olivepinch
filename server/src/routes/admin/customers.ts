@@ -31,12 +31,31 @@ adminCustomersRouter.get("/", async (req, res) => {
       orderBy: SORTABLE[sort as keyof typeof SORTABLE] ?? SORTABLE.newest,
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
-      select: { id: true, fullName: true, email: true, postcode: true, accountStatus: true, createdAt: true },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        postcode: true,
+        accountStatus: true,
+        createdAt: true,
+        addressDoorNumber: true,
+        addressBuildingName: true,
+        addressStreet: true,
+        addressArea: true,
+        addressPostcode: true,
+      },
     }),
     prisma.customer.count({ where }),
   ])
 
-  res.json({ customers, page, pageSize: PAGE_SIZE, total, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) })
+  res.json({
+    customers: customers.map((c) => ({ ...c, address: formatAddress(c) })),
+    page,
+    pageSize: PAGE_SIZE,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+  })
 })
 
 adminCustomersRouter.get("/:id", async (req, res) => {
