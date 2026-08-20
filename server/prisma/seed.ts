@@ -22,12 +22,38 @@ const MENU_ITEMS = [
   { id: "d-chicken-pasta", name: "Chicken & Pesto Pasta", description: "Grilled chicken, wholewheat pasta, basil pesto.", slot: "DINNER", dietTags: ["MEAT"], allergenTags: ["Gluten", "Dairy", "Tree Nuts"], goalTags: ["WEIGHT_GAIN", "MUSCLE_BUILDING"], kcal: 640, protein: 44, price: 7.60, premium: true },
 ] as const
 
+// Plan-based/goal-based pricing seed — mirrors the plan durations (7/14/28 days) and goals
+// already offered in the subscribe funnel (src/pages/subscribe/plan.tsx, goal.tsx). Flat
+// price per (days, goal); longer plans get a small per-day discount. Admin can edit anytime.
+const PLANS = [
+  { goal: "WEIGHT_LOSS", planDuration: 7, price: 74.99 },
+  { goal: "WEIGHT_LOSS", planDuration: 14, price: 139.99 },
+  { goal: "WEIGHT_LOSS", planDuration: 28, price: 259.99 },
+  { goal: "WEIGHT_MAINTENANCE", planDuration: 7, price: 79.99 },
+  { goal: "WEIGHT_MAINTENANCE", planDuration: 14, price: 149.99 },
+  { goal: "WEIGHT_MAINTENANCE", planDuration: 28, price: 279.99 },
+  { goal: "WEIGHT_GAIN", planDuration: 7, price: 84.99 },
+  { goal: "WEIGHT_GAIN", planDuration: 14, price: 159.99 },
+  { goal: "WEIGHT_GAIN", planDuration: 28, price: 299.99 },
+  { goal: "MUSCLE_BUILDING", planDuration: 7, price: 89.99 },
+  { goal: "MUSCLE_BUILDING", planDuration: 14, price: 169.99 },
+  { goal: "MUSCLE_BUILDING", planDuration: 28, price: 319.99 },
+] as const
+
 async function main() {
   for (const item of MENU_ITEMS) {
     await prisma.menuItem.upsert({
       where: { id: item.id },
       update: item as never,
       create: item as never,
+    })
+  }
+
+  for (const plan of PLANS) {
+    await prisma.plan.upsert({
+      where: { planDuration_goal: { planDuration: plan.planDuration, goal: plan.goal as never } },
+      update: { price: plan.price },
+      create: plan as never,
     })
   }
 
@@ -48,7 +74,7 @@ async function main() {
     },
   })
 
-  console.log(`Seeded ${MENU_ITEMS.length} menu items, 1 zone, and 1 admin user (${adminEmail} / ChangeMe123!).`)
+  console.log(`Seeded ${MENU_ITEMS.length} menu items, ${PLANS.length} plans, 1 zone, and 1 admin user (${adminEmail} / ChangeMe123!).`)
 }
 
 main()

@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { adminAuthRouter } from "./auth.js"
 import { adminMenuItemsRouter } from "./menu-items.js"
+import { adminPlansRouter } from "./plans.js"
 import { adminZonesRouter } from "./zones.js"
 import { adminCustomersRouter } from "./customers.js"
 import { adminRevenueRouter } from "./revenue.js"
@@ -13,6 +14,7 @@ export const adminRouter = Router()
 
 adminRouter.use("/auth", adminAuthRouter)
 adminRouter.use("/menu-items", adminMenuItemsRouter)
+adminRouter.use("/plans", adminPlansRouter)
 adminRouter.use("/menu-weeks", adminMenuWeeksRouter)
 adminRouter.use("/zones", adminZonesRouter)
 adminRouter.use("/customers", adminCustomersRouter)

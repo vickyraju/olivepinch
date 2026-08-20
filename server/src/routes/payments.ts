@@ -5,15 +5,17 @@ import { worldpayConfig, createHostedPayment, queryPaymentStatus } from "../lib/
 import { validateBody } from "../middleware/validate.js"
 import { sendEmail } from "../lib/email.js"
 import { subscriptionConfirmationEmail } from "../lib/email-templates.js"
+import { planPrice } from "../lib/pricing.js"
+import type { Goal } from "@prisma/client"
 
 export const paymentsRouter = Router()
 
 async function subscriptionTotal(subscriptionId: string) {
-  const orders = await prisma.order.findMany({
-    where: { subscriptionId },
-    include: { items: { include: { menuItem: true } } },
+  const subscription = await prisma.subscription.findUniqueOrThrow({
+    where: { id: subscriptionId },
+    include: { customer: true },
   })
-  return orders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + Number(i.menuItem.price), 0), 0)
+  return planPrice(subscription.customer.goal as Goal, subscription.planDuration)
 }
 
 // Only two return destinations ever legitimately exist (the funnel's default, computed

@@ -209,6 +209,20 @@ model Payment {
   createdAt      DateTime      @default(now())
 }
 
+// Source of truth for FR-C10/FR-C12 pricing — a flat price per (planDuration, goal)
+// combination, set by admin staff. Replaces the old per-menu-item pricing sum.
+model Plan {
+  id           String   @id @default(cuid())
+  planDuration Int
+  goal         Goal
+  price        Decimal  @db.Decimal(8, 2)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([planDuration, goal])
+}
+
 model Zone {
   id               String   @id @default(cuid())
   name             String

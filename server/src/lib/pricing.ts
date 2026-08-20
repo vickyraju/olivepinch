@@ -19,17 +19,12 @@ export async function defaultMenuItemFor(goal: Goal, dietTypes: DietType[], alle
   return chosen
 }
 
-export async function estimatePrice(params: {
-  goal: Goal
-  dietTypes: DietType[]
-  allergens: string[]
-  mealsPerDay: 1 | 2 | 3
-  planDuration: number
-}) {
-  const slots = SLOTS_BY_MEALS_PER_DAY[params.mealsPerDay]
-  const items = await Promise.all(
-    slots.map((slot) => defaultMenuItemFor(params.goal, params.dietTypes, params.allergens, slot))
-  )
-  const perDay = items.reduce((sum, item) => sum + Number(item.price), 0)
-  return { perDay, total: perDay * params.planDuration, items }
+// Price is plan-based and goal-based — a flat rate admin sets per (days, goal) combination
+// (see the Plan model), not a sum of the day's actual menu items.
+export async function planPrice(goal: Goal, planDuration: number): Promise<number> {
+  const plan = await prisma.plan.findUnique({ where: { planDuration_goal: { planDuration, goal } } })
+  if (!plan) {
+    throw Object.assign(new Error(`No plan configured for ${planDuration} days / ${goal}`), { status: 400 })
+  }
+  return Number(plan.price)
 }

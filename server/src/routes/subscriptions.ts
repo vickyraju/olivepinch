@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js"
 import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES } from "../lib/enums.js"
-import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor } from "../lib/pricing.js"
+import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
 import { computeEndDate, pausesUsedThisMonth, buildDeliveryDates, MAX_PAUSES_PER_MONTH } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
@@ -104,10 +104,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
     },
   })
 
-  const total = subscription.orders.reduce(
-    (sum, order) => sum + order.items.reduce((s, i) => s + Number(i.menuItem.price), 0),
-    0
-  )
+  const total = await planPrice(customer.goal as Goal, body.planDuration)
 
   res.status(201).json({ subscriptionId: subscription.id, total, dayCount: subscription.orders.length })
 })
@@ -229,10 +226,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     include: { orders: { include: { items: { include: { menuItem: true } } } } },
   })
 
-  const total = subscription.orders.reduce(
-    (sum, order) => sum + order.items.reduce((s, i) => s + Number(i.menuItem.price), 0),
-    0
-  )
+  const total = await planPrice(body.goal as Goal, body.planDuration)
 
   // Renewal goes through the same /payments/intent + /payments/confirm chain as initial
   // checkout (see payment.tsx) — that's the only place real-Worldpay-vs-dev-mode is
