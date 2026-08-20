@@ -25,7 +25,6 @@ interface DashboardSummary {
   accountStatusBreakdown: StatusCount[]
   subscriptionStatusBreakdown: StatusCount[]
   ordersTodayByStatus: StatusCount[]
-  zoneDistribution: { zone: string; count: number }[]
   refunds: { succeeded: number; refunded: number; refundRate: number }
   recentActivity: {
     id: string
@@ -230,40 +229,6 @@ function Dashboard() {
               <DistributionRows rows={summary?.accountStatusBreakdown ?? []} styles={ACCOUNT_STATUS_STYLES} loading={summaryQuery.isLoading} emptyText="No customers yet." />
             </div>
           </div>
-        </div>
-
-        <div className="bg-white p-[24px] border border-gray-200 rounded-[12px]">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-[16px] font-bold text-gray-900">Delivery Zone Coverage</h2>
-            <Link to="/zones" className="text-xs font-semibold text-primary hover:underline">Manage zones →</Link>
-          </div>
-          {summaryQuery.isLoading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-6 w-full" />
-              ))}
-            </div>
-          ) : !summary?.zoneDistribution.length ? (
-            <p className="text-sm text-gray-400">No customers yet.</p>
-          ) : (
-            (() => {
-              const rows = summary.zoneDistribution
-              const max = Math.max(...rows.map((r) => r.count), 1)
-              return (
-                <div className="space-y-3">
-                  {rows.map((row) => (
-                    <div key={row.zone} className="flex items-center gap-3">
-                      <span className="shrink-0 w-[130px] truncate text-sm text-gray-700">{row.zone}</span>
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-status-blue rounded-full" style={{ width: `${(row.count / max) * 100}%` }} />
-                      </div>
-                      <span className="w-8 text-right text-sm font-bold text-gray-900">{row.count}</span>
-                    </div>
-                  ))}
-                </div>
-              )
-            })()
-          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
