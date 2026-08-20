@@ -13,10 +13,11 @@ export const ACCOUNT_STATUS_STYLES: Record<string, { label: string; className: s
   DELETED: { label: "Deleted", className: "bg-red-50 text-red-700 border-red-200" },
 }
 
-export const SUBSCRIPTION_STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  PENDING_PAYMENT: { label: "Pending Payment", className: "bg-amber-50 text-amber-700 border-amber-200" },
-  ACTIVE: { label: "Active", className: "bg-green-50 text-green-700 border-green-200" },
-  EXPIRED: { label: "Expired", className: "bg-gray-100 text-gray-600 border-gray-200" },
+export const MEAL_SLOT_STYLES: Record<string, { label: string; className: string }> = {
+  BREAKFAST: { label: "Breakfast", className: "bg-amber-50 text-amber-700 border-amber-200" },
+  LUNCH: { label: "Lunch", className: "bg-blue-50 text-blue-700 border-blue-200" },
+  DINNER: { label: "Dinner", className: "bg-purple-50 text-purple-700 border-purple-200" },
+  SNACKS: { label: "Snacks", className: "bg-green-50 text-green-700 border-green-200" },
 }
 
 export function getInitials(name: string): string {

@@ -18,20 +18,28 @@ interface MenuItem {
   protein: number
 }
 
-const SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
+const SLOTS = ["BREAKFAST", "LUNCH", "DINNER", "SNACKS"]
 const DIETS = ["MEAT", "FISH", "VEGAN", "VEGETARIAN", "EGG"]
+const GOALS = ["WEIGHT_LOSS", "WEIGHT_GAIN", "WEIGHT_MAINTENANCE", "MUSCLE_BUILDING"]
+const GOAL_LABELS: Record<string, string> = {
+  WEIGHT_LOSS: "Weight Loss",
+  WEIGHT_GAIN: "Weight Gain",
+  WEIGHT_MAINTENANCE: "Weight Maintenance",
+  MUSCLE_BUILDING: "Muscle Building",
+}
 
 // Must match REQUIRED_PHOTO_WIDTH/HEIGHT in the backend's admin/menu-items route.
 const REQUIRED_PHOTO_WIDTH = 1200
 const REQUIRED_PHOTO_HEIGHT = 800
 
-type SlotFilter = "ALL" | "BREAKFAST" | "LUNCH" | "DINNER"
+type SlotFilter = "ALL" | "BREAKFAST" | "LUNCH" | "DINNER" | "SNACKS"
 
 const slotFilters: { key: SlotFilter; label: string }[] = [
   { key: "ALL", label: "All" },
   { key: "BREAKFAST", label: "Breakfast" },
   { key: "LUNCH", label: "Lunch" },
   { key: "DINNER", label: "Dinner" },
+  { key: "SNACKS", label: "Snacks" },
 ]
 
 const emptyForm = {
@@ -91,6 +99,11 @@ function MenuItemCard({
               {t}
             </span>
           ))}
+          {item.goalTags.map((t) => (
+            <span key={t} className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-purple-50 text-purple-700 border-purple-200">
+              {GOAL_LABELS[t] ?? t}
+            </span>
+          ))}
         </div>
         <div className="mt-auto flex items-center gap-3 text-sm text-gray-600">
           <span>{item.kcal} kcal</span>
@@ -131,6 +144,10 @@ function MenuControl() {
 
   function toggleDiet(diet: string) {
     setForm((f) => ({ ...f, dietTags: f.dietTags.includes(diet) ? f.dietTags.filter((d) => d !== diet) : [...f.dietTags, diet] }))
+  }
+
+  function toggleGoal(goal: string) {
+    setForm((f) => ({ ...f, goalTags: f.goalTags.includes(goal) ? f.goalTags.filter((g) => g !== goal) : [...f.goalTags, goal] }))
   }
 
   async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
@@ -290,6 +307,23 @@ function MenuControl() {
                       }`}
                     >
                       {d}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Goal Tags</label>
+                <div className="flex gap-2 flex-wrap">
+                  {GOALS.map((g) => (
+                    <button
+                      type="button"
+                      key={g}
+                      onClick={() => toggleGoal(g)}
+                      className={`px-3 py-1.5 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
+                        form.goalTags.includes(g) ? "bg-purple-600 text-white border-purple-600" : "bg-white border-gray-300 text-gray-700"
+                      }`}
+                    >
+                      {GOAL_LABELS[g]}
                     </button>
                   ))}
                 </div>

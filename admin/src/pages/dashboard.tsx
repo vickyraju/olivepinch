@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/skeleton"
 import { TrendBarChart } from "@/components/trend-bar-chart"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
-import { ORDER_STATUS_STYLES, ACCOUNT_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES } from "@/lib/status-styles"
+import { ORDER_STATUS_STYLES, ACCOUNT_STATUS_STYLES, MEAL_SLOT_STYLES } from "@/lib/status-styles"
 
 interface RevenueResponse {
   series: { date: string; total: number }[]
@@ -22,7 +22,9 @@ interface DashboardSummary {
   newCustomersThisWeek: number
   accountStatusBreakdown: StatusCount[]
   subscriptionStatusBreakdown: StatusCount[]
+  subscriptionDurationBreakdown: StatusCount[]
   ordersTodayByStatus: StatusCount[]
+  ordersTodayBySlot: StatusCount[]
   refunds: { succeeded: number; refunded: number; refundRate: number }
   recentActivity: {
     id: string
@@ -199,11 +201,13 @@ function Dashboard() {
           <div className="bg-white p-[24px] border border-gray-200 rounded-[12px]">
             <h2 className="text-[16px] font-bold text-gray-900 mb-5">Today's Orders</h2>
             <DistributionRows rows={summary?.ordersTodayByStatus ?? []} styles={ORDER_STATUS_STYLES} loading={summaryQuery.isLoading} emptyText="No orders scheduled today." />
+            <h3 className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider mt-6 mb-3">By Meal Slot</h3>
+            <DistributionRows rows={summary?.ordersTodayBySlot ?? []} styles={MEAL_SLOT_STYLES} loading={summaryQuery.isLoading} emptyText="No meals scheduled today." />
           </div>
           <div className="bg-white p-[24px] border border-gray-200 rounded-[12px] space-y-6">
             <div>
               <h2 className="text-[16px] font-bold text-gray-900 mb-5">Subscriptions</h2>
-              <DistributionRows rows={summary?.subscriptionStatusBreakdown ?? []} styles={SUBSCRIPTION_STATUS_STYLES} loading={summaryQuery.isLoading} emptyText="No subscriptions yet." />
+              <DistributionRows rows={summary?.subscriptionDurationBreakdown ?? []} styles={{}} loading={summaryQuery.isLoading} emptyText="No subscriptions yet." />
             </div>
             <div>
               <h2 className="text-[16px] font-bold text-gray-900 mb-5">Customer Accounts</h2>

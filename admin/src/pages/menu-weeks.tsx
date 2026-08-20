@@ -8,6 +8,7 @@ interface MenuItem {
   id: string
   name: string
   slot: string
+  date?: string
 }
 
 interface WeekSummary {
@@ -24,12 +25,13 @@ interface PendingEntry {
   missingDates: string[]
 }
 
-const SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
+const SLOTS = ["BREAKFAST", "LUNCH", "DINNER", "SNACKS"]
 const SLOTS_BY_MEALS_PER_DAY: Record<number, string[]> = {
   1: ["LUNCH"],
   2: ["BREAKFAST", "DINNER"],
   3: ["BREAKFAST", "LUNCH", "DINNER"],
 }
+const WEEKDAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 function isMonday(iso: string): boolean {
   if (!iso) return false
@@ -45,6 +47,22 @@ function nextMondayIso(): string {
   return d.toISOString().slice(0, 10)
 }
 
+// The 7 calendar dates (ISO) making up the week that starts on this Monday.
+function weekDatesFrom(mondayIso: string): string[] {
+  if (!isMonday(mondayIso)) return []
+  const start = new Date(`${mondayIso}T00:00:00.000Z`)
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start)
+    d.setUTCDate(d.getUTCDate() + i)
+    return d.toISOString().slice(0, 10)
+  })
+}
+
+function formatDayLabel(iso: string): string {
+  const d = new Date(`${iso}T00:00:00.000Z`)
+  return `${WEEKDAY_LABELS[(d.getUTCDay() + 6) % 7]}, ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}`
+}
+
 function MenuWeeks() {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
@@ -56,7 +74,7 @@ function MenuWeeks() {
   const weeks = weeksQuery.data ?? []
 
   const [composerWeek, setComposerWeek] = useState(nextMondayIso())
-  const [composerItems, setComposerItems] = useState<string[]>([])
+  const [composerItemsByDate, setComposerItemsByDate] = useState<Record<string, string[]>>({})
   const [composerPublished, setComposerPublished] = useState(false)
   const [composerError, setComposerError] = useState("")
   const [saving, setSaving] = useState(false)
@@ -75,18 +93,23 @@ function MenuWeeks() {
     setComposerWeek(weekStart)
     setComposerError("")
     if (!isMonday(weekStart)) {
-      setComposerItems([])
+      setComposerItemsByDate({})
       setComposerPublished(false)
       return
     }
     api
       .get<{ published: boolean; items: MenuItem[] }>(`/menu-weeks/${weekStart}`)
       .then((res) => {
-        setComposerItems(res.items.map((i) => i.id))
+        const byDate: Record<string, string[]> = {}
+        for (const item of res.items) {
+          if (!item.date) continue
+          byDate[item.date] = [...(byDate[item.date] ?? []), item.id]
+        }
+        setComposerItemsByDate(byDate)
         setComposerPublished(res.published)
       })
       .catch(() => {
-        setComposerItems([])
+        setComposerItemsByDate({})
         setComposerPublished(false)
       })
   }
@@ -111,8 +134,20 @@ function MenuWeeks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingList])
 
-  function toggleComposerItem(id: string) {
-    setComposerItems((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]))
+  function toggleComposerItem(date: string, id: string) {
+    setComposerItemsByDate((prev) => {
+      const current = prev[date] ?? []
+      return { ...prev, [date]: current.includes(id) ? current.filter((i) => i !== id) : [...current, id] }
+    })
+  }
+
+  const composerDates = weekDatesFrom(composerWeek)
+  // An item picked for one day can't also be picked for another — the week never repeats a dish.
+  const itemDateUsed = new Map<string, string>()
+  let composerItemCount = 0
+  for (const [date, ids] of Object.entries(composerItemsByDate)) {
+    composerItemCount += ids.length
+    for (const id of ids) itemDateUsed.set(id, date)
   }
 
   async function saveDraft() {
@@ -123,7 +158,8 @@ function MenuWeeks() {
     setSaving(true)
     setComposerError("")
     try {
-      await api.put(`/menu-weeks/${composerWeek}`, { menuItemIds: composerItems })
+      const dayItems = composerDates.map((date) => ({ date, menuItemIds: composerItemsByDate[date] ?? [] }))
+      await api.put(`/menu-weeks/${composerWeek}`, { dayItems })
       await queryClient.invalidateQueries({ queryKey: ["menu-weeks"] })
     } catch (err) {
       setComposerError(err instanceof ApiError ? err.message : "Couldn't save this week's menu.")
@@ -192,15 +228,21 @@ function MenuWeeks() {
   const itemsBySlot = new Map<string, MenuItem[]>()
   for (const item of allItems) itemsBySlot.set(item.slot, [...(itemsBySlot.get(item.slot) ?? []), item])
 
-  const pendingItemsBySlot = new Map<string, MenuItem[]>()
-  for (const item of pendingWeekItems) pendingItemsBySlot.set(item.slot, [...(pendingItemsBySlot.get(item.slot) ?? []), item])
+  // Keyed by "date:slot" — the override dropdowns only offer items actually published for that day.
+  const pendingItemsByDateSlot = new Map<string, MenuItem[]>()
+  for (const item of pendingWeekItems) {
+    if (!item.date) continue
+    const key = `${item.date}:${item.slot}`
+    pendingItemsByDateSlot.set(key, [...(pendingItemsByDateSlot.get(key) ?? []), item])
+  }
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
       <Header title="Weekly Menu" />
       <div className="flex-1 overflow-y-auto p-8">
         <p className="mb-6 text-sm text-gray-500">
-          Publish next week's available items and cover anyone who hasn't chosen by the Friday cutoff.
+          Set a different lineup for each day of the week — no dish repeats — then publish and cover anyone who
+          hasn't chosen by the Friday cutoff.
         </p>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -268,28 +310,47 @@ function MenuWeeks() {
               <p className="text-sm text-status-red mb-4">Pick a Monday — weeks always start on a Monday.</p>
             )}
 
-            <div className="space-y-4">
-              {SLOTS.map((slot) => (
-                <div key={slot}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{slot}</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {(itemsBySlot.get(slot) ?? []).map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => toggleComposerItem(item.id)}
-                        className={`px-3 py-1.5 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
-                          composerItems.includes(item.id)
-                            ? "bg-[#2E6B3E] text-white border-[#2E6B3E]"
-                            : "bg-white border-gray-300 text-gray-700 hover:border-gray-400"
-                        }`}
-                      >
-                        {item.name}
-                      </button>
+            <div className="space-y-5">
+              {composerDates.length === 0 && (
+                <p className="text-sm text-gray-400">Pick a valid Monday to start composing.</p>
+              )}
+              {composerDates.map((date) => (
+                <div key={date} className="border border-gray-100 rounded-lg p-4">
+                  <p className="text-sm font-bold text-gray-900 mb-3">{formatDayLabel(date)}</p>
+                  <div className="space-y-3">
+                    {SLOTS.map((slot) => (
+                      <div key={slot}>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{slot}</p>
+                        <div className="flex gap-2 flex-wrap">
+                          {(itemsBySlot.get(slot) ?? []).map((item) => {
+                            const selected = (composerItemsByDate[date] ?? []).includes(item.id)
+                            const usedOn = itemDateUsed.get(item.id)
+                            const usedElsewhere = usedOn !== undefined && usedOn !== date
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                disabled={usedElsewhere}
+                                onClick={() => toggleComposerItem(date, item.id)}
+                                title={usedElsewhere ? `Already used on ${formatDayLabel(usedOn!)}` : undefined}
+                                className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
+                                  selected
+                                    ? "bg-[#2E6B3E] text-white border-[#2E6B3E] cursor-pointer"
+                                    : usedElsewhere
+                                      ? "bg-gray-50 border-gray-200 text-gray-300 cursor-not-allowed"
+                                      : "bg-white border-gray-300 text-gray-700 hover:border-gray-400 cursor-pointer"
+                                }`}
+                              >
+                                {item.name}
+                              </button>
+                            )
+                          })}
+                          {(itemsBySlot.get(slot) ?? []).length === 0 && (
+                            <span className="text-xs text-gray-400">No {slot.toLowerCase()} items yet.</span>
+                          )}
+                        </div>
+                      </div>
                     ))}
-                    {(itemsBySlot.get(slot) ?? []).length === 0 && (
-                      <span className="text-xs text-gray-400">No {slot.toLowerCase()} items yet.</span>
-                    )}
                   </div>
                 </div>
               ))}
@@ -313,7 +374,7 @@ function MenuWeeks() {
               <button
                 type="button"
                 onClick={publish}
-                disabled={publishing || composerPublished || composerItems.length === 0 || !isMonday(composerWeek)}
+                disabled={publishing || composerPublished || composerItemCount === 0 || !isMonday(composerWeek)}
                 className="px-4 py-2 bg-[#2E6B3E] text-white rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
               >
                 {publishing ? "Publishing…" : composerPublished ? "Published" : "Publish"}
@@ -392,7 +453,7 @@ function MenuWeeks() {
                                   className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-900"
                                 >
                                   <option value="">{slot}…</option>
-                                  {(pendingItemsBySlot.get(slot) ?? []).map((item) => (
+                                  {(pendingItemsByDateSlot.get(`${date}:${slot}`) ?? []).map((item) => (
                                     <option key={item.id} value={item.id}>
                                       {item.name}
                                     </option>
