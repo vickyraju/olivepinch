@@ -1,12 +1,10 @@
-import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router-dom"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
-import { TrendLineChart } from "@/components/trend-line-chart"
+import { TrendBarChart } from "@/components/trend-bar-chart"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
-import { downloadCsv } from "@/lib/csv"
 import { ORDER_STATUS_STYLES, ACCOUNT_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES } from "@/lib/status-styles"
 
 interface RevenueResponse {
@@ -103,12 +101,11 @@ function DistributionRows({ rows, styles, loading, emptyText }: { rows: StatusCo
 }
 
 function Dashboard() {
-  const [range, setRange] = useState<"daily" | "weekly">("daily")
   const nextMonday = nextMondayIso()
 
   const revenueQuery = useQuery({
-    queryKey: ["revenue", range],
-    queryFn: () => api.get<RevenueResponse>(`/revenue?range=${range}`),
+    queryKey: ["revenue", "daily"],
+    queryFn: () => api.get<RevenueResponse>("/revenue?range=daily"),
   })
   const summaryQuery = useQuery({
     queryKey: ["dashboard-summary"],
@@ -127,9 +124,6 @@ function Dashboard() {
   const summary = summaryQuery.data
   const trendData = (data?.series ?? []).map((s) => ({ label: s.date.slice(5), value: s.total }))
 
-  const activeSubscriptions = summary?.subscriptionStatusBreakdown.find((s) => s.status === "ACTIVE")?.count ?? 0
-  const ordersToday = summary?.ordersTodayByStatus.reduce((sum, s) => sum + s.count, 0) ?? 0
-
   const nextWeekEntry = weeksQuery.data?.find((w) => w.weekStart === nextMonday)
   const nextWeekPublished = nextWeekEntry?.published ?? false
   const pendingCount = pendingQuery.data?.length ?? 0
@@ -139,34 +133,9 @@ function Dashboard() {
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
       <Header title="Dashboard Overview" />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
-        <div className="flex items-center justify-end gap-2">
-          <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-            {(["daily", "weekly"] as const).map((r) => (
-              <button
-                key={r}
-                onClick={() => setRange(r)}
-                className={`px-4 py-1.5 text-sm font-semibold cursor-pointer transition-colors ${
-                  range === r ? "bg-[#2E6B3E] text-white" : "bg-white text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                {r === "daily" ? "Last 30 days" : "Last 90 days"}
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => data && downloadCsv(`olivepinch-revenue-${range}.csv`, data.series.map((s) => ({ date: s.date, total: s.total })))}
-            disabled={!data?.series.length}
-            className="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors disabled:opacity-40"
-          >
-            <span className="material-symbols-outlined text-[18px]">download</span> Export CSV
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
-          <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label={`Revenue (${range === "daily" ? "30d" : "90d"})`} value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
+        <div className="grid grid-cols-2 gap-[16px]">
+          <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label="Revenue (30d)" value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
           <KpiCard icon="person_add" iconBg="bg-purple-50" iconColor="text-purple-600" label="New Customers (7d)" value={summary ? String(summary.newCustomersThisWeek) : "—"} loading={summaryQuery.isLoading} />
-          <KpiCard icon="verified" iconBg="bg-green-50" iconColor="text-primary" label="Active Subscriptions" value={summary ? String(activeSubscriptions) : "—"} loading={summaryQuery.isLoading} />
-          <KpiCard icon="local_shipping" iconBg="bg-amber-50" iconColor="text-amber-600" label="Orders Today" value={summary ? String(ordersToday) : "—"} loading={summaryQuery.isLoading} />
         </div>
 
         {showAlerts && (
@@ -201,12 +170,12 @@ function Dashboard() {
         <div className="bg-white p-[24px] border border-gray-200 rounded-[12px] flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-[16px] font-bold text-gray-900">Revenue Horizon</h2>
-            <span className="text-xs text-gray-500">{range === "daily" ? "Last 30 days" : "Last 90 days"}</span>
+            <span className="text-xs text-gray-500">Last 30 days</span>
           </div>
           {revenueQuery.isLoading ? (
             <Skeleton className="h-[240px] w-full" />
           ) : trendData.length > 0 ? (
-            <TrendLineChart data={trendData} formatValue={formatGBP} />
+            <TrendBarChart data={trendData} formatValue={formatGBP} />
           ) : (
             <div className="h-[240px] flex items-center justify-center text-sm text-gray-400">
               No payments in this range yet
