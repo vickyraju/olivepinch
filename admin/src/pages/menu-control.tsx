@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react"
-import type { FormEvent } from "react"
+import type { ChangeEvent, FormEvent } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { CardGridSkeleton } from "@/components/skeletons/card-grid-skeleton"
 import { api, ApiError } from "@/lib/api"
-import { formatGBP } from "@/lib/currency"
 
 interface MenuItem {
   id: string
@@ -17,13 +16,14 @@ interface MenuItem {
   goalTags: string[]
   kcal: number
   protein: number
-  price: string
-  premium: boolean
-  dailyCapacity: number | null
 }
 
 const SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
 const DIETS = ["MEAT", "FISH", "VEGAN", "VEGETARIAN", "EGG"]
+
+// Must match REQUIRED_PHOTO_WIDTH/HEIGHT in the backend's admin/menu-items route.
+const REQUIRED_PHOTO_WIDTH = 1200
+const REQUIRED_PHOTO_HEIGHT = 800
 
 type SlotFilter = "ALL" | "BREAKFAST" | "LUNCH" | "DINNER"
 
@@ -44,67 +44,24 @@ const emptyForm = {
   goalTags: [] as string[],
   kcal: "",
   protein: "",
-  price: "",
-  dailyCapacity: "",
-  premium: false,
 }
 
-function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <label className="flex items-center gap-2 cursor-pointer select-none shrink-0">
-      <span className={`text-sm font-semibold ${checked ? "text-primary" : "text-gray-400"}`}>
-        {checked ? "Premium" : "Standard"}
-      </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={onChange}
-        className={`relative w-11 h-6 rounded-full transition-colors ${checked ? "bg-primary" : "bg-gray-300"}`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-            checked ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
-      </button>
-    </label>
-  )
+function readImageDimensions(dataUrl: string): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    img.onerror = () => reject(new Error("Could not read image"))
+    img.src = dataUrl
+  })
 }
 
 function MenuItemCard({
   item,
-  onSaveCapacity,
-  onTogglePremium,
   onRequestDelete,
 }: {
   item: MenuItem
-  onSaveCapacity: (item: MenuItem, capacity: number) => Promise<void>
-  onTogglePremium: (item: MenuItem, premium: boolean) => Promise<void>
   onRequestDelete: (item: MenuItem) => void
 }) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [draftCapacity, setDraftCapacity] = useState(item.dailyCapacity ?? 0)
-  const [saving, setSaving] = useState(false)
-
-  const hasChanged = draftCapacity !== (item.dailyCapacity ?? 0)
-
-  function startEdit() {
-    setDraftCapacity(item.dailyCapacity ?? 0)
-    setIsEditing(true)
-  }
-
-  async function handleSave() {
-    if (!hasChanged) return
-    setSaving(true)
-    try {
-      await onSaveCapacity(item, draftCapacity)
-      setIsEditing(false)
-    } finally {
-      setSaving(false)
-    }
-  }
-
   return (
     <article className="bg-white rounded-[12px] border border-gray-200 hover:border-gray-300 overflow-hidden flex flex-col transition-colors">
       <div className="relative h-[160px] w-full bg-gray-100 flex items-center justify-center overflow-hidden">
@@ -126,10 +83,7 @@ function MenuItemCard({
         </button>
       </div>
       <div className="p-5 flex-1 flex flex-col">
-        <div className="flex items-start justify-between gap-3 mb-1">
-          <h3 className="text-[16px] font-bold text-gray-900">{item.name}</h3>
-          <ToggleSwitch checked={item.premium} onChange={() => void onTogglePremium(item, !item.premium)} />
-        </div>
+        <h3 className="text-[16px] font-bold text-gray-900 mb-1">{item.name}</h3>
         <p className="text-[14px] text-gray-500 mb-3">{item.description}</p>
         <div className="flex gap-1.5 flex-wrap mb-4">
           {item.dietTags.map((t) => (
@@ -138,59 +92,10 @@ function MenuItemCard({
             </span>
           ))}
         </div>
-        <div className="mt-auto space-y-3">
-          <div className="flex items-center gap-3 text-sm text-gray-600">
-            <span className="font-bold text-[16px] text-[#2E6B3E]">{formatGBP(Number(item.price))}</span>
-            <span>·</span>
-            <span>{item.kcal} kcal</span>
-            <span>·</span>
-            <span>{item.protein}g protein</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Daily capacity</span>
-            {!isEditing ? (
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-gray-900 text-sm">{item.dailyCapacity ?? "Unlimited"}</span>
-                <button
-                  onClick={startEdit}
-                  className="px-2 py-1 rounded-md border border-primary text-primary text-xs font-semibold hover:bg-[#F0F7F3] transition-colors cursor-pointer"
-                >
-                  Edit
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setDraftCapacity((d) => Math.max(0, d - 1))}
-                  disabled={draftCapacity === 0}
-                  className="w-7 h-7 border border-gray-200 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-40 cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px]">remove</span>
-                </button>
-                <span className="font-bold w-6 text-center">{draftCapacity}</span>
-                <button
-                  onClick={() => setDraftCapacity((d) => d + 1)}
-                  className="w-7 h-7 border border-gray-200 rounded bg-white text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                </button>
-              </div>
-            )}
-          </div>
-          {isEditing ? (
-            <div className="flex items-center justify-end gap-4 pt-1">
-              <button onClick={() => setIsEditing(false)} className="text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer">
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={!hasChanged || saving}
-                className="px-4 py-1.5 bg-primary text-white rounded-lg text-sm font-semibold disabled:opacity-40 transition-opacity cursor-pointer"
-              >
-                {saving ? "Saving..." : "Save"}
-              </button>
-            </div>
-          ) : null}
+        <div className="mt-auto flex items-center gap-3 text-sm text-gray-600">
+          <span>{item.kcal} kcal</span>
+          <span>·</span>
+          <span>{item.protein}g protein</span>
         </div>
       </div>
     </article>
@@ -206,6 +111,7 @@ function MenuControl() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | undefined>()
+  const [photoError, setPhotoError] = useState<string | undefined>()
 
   const menuQuery = useQuery({ queryKey: ["menu-items"], queryFn: () => api.get<MenuItem[]>("/menu-items") })
 
@@ -217,16 +123,6 @@ function MenuControl() {
     return rows
   }, [menuQuery.data, search, slotFilter])
 
-  async function saveCapacity(item: MenuItem, dailyCapacity: number) {
-    await api.patch(`/menu-items/${item.id}`, { dailyCapacity })
-    await queryClient.invalidateQueries({ queryKey: ["menu-items"] })
-  }
-
-  async function togglePremium(item: MenuItem, premium: boolean) {
-    await api.patch(`/menu-items/${item.id}`, { premium })
-    await queryClient.invalidateQueries({ queryKey: ["menu-items"] })
-  }
-
   async function deleteItem(item: MenuItem) {
     await api.del(`/menu-items/${item.id}`)
     setDeletingItem(null)
@@ -237,31 +133,52 @@ function MenuControl() {
     setForm((f) => ({ ...f, dietTags: f.dietTags.includes(diet) ? f.dietTags.filter((d) => d !== diet) : [...f.dietTags, diet] }))
   }
 
+  async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ""
+    if (!file) return
+    setPhotoError(undefined)
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      setPhotoError("Photo must be a PNG or JPEG file.")
+      return
+    }
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result as string)
+      reader.onerror = () => reject(new Error("Could not read file"))
+      reader.readAsDataURL(file)
+    })
+    const { width, height } = await readImageDimensions(dataUrl)
+    if (width !== REQUIRED_PHOTO_WIDTH || height !== REQUIRED_PHOTO_HEIGHT) {
+      setPhotoError(`Photo must be exactly ${REQUIRED_PHOTO_WIDTH}×${REQUIRED_PHOTO_HEIGHT}px (uploaded ${width}×${height}px).`)
+      return
+    }
+    setForm((f) => ({ ...f, photoUrl: dataUrl }))
+  }
+
   async function handleCreate(e: FormEvent) {
     e.preventDefault()
     setError(undefined)
     setSaving(true)
     try {
-      if (!form.name.trim() || !form.dietTags.length || !form.kcal || !form.protein || !form.price) {
-        throw new Error("Fill in name, at least one diet tag, kcal, protein, and price.")
+      if (!form.name.trim() || !form.dietTags.length || !form.kcal || !form.protein) {
+        throw new Error("Fill in name, at least one diet tag, kcal, and protein.")
       }
       await api.post("/menu-items", {
         name: form.name.trim(),
         description: form.description.trim(),
-        photoUrl: form.photoUrl.trim() || undefined,
+        photoUrl: form.photoUrl || undefined,
         slot: form.slot,
         dietTags: form.dietTags,
         allergenTags: form.allergenTags ? form.allergenTags.split(",").map((s) => s.trim()).filter(Boolean) : [],
         goalTags: form.goalTags,
         kcal: Number(form.kcal),
         protein: Number(form.protein),
-        price: Number(form.price),
-        premium: form.premium,
-        dailyCapacity: form.dailyCapacity ? Number(form.dailyCapacity) : undefined,
       })
       await queryClient.invalidateQueries({ queryKey: ["menu-items"] })
       setShowModal(false)
       setForm(emptyForm)
+      setPhotoError(undefined)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Could not save item")
     } finally {
@@ -309,13 +226,7 @@ function MenuControl() {
           ) : (
             <>
               {items.map((item) => (
-                <MenuItemCard
-                  key={item.id}
-                  item={item}
-                  onSaveCapacity={saveCapacity}
-                  onTogglePremium={togglePremium}
-                  onRequestDelete={setDeletingItem}
-                />
+                <MenuItemCard key={item.id} item={item} onRequestDelete={setDeletingItem} />
               ))}
               {items.length === 0 ? <p className="col-span-full text-center text-sm text-gray-400 py-10">No menu items found.</p> : null}
             </>
@@ -392,7 +303,7 @@ function MenuControl() {
                   onChange={(e) => setForm((f) => ({ ...f, allergenTags: e.target.value }))}
                 />
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Calories</label>
                   <input
@@ -413,39 +324,23 @@ function MenuControl() {
                     onChange={(e) => setForm((f) => ({ ...f, protein: e.target.value }))}
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Price (£)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="w-full h-10 border border-gray-200 rounded-lg px-3"
-                    value={form.price}
-                    onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                  />
-                </div>
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Daily Capacity</label>
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Photo</label>
+                <p className="text-xs text-gray-500">
+                  Must be exactly {REQUIRED_PHOTO_WIDTH}×{REQUIRED_PHOTO_HEIGHT}px (PNG or JPEG)
+                </p>
                 <input
-                  type="number"
-                  min="0"
-                  className="w-full h-10 border border-gray-200 rounded-lg px-3"
-                  placeholder="Leave blank for unlimited"
-                  value={form.dailyCapacity}
-                  onChange={(e) => setForm((f) => ({ ...f, dailyCapacity: e.target.value }))}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                  onChange={handlePhotoChange}
                 />
+                {photoError ? <p role="alert" className="text-sm text-status-red">{photoError}</p> : null}
+                {form.photoUrl ? (
+                  <img src={form.photoUrl} alt="Menu item preview" className="mt-2 h-24 w-auto rounded-lg border border-gray-200 object-cover" />
+                ) : null}
               </div>
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Photo URL</label>
-                <input
-                  className="w-full h-10 border border-gray-200 rounded-lg px-3"
-                  placeholder="https://..."
-                  value={form.photoUrl}
-                  onChange={(e) => setForm((f) => ({ ...f, photoUrl: e.target.value }))}
-                />
-              </div>
-              <ToggleSwitch checked={form.premium} onChange={() => setForm((f) => ({ ...f, premium: !f.premium }))} />
               {error ? <p role="alert" className="text-sm text-status-red">{error}</p> : null}
               <div className="pt-4 flex justify-end gap-3">
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
