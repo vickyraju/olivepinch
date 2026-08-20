@@ -4,7 +4,7 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
-import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
+import { GOAL_VALUES, DIET_VALUES, MEAL_SLOT_VALUES } from "../../lib/enums.js"
 import { getImageDimensions } from "../../lib/image-dimensions.js"
 
 export const adminMenuItemsRouter = Router()
@@ -23,7 +23,7 @@ const menuItemSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
   photoUrl: z.string().optional(),
-  slot: z.enum(["BREAKFAST", "LUNCH", "DINNER"]),
+  slot: z.enum(MEAL_SLOT_VALUES as [string, ...string[]]),
   dietTags: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1),
   allergenTags: z.array(z.string()).default([]),
   goalTags: z.array(z.enum(GOAL_VALUES as [string, ...string[]])).default([]),

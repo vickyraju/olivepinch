@@ -3,7 +3,7 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
-import { assertMonday, applyWeekSelection } from "../../lib/menu-week.js"
+import { assertMonday, applyWeekSelection, weekDates } from "../../lib/menu-week.js"
 import { formatAddress } from "../../lib/address.js"
 
 export const adminMenuWeeksRouter = Router()
@@ -31,17 +31,33 @@ adminMenuWeeksRouter.get("/:weekStart", async (req, res) => {
     weekStart: menuWeek.weekStart.toISOString().slice(0, 10),
     published: menuWeek.published,
     publishedAt: menuWeek.publishedAt,
-    items: menuWeek.items.map((wi) => wi.menuItem),
+    items: menuWeek.items.map((wi) => ({ ...wi.menuItem, date: wi.date.toISOString().slice(0, 10) })),
   })
 })
 
-const putWeekSchema = z.object({ menuItemIds: z.array(z.string()) })
+const putWeekSchema = z.object({
+  dayItems: z.array(z.object({ date: z.string(), menuItemIds: z.array(z.string()) })),
+})
 
-// Composes a week's available item set in one call — upserts the MenuWeek (created unpublished
-// if it doesn't exist yet) and replaces its full MenuWeekItem set to match the given list.
+// Composes a week's per-day menu in one call — upserts the MenuWeek (created unpublished if it
+// doesn't exist yet) and replaces its full MenuWeekItem set to match the given per-date lists.
 adminMenuWeeksRouter.put("/:weekStart", validateBody(putWeekSchema), async (req, res) => {
   const weekStart = assertMonday(req.params.weekStart as string)
-  const { menuItemIds } = req.body as z.infer<typeof putWeekSchema>
+  const { dayItems } = req.body as z.infer<typeof putWeekSchema>
+
+  const validDates = new Set(weekDates(weekStart).map((d) => d.toISOString().slice(0, 10)))
+  const rows: { menuItemId: string; date: string }[] = []
+  const seenItemIds = new Set<string>()
+  for (const { date, menuItemIds } of dayItems) {
+    if (!validDates.has(date)) return res.status(400).json({ error: `${date} is not in this week` })
+    for (const menuItemId of menuItemIds) {
+      if (seenItemIds.has(menuItemId)) {
+        return res.status(400).json({ error: "The same item can't be used twice in one week" })
+      }
+      seenItemIds.add(menuItemId)
+      rows.push({ menuItemId, date })
+    }
+  }
 
   const menuWeek = await prisma.menuWeek.upsert({
     where: { weekStart },
@@ -50,9 +66,9 @@ adminMenuWeeksRouter.put("/:weekStart", validateBody(putWeekSchema), async (req,
   })
   await prisma.$transaction([
     prisma.menuWeekItem.deleteMany({ where: { menuWeekId: menuWeek.id } }),
-    prisma.menuWeekItem.createMany({ data: menuItemIds.map((menuItemId) => ({ menuWeekId: menuWeek.id, menuItemId })) }),
+    prisma.menuWeekItem.createMany({ data: rows.map((r) => ({ menuWeekId: menuWeek.id, menuItemId: r.menuItemId, date: r.date })) }),
   ])
-  await logAction(req.adminId!, "menu-week-compose", undefined, `week ${req.params.weekStart}, ${menuItemIds.length} items`)
+  await logAction(req.adminId!, "menu-week-compose", undefined, `week ${req.params.weekStart}, ${rows.length} items`)
   res.status(204).send()
 })
 

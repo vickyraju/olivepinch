@@ -20,7 +20,7 @@ export function fridayCutoffFor(weekStart: Date): Date {
   return cutoff
 }
 
-function weekDates(weekStart: Date): Date[] {
+export function weekDates(weekStart: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart)
     d.setUTCDate(d.getUTCDate() + i)
@@ -43,7 +43,13 @@ export async function applyWeekSelection(subscriptionId: string, weekStart: Date
   if (!menuWeek || !menuWeek.published) {
     throw httpError(400, "No published menu for that week yet")
   }
-  const availableItems = new Map(menuWeek.items.map((wi) => [wi.menuItemId, wi.menuItem]))
+  // Items are scoped to the specific date they're served on, not the whole week.
+  const availableByDate = new Map<string, Map<string, (typeof menuWeek.items)[number]["menuItem"]>>()
+  for (const wi of menuWeek.items) {
+    const dateIso = wi.date.toISOString().slice(0, 10)
+    if (!availableByDate.has(dateIso)) availableByDate.set(dateIso, new Map())
+    availableByDate.get(dateIso)!.set(wi.menuItemId, wi.menuItem)
+  }
 
   // Only the days that actually belong to this subscription within the week (a plan can
   // start or end mid-week, so not every one of the 7 calendar days necessarily has an Order).
@@ -61,7 +67,7 @@ export async function applyWeekSelection(subscriptionId: string, weekStart: Date
       throw httpError(400, `Missing menu selection for ${date}`)
     }
     const items = itemIds.map((id, i) => {
-      const item = availableItems.get(id)
+      const item = availableByDate.get(date)?.get(id)
       if (!item || item.slot !== slots[i]) {
         throw httpError(400, `Invalid menu selection for ${date} (${slots[i]})`)
       }

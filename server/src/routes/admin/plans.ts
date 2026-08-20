@@ -3,18 +3,19 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
-import { GOAL_VALUES } from "../../lib/enums.js"
+import { GOAL_VALUES, PLAN_TIER_VALUES } from "../../lib/enums.js"
 
 export const adminPlansRouter = Router()
 adminPlansRouter.use(requireAdminAuth)
 
 adminPlansRouter.get("/", async (_req, res) => {
-  res.json(await prisma.plan.findMany({ orderBy: [{ goal: "asc" }, { planDuration: "asc" }] }))
+  res.json(await prisma.plan.findMany({ orderBy: [{ goal: "asc" }, { tier: "asc" }, { planDuration: "asc" }] }))
 })
 
 const planSchema = z.object({
   planDuration: z.union([z.literal(7), z.literal(14), z.literal(28)]),
   goal: z.enum(GOAL_VALUES as [string, ...string[]]),
+  tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]),
   price: z.number().positive(),
   active: z.boolean().default(true),
 })

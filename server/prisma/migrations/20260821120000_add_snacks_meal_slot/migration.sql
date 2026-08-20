@@ -1,0 +1,1 @@
+ALTER TYPE "MealSlot" ADD VALUE 'SNACKS';

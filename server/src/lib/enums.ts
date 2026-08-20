@@ -1,4 +1,4 @@
-import type { DietType, Goal, DeliverySlot } from "@prisma/client"
+import type { DietType, Goal, DeliverySlot, MealSlot, PlanTier } from "@prisma/client"
 
 export const GOAL_LABELS: Record<Goal, string> = {
   WEIGHT_LOSS: "Weight Loss",
@@ -21,6 +21,20 @@ export const DELIVERY_SLOT_LABELS: Record<DeliverySlot, string> = {
   ALTERNATE: "Alternate days",
 }
 
+export const MEAL_SLOT_LABELS: Record<MealSlot, string> = {
+  BREAKFAST: "Breakfast",
+  LUNCH: "Lunch",
+  DINNER: "Dinner",
+  SNACKS: "Snacks",
+}
+
+export const PLAN_TIER_LABELS: Record<PlanTier, string> = {
+  BASIC: "Basic",
+  ADVANCED: "Advanced",
+}
+
 export const GOAL_VALUES = Object.keys(GOAL_LABELS) as Goal[]
 export const DIET_VALUES = Object.keys(DIET_LABELS) as DietType[]
 export const DELIVERY_SLOT_VALUES = Object.keys(DELIVERY_SLOT_LABELS) as DeliverySlot[]
+export const MEAL_SLOT_VALUES = Object.keys(MEAL_SLOT_LABELS) as MealSlot[]
+export const PLAN_TIER_VALUES = Object.keys(PLAN_TIER_LABELS) as PlanTier[]

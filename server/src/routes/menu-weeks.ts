@@ -16,6 +16,6 @@ menuWeeksRouter.get("/:weekStart", async (req, res) => {
   }
   res.json({
     weekStart: menuWeek.weekStart.toISOString().slice(0, 10),
-    items: menuWeek.items.map((wi) => wi.menuItem),
+    items: menuWeek.items.map((wi) => ({ ...wi.menuItem, date: wi.date.toISOString().slice(0, 10) })),
   })
 })

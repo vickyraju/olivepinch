@@ -3,12 +3,12 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
-import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES } from "../lib/enums.js"
+import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
 import { computeEndDate, pausesUsedThisMonth, buildDeliveryDates, MAX_PAUSES_PER_MONTH } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
-import type { Goal, DietType, MealSlot } from "@prisma/client"
+import type { Goal, DietType, MealSlot, PlanTier } from "@prisma/client"
 
 export const subscriptionsRouter = Router()
 
@@ -23,6 +23,7 @@ const createSchema = z.object({
   addressArea: z.string().min(1),
   addressPostcode: z.string().min(1),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]).default("DAILY"),
+  tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   // Optional per-day menu customization from the "customize your menu" funnel step.
   // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
   // Falls back to the goal/diet-matched default when omitted.
@@ -81,6 +82,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
       planDuration: body.planDuration,
       startDate,
       mealsPerDay: body.mealsPerDay,
+      tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
       status: "PENDING_PAYMENT",
       orders: {
@@ -104,7 +106,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
     },
   })
 
-  const total = await planPrice(customer.goal as Goal, body.planDuration)
+  const total = await planPrice(customer.goal as Goal, body.planDuration, body.tier as PlanTier)
 
   res.status(201).json({ subscriptionId: subscription.id, total, dayCount: subscription.orders.length })
 })
@@ -181,6 +183,7 @@ const renewSchema = z.object({
   dietTypes: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1),
   allergens: z.array(z.string()).default([]),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]),
+  tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
 })
 
 // FR-C23: preferences carry over (client sends current values, editable before confirming);
@@ -214,6 +217,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
       planDuration: body.planDuration,
       startDate,
       mealsPerDay: 2,
+      tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
       status: "PENDING_PAYMENT",
       orders: {
@@ -226,7 +230,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     include: { orders: { include: { items: { include: { menuItem: true } } } } },
   })
 
-  const total = await planPrice(body.goal as Goal, body.planDuration)
+  const total = await planPrice(body.goal as Goal, body.planDuration, body.tier as PlanTier)
 
   // Renewal goes through the same /payments/intent + /payments/confirm chain as initial
   // checkout (see payment.tsx) — that's the only place real-Worldpay-vs-dev-mode is

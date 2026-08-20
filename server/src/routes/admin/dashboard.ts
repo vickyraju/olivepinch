@@ -27,6 +27,7 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
     accountStatusRows,
     subscriptionStatusRows,
     ordersTodayRows,
+    orderItemsTodayRows,
     zoneCustomers,
     activeZones,
     paymentRows,
@@ -34,8 +35,9 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
   ] = await Promise.all([
     prisma.customer.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
     prisma.customer.findMany({ select: { accountStatus: true } }),
-    prisma.subscription.findMany({ select: { status: true } }),
+    prisma.subscription.findMany({ select: { status: true, planDuration: true } }),
     prisma.order.findMany({ where: { deliveryDate: new Date(`${today}T00:00:00.000Z`) }, select: { status: true } }),
+    prisma.orderItem.findMany({ where: { order: { deliveryDate: new Date(`${today}T00:00:00.000Z`) } }, select: { slot: true } }),
     prisma.customer.findMany({ where: { accountStatus: { not: "DELETED" } }, select: { postcode: true } }),
     prisma.zone.findMany({ where: { isActive: true } }),
     prisma.payment.findMany({ select: { status: true } }),
@@ -75,7 +77,10 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
     newCustomersThisWeek,
     accountStatusBreakdown: bucketBy(accountStatusRows, (r) => r.accountStatus),
     subscriptionStatusBreakdown: bucketBy(subscriptionStatusRows, (r) => r.status),
+    subscriptionDurationBreakdown: bucketBy(subscriptionStatusRows, (r) => `${r.planDuration} Days`)
+      .sort((a, b) => parseInt(a.status) - parseInt(b.status)),
     ordersTodayByStatus: bucketBy(ordersTodayRows, (r) => r.status),
+    ordersTodayBySlot: bucketBy(orderItemsTodayRows, (r) => r.slot),
     zoneDistribution: [...zoneBuckets.entries()].map(([zone, count]) => ({ zone, count })),
     refunds: { succeeded, refunded, refundRate },
     recentActivity: auditLogs.map((l) => ({
