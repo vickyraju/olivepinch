@@ -63,6 +63,14 @@ function formatDayLabel(iso: string): string {
   return `${WEEKDAY_LABELS[(d.getUTCDay() + 6) % 7]}, ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}`
 }
 
+function formatDayShort(iso: string): { weekday: string; day: string } {
+  const d = new Date(`${iso}T00:00:00.000Z`)
+  return {
+    weekday: WEEKDAY_LABELS[(d.getUTCDay() + 6) % 7]!.slice(0, 3),
+    day: d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" }),
+  }
+}
+
 function MenuWeeks() {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
@@ -79,6 +87,8 @@ function MenuWeeks() {
   const [composerError, setComposerError] = useState("")
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
+  const [activeDay, setActiveDay] = useState("")
+  const [pendingExpanded, setPendingExpanded] = useState(false)
 
   const deepLinkWeek = searchParams.get("week")
   const [pendingWeek, setPendingWeek] = useState(deepLinkWeek && isMonday(deepLinkWeek) ? deepLinkWeek : nextMondayIso())
@@ -116,7 +126,10 @@ function MenuWeeks() {
 
   useEffect(() => {
     loadComposerWeek(composerWeek)
-    if (searchParams.get("subscriptionId")) loadPending(pendingWeek)
+    if (searchParams.get("subscriptionId")) {
+      setPendingExpanded(true)
+      loadPending(pendingWeek)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -142,6 +155,12 @@ function MenuWeeks() {
   }
 
   const composerDates = weekDatesFrom(composerWeek)
+
+  useEffect(() => {
+    if (composerDates.length && !composerDates.includes(activeDay)) setActiveDay(composerDates[0]!)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [composerWeek])
+
   // An item picked for one day can't also be picked for another — the week never repeats a dish.
   const itemDateUsed = new Map<string, string>()
   let composerItemCount = 0
@@ -310,51 +329,81 @@ function MenuWeeks() {
               <p className="text-sm text-status-red mb-4">Pick a Monday — weeks always start on a Monday.</p>
             )}
 
-            <div className="space-y-5">
-              {composerDates.length === 0 && (
-                <p className="text-sm text-gray-400">Pick a valid Monday to start composing.</p>
-              )}
-              {composerDates.map((date) => (
-                <div key={date} className="border border-gray-100 rounded-lg p-4">
-                  <p className="text-sm font-bold text-gray-900 mb-3">{formatDayLabel(date)}</p>
-                  <div className="space-y-3">
-                    {SLOTS.map((slot) => (
-                      <div key={slot}>
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{slot}</p>
-                        <div className="flex gap-2 flex-wrap">
-                          {(itemsBySlot.get(slot) ?? []).map((item) => {
-                            const selected = (composerItemsByDate[date] ?? []).includes(item.id)
-                            const usedOn = itemDateUsed.get(item.id)
-                            const usedElsewhere = usedOn !== undefined && usedOn !== date
-                            return (
-                              <button
-                                key={item.id}
-                                type="button"
-                                disabled={usedElsewhere}
-                                onClick={() => toggleComposerItem(date, item.id)}
-                                title={usedElsewhere ? `Already used on ${formatDayLabel(usedOn!)}` : undefined}
-                                className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
-                                  selected
-                                    ? "bg-[#2E6B3E] text-white border-[#2E6B3E] cursor-pointer"
-                                    : usedElsewhere
-                                      ? "bg-gray-50 border-gray-200 text-gray-300 cursor-not-allowed"
-                                      : "bg-white border-gray-300 text-gray-700 hover:border-gray-400 cursor-pointer"
-                                }`}
-                              >
-                                {item.name}
-                              </button>
-                            )
-                          })}
-                          {(itemsBySlot.get(slot) ?? []).length === 0 && (
-                            <span className="text-xs text-gray-400">No {slot.toLowerCase()} items yet.</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+            {composerDates.length === 0 && (
+              <p className="text-sm text-gray-400">Pick a valid Monday to start composing.</p>
+            )}
+
+            {composerDates.length > 0 && (
+              <>
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-5 -mx-1 px-1">
+                  {composerDates.map((date) => {
+                    const count = (composerItemsByDate[date] ?? []).length
+                    const active = date === activeDay
+                    const { weekday, day } = formatDayShort(date)
+                    return (
+                      <button
+                        key={date}
+                        type="button"
+                        onClick={() => setActiveDay(date)}
+                        className={`shrink-0 flex flex-col items-center gap-0.5 px-4 py-2 rounded-lg border text-sm font-semibold transition-colors cursor-pointer ${
+                          active
+                            ? "bg-[#2E6B3E] text-white border-[#2E6B3E]"
+                            : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                        }`}
+                      >
+                        <span>
+                          {weekday} {day}
+                        </span>
+                        <span className={`text-[10px] font-medium ${active ? "text-white/80" : "text-gray-400"}`}>
+                          {count === 0 ? "Empty" : `${count} item${count === 1 ? "" : "s"}`}
+                        </span>
+                      </button>
+                    )
+                  })}
                 </div>
-              ))}
-            </div>
+
+                {activeDay && (
+                  <div className="border border-gray-100 rounded-lg p-4">
+                    <p className="text-sm font-bold text-gray-900 mb-3">{formatDayLabel(activeDay)}</p>
+                    <div className="space-y-3">
+                      {SLOTS.map((slot) => (
+                        <div key={slot}>
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{slot}</p>
+                          <div className="flex gap-2 flex-wrap">
+                            {(itemsBySlot.get(slot) ?? []).map((item) => {
+                              const selected = (composerItemsByDate[activeDay] ?? []).includes(item.id)
+                              const usedOn = itemDateUsed.get(item.id)
+                              const usedElsewhere = usedOn !== undefined && usedOn !== activeDay
+                              return (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  disabled={usedElsewhere}
+                                  onClick={() => toggleComposerItem(activeDay, item.id)}
+                                  title={usedElsewhere ? `Already used on ${formatDayLabel(usedOn!)}` : undefined}
+                                  className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
+                                    selected
+                                      ? "bg-[#2E6B3E] text-white border-[#2E6B3E] cursor-pointer"
+                                      : usedElsewhere
+                                        ? "bg-gray-50 border-gray-200 text-gray-300 cursor-not-allowed"
+                                        : "bg-white border-gray-300 text-gray-700 hover:border-gray-400 cursor-pointer"
+                                  }`}
+                                >
+                                  {item.name}
+                                </button>
+                              )
+                            })}
+                            {(itemsBySlot.get(slot) ?? []).length === 0 && (
+                              <span className="text-xs text-gray-400">No {slot.toLowerCase()} items yet.</span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
             {composerError && (
               <p role="alert" className="mt-4 text-sm text-status-red">
@@ -383,33 +432,50 @@ function MenuWeeks() {
           </div>
         </div>
 
-        <div className="bg-white rounded-[12px] border border-gray-200 p-6 mt-6">
-          <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-4">
-            Customers who haven't chosen yet
-          </h3>
-          <div className="flex items-end gap-3 mb-5">
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                Week start (Monday)
-              </label>
-              <input
-                type="date"
-                value={pendingWeek}
-                onChange={(e) => setPendingWeek(e.target.value)}
-                className="h-10 border border-gray-200 rounded-lg px-3 text-sm"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => loadPending()}
-              disabled={!isMonday(pendingWeek)}
-              className="h-10 px-4 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-            >
-              Load
-            </button>
-          </div>
+        <div className="bg-white rounded-[12px] border border-gray-200 mt-6 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setPendingExpanded((v) => !v)}
+            className="w-full flex items-center justify-between px-6 py-4 cursor-pointer"
+          >
+            <span className="flex items-center gap-2 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+              Customers who haven't chosen yet
+              {pendingList && pendingList.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 normal-case tracking-normal">
+                  {pendingList.length} pending
+                </span>
+              )}
+            </span>
+            <span className={`material-symbols-outlined text-gray-400 transition-transform ${pendingExpanded ? "rotate-180" : ""}`}>
+              expand_more
+            </span>
+          </button>
 
-          {pendingList && pendingList.length === 0 && (
+          {pendingExpanded && (
+            <div className="px-6 pb-6">
+              <div className="flex items-end gap-3 mb-5">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
+                    Week start (Monday)
+                  </label>
+                  <input
+                    type="date"
+                    value={pendingWeek}
+                    onChange={(e) => setPendingWeek(e.target.value)}
+                    className="h-10 border border-gray-200 rounded-lg px-3 text-sm"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => loadPending()}
+                  disabled={!isMonday(pendingWeek)}
+                  className="h-10 px-4 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                >
+                  Load
+                </button>
+              </div>
+
+              {pendingList && pendingList.length === 0 && (
             <p className="text-sm text-gray-400">Everyone with a delivery that week has already chosen.</p>
           )}
 
@@ -492,6 +558,8 @@ function MenuWeeks() {
                 </li>
               ))}
             </ul>
+          )}
+            </div>
           )}
         </div>
       </div>
