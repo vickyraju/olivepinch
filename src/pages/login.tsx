@@ -11,18 +11,16 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import { GoogleIcon, AppleIcon } from "@/components/ui/social-icons"
 
 function Login() {
-  const { isAuthenticated, authError, sendOtp, verifyOtp, signInWithPassword, signInWithGoogle, signInWithApple } = useAuth()
+  const { isAuthenticated, authError, sendOtp, verifyOtp, signInWithGoogle, signInWithApple } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const [stage, setStage] = useState<"email" | "otp" | "password">("email")
+  const [stage, setStage] = useState<"email" | "otp">("email")
   const [email, setEmail] = useState(searchParams.get("email") ?? "")
   const [code, setCode] = useState("")
-  const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [sending, setSending] = useState(false)
   const [verifying, setVerifying] = useState(false)
-  const [loggingIn, setLoggingIn] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated) navigate("/dashboard")
@@ -59,19 +57,6 @@ function Login() {
     }
   }
 
-  async function handlePasswordLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setError("")
-    setLoggingIn(true)
-    try {
-      await signInWithPassword(email, password)
-      // isAuthenticated flips once link-account + profile load resolve — the effect above navigates.
-    } catch {
-      setError("Incorrect email or password.")
-      setLoggingIn(false)
-    }
-  }
-
   async function handleSocial(signIn: () => Promise<void>, label: string) {
     setError("")
     try {
@@ -93,7 +78,6 @@ function Login() {
           <p className="text-ink-muted mb-8">
             {stage === "email" && "Log in to manage your deliveries, pause a week, or renew your plan."}
             {stage === "otp" && <>We've sent a 6-digit code to <strong className="text-ink">{email}</strong>.</>}
-            {stage === "password" && "Log in with your email and password."}
           </p>
 
           {stage === "email" && (
@@ -107,38 +91,6 @@ function Login() {
                 <Mail className="h-4 w-4" />
                 {sending ? "Sending code…" : "Send code"}
               </Button>
-              <button
-                type="button"
-                onClick={() => { setStage("password"); setError("") }}
-                className="w-full text-center text-sm text-ink-muted hover:text-ink cursor-pointer"
-              >
-                Use password instead
-              </button>
-            </form>
-          )}
-
-          {stage === "password" && (
-            <form onSubmit={handlePasswordLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="password-email">Email</Label>
-                <Input id="password-email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <FieldError>{error}</FieldError>
-              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={loggingIn}>
-                <Lock className="h-4 w-4" />
-                {loggingIn ? "Logging in…" : "Log in"}
-              </Button>
-              <button
-                type="button"
-                onClick={() => { setStage("email"); setPassword(""); setError("") }}
-                className="w-full text-center text-sm text-ink-muted hover:text-ink cursor-pointer"
-              >
-                Use an email code instead
-              </button>
             </form>
           )}
 
