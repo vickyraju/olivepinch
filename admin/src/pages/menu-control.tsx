@@ -14,6 +14,7 @@ interface MenuItem {
   dietTags: string[]
   allergenTags: string[]
   goalTags: string[]
+  tier: string
   kcal: number
   protein: number
 }
@@ -27,6 +28,8 @@ const GOAL_LABELS: Record<string, string> = {
   WEIGHT_MAINTENANCE: "Weight Maintenance",
   MUSCLE_BUILDING: "Muscle Building",
 }
+const TIERS = ["BASIC", "ADVANCED"]
+const TIER_LABELS: Record<string, string> = { BASIC: "Basic", ADVANCED: "Advanced" }
 
 // Must match REQUIRED_PHOTO_WIDTH/HEIGHT in the backend's admin/menu-items route.
 const REQUIRED_PHOTO_WIDTH = 1200
@@ -50,6 +53,7 @@ const emptyForm = {
   dietTags: [] as string[],
   allergenTags: "",
   goalTags: [] as string[],
+  tier: "BASIC",
   kcal: "",
   protein: "",
 }
@@ -80,6 +84,13 @@ function MenuItemCard({
         )}
         <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 text-gray-700 shadow-sm">
           {item.slot}
+        </span>
+        <span
+          className={`absolute bottom-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-semibold shadow-sm ${
+            item.tier === "ADVANCED" ? "bg-amber-500 text-white" : "bg-white/90 text-gray-700"
+          }`}
+        >
+          {TIER_LABELS[item.tier] ?? item.tier}
         </span>
         <button
           type="button"
@@ -189,6 +200,7 @@ function MenuControl() {
         dietTags: form.dietTags,
         allergenTags: form.allergenTags ? form.allergenTags.split(",").map((s) => s.trim()).filter(Boolean) : [],
         goalTags: form.goalTags,
+        tier: form.tier,
         kcal: Number(form.kcal),
         protein: Number(form.protein),
       })
@@ -293,6 +305,23 @@ function MenuControl() {
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan Type</label>
+                <div className="flex gap-2">
+                  {TIERS.map((t) => (
+                    <button
+                      type="button"
+                      key={t}
+                      onClick={() => setForm((f) => ({ ...f, tier: t }))}
+                      className={`px-3 py-1.5 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
+                        form.tier === t ? "bg-[#2E6B3E] text-white border-[#2E6B3E]" : "bg-white border-gray-300 text-gray-700"
+                      }`}
+                    >
+                      {TIER_LABELS[t]}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Diet Tags</label>
