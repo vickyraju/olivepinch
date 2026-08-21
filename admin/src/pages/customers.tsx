@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { api } from "@/lib/api"
-import { ACCOUNT_STATUS_STYLES } from "@/lib/status-styles"
+import { ACCOUNT_STATUS_STYLES, getInitials } from "@/lib/status-styles"
 
 interface CustomerRow {
   id: string
@@ -74,8 +74,11 @@ function Customers() {
                     return (
                       <tr key={c.id} className="hover:bg-gray-50/50">
                         <td className="py-4 px-6">
-                          <Link to={`/customers/${c.id}`} className="font-semibold text-gray-900 hover:text-primary transition-colors">
-                            {c.fullName}
+                          <Link to={`/customers/${c.id}`} className="flex items-center gap-2.5 group">
+                            <span className="w-7 h-7 rounded-full bg-green-50 text-green-700 text-[11px] font-bold flex items-center justify-center shrink-0">
+                              {getInitials(c.fullName)}
+                            </span>
+                            <span className="font-semibold text-gray-900 group-hover:text-primary transition-colors">{c.fullName}</span>
                           </Link>
                         </td>
                         <td className="py-4 px-6 text-gray-600">{c.email}</td>
@@ -84,7 +87,10 @@ function Customers() {
                           {c.address ?? c.postcode ?? "—"}
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>{style.label}</span>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                            {style.label}
+                          </span>
                         </td>
                         <td className="py-4 px-6 text-gray-600">{new Date(c.createdAt).toLocaleDateString("en-GB")}</td>
                         <td className="py-4 px-6 text-right">

@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { api } from "@/lib/api"
-import { ORDER_STATUS_STYLES } from "@/lib/status-styles"
+import { ORDER_STATUS_STYLES, getInitials } from "@/lib/status-styles"
 
 interface OrderRow {
   id: string
@@ -90,6 +90,7 @@ function Orders() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Order ID</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Address</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Items</th>
@@ -98,19 +99,30 @@ function Orders() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {ordersQuery.isLoading ? <TableSkeleton columns={5} /> : null}
+                {ordersQuery.isLoading ? <TableSkeleton columns={6} /> : null}
                 {!ordersQuery.isLoading &&
                   filteredOrders.map((order) => {
                     const style = ORDER_STATUS_STYLES[order.status]
                     return (
                       <tr key={order.id} className="hover:bg-gray-50/50">
-                        <td className="py-4 px-6 font-semibold text-gray-900">{order.subscription.customer.fullName}</td>
+                        <td className="py-4 px-6 font-mono font-bold text-gray-900">#{order.id.slice(-6).toUpperCase()}</td>
+                        <td className="py-4 px-6">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-7 h-7 rounded-full bg-green-50 text-green-700 text-[11px] font-bold flex items-center justify-center shrink-0">
+                              {getInitials(order.subscription.customer.fullName)}
+                            </span>
+                            <span className="font-semibold text-gray-900">{order.subscription.customer.fullName}</span>
+                          </div>
+                        </td>
                         <td className="py-4 px-6 text-gray-600">
                           {order.subscription.customer.address ?? order.subscription.customer.postcode ?? "—"}
                         </td>
                         <td className="py-4 px-6 text-gray-600">{order.items.map((i) => i.menuItem.name).join(", ")}</td>
                         <td className="py-4 px-6">
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>{style.label}</span>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                            {style.label}
+                          </span>
                         </td>
                         <td className="py-4 px-6">
                           <select
@@ -130,7 +142,7 @@ function Orders() {
                   })}
                 {!ordersQuery.isLoading && filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-sm text-gray-400">
+                    <td colSpan={6} className="py-10 text-center text-sm text-gray-400">
                       No orders match this filter.
                     </td>
                   </tr>
