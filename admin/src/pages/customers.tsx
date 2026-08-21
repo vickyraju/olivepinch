@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { api } from "@/lib/api"
-import { ACCOUNT_STATUS_STYLES, getInitials } from "@/lib/status-styles"
+import { getInitials } from "@/lib/status-styles"
 
 interface CustomerRow {
   id: string
@@ -13,7 +13,7 @@ interface CustomerRow {
   phone: string | null
   address: string | null
   postcode: string | null
-  accountStatus: string
+  subscribed: boolean
   createdAt: string
 }
 
@@ -69,7 +69,6 @@ function Customers() {
                 {customersQuery.isLoading ? <TableSkeleton columns={6} /> : null}
                 {!customersQuery.isLoading &&
                   (data?.customers ?? []).map((c) => {
-                    const style = ACCOUNT_STATUS_STYLES[c.accountStatus]
                     return (
                       <tr key={c.id} className="hover:bg-gray-50/50">
                         <td className="py-4 px-6">
@@ -88,9 +87,13 @@ function Customers() {
                           {c.address ?? c.postcode ?? "—"}
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-                            {style.label}
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                              c.subscribed ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-100 text-gray-600 border-gray-200"
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${c.subscribed ? "bg-green-500" : "bg-gray-400"}`} />
+                            {c.subscribed ? "Subscribed" : "Unsubscribed"}
                           </span>
                         </td>
                         <td className="py-4 px-6 text-gray-600">{new Date(c.createdAt).toLocaleDateString("en-GB")}</td>
