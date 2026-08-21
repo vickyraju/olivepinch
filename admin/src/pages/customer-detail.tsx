@@ -373,7 +373,7 @@ function CustomerDetail() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {customer.payments.map((p) => (
+                {(customer?.payments ?? []).map((p) => (
                   <tr key={p.id}>
                     <td className="py-3 px-6 text-gray-900">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
                     <td className="py-3 px-6 text-gray-900 font-semibold">{formatGBP(Number(p.amount))}</td>
@@ -390,7 +390,7 @@ function CustomerDetail() {
                     </td>
                   </tr>
                 ))}
-                {customer.payments.length === 0 ? (
+                {(customer?.payments ?? []).length === 0 ? (
                   <tr>
                     <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
                       No payments yet.
