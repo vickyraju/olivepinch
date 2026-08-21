@@ -106,6 +106,8 @@ function SlotPicker({
   itemDateUsed,
   activeDay,
   onToggle,
+  readOnly,
+  itemCounts,
 }: {
   slot: string
   items: MenuItem[]
@@ -113,6 +115,8 @@ function SlotPicker({
   itemDateUsed: Map<string, string>
   activeDay: string
   onToggle: (id: string) => void
+  readOnly?: boolean
+  itemCounts?: Record<string, number>
 }) {
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
@@ -130,27 +134,48 @@ function SlotPicker({
   const q = query.trim().toLowerCase()
   const matches = items.filter((i) => !dayItemIds.includes(i.id) && (!q || i.name.toLowerCase().includes(q)))
 
+  if (readOnly) {
+    return (
+      <div className="min-h-[42px] w-full border border-gray-100 bg-gray-50/60 rounded-lg px-2 py-1.5 flex flex-wrap items-center gap-1.5">
+        {selectedItems.length === 0 && <span className="text-xs text-gray-400 px-1">No items</span>}
+        {selectedItems.map((item) => {
+          const count = itemCounts?.[item.id] ?? 0
+          return (
+            <span key={item.id} className="flex items-center gap-1 pl-2 pr-2 py-1 rounded-md bg-gray-200 text-gray-700 text-xs font-medium">
+              {item.name}
+              {count > 0 && <span className="text-gray-500 font-normal">· {count} chosen</span>}
+            </span>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div ref={containerRef} className="relative">
       <div
         onClick={() => setOpen(true)}
         className="min-h-[42px] w-full border border-gray-200 rounded-lg px-2 py-1.5 flex flex-wrap items-center gap-1.5 cursor-text focus-within:ring-2 focus-within:ring-[#2E6B3E]/30 focus-within:border-[#2E6B3E]"
       >
-        {selectedItems.map((item) => (
-          <span key={item.id} className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-md bg-[#2E6B3E] text-white text-xs font-medium">
-            {item.name}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onToggle(item.id)
-              }}
-              className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-white/20 cursor-pointer"
-            >
-              <span className="material-symbols-outlined text-[13px]">close</span>
-            </button>
-          </span>
-        ))}
+        {selectedItems.map((item) => {
+          const count = itemCounts?.[item.id] ?? 0
+          return (
+            <span key={item.id} className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-md bg-[#2E6B3E] text-white text-xs font-medium">
+              {item.name}
+              {count > 0 && <span className="text-white/70 font-normal">· {count} chosen</span>}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggle(item.id)
+                }}
+                className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-white/20 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[13px]">close</span>
+              </button>
+            </span>
+          )
+        })}
         <input
           value={query}
           onChange={(e) => {
@@ -216,6 +241,16 @@ function MenuWeeks() {
   const [publishing, setPublishing] = useState(false)
   const [activeDay, setActiveDay] = useState("")
   const [pendingExpanded, setPendingExpanded] = useState(false)
+  const [unlocked, setUnlocked] = useState(false)
+  const [showUnlockModal, setShowUnlockModal] = useState(false)
+  const locked = composerPublished && !unlocked
+
+  const itemCountsQuery = useQuery({
+    queryKey: ["menu-week-item-counts", composerWeek],
+    queryFn: () => api.get<Record<string, number>>(`/menu-weeks/${composerWeek}/item-counts`),
+    enabled: composerPublished && isMonday(composerWeek),
+  })
+  const itemCounts = itemCountsQuery.data ?? {}
 
   const deepLinkWeek = searchParams.get("week")
   const pendingWeek = deepLinkWeek && isMonday(deepLinkWeek) ? deepLinkWeek : nextMondayIso()
@@ -229,6 +264,7 @@ function MenuWeeks() {
   function loadComposerWeek(weekStart: string) {
     setComposerWeek(weekStart)
     setComposerError("")
+    setUnlocked(false)
     if (!isMonday(weekStart)) {
       setComposerItemsByDate({})
       setComposerPublished(false)
@@ -304,11 +340,19 @@ function MenuWeeks() {
       const dayItems = composerDates.map((date) => ({ date, menuItemIds: composerItemsByDate[date] ?? [] }))
       await api.put(`/menu-weeks/${composerWeek}`, { dayItems })
       await queryClient.invalidateQueries({ queryKey: ["menu-weeks"] })
+      if (composerPublished) {
+        await queryClient.invalidateQueries({ queryKey: ["menu-week-item-counts", composerWeek] })
+        setUnlocked(false)
+      }
     } catch (err) {
       setComposerError(err instanceof ApiError ? err.message : "Couldn't save this week's menu.")
     } finally {
       setSaving(false)
     }
+  }
+
+  function discardChanges() {
+    loadComposerWeek(composerWeek)
   }
 
   async function publish() {
@@ -477,7 +521,19 @@ function MenuWeeks() {
                   {composerComplete ? "Published" : "Incomplete"}
                 </span>
               )}
+              {composerPublished && unlocked && (
+                <span className="px-2 py-1 rounded-full text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                  Editing live week
+                </span>
+              )}
             </div>
+
+            {composerPublished && unlocked && (
+              <p className="mb-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                Customers who've already chosen aren't affected — this only changes what people who haven't chosen
+                yet will see.
+              </p>
+            )}
 
             {composerDates.length === 0 && (
               <p className="text-sm text-gray-400">Pick a week from the left to start composing.</p>
@@ -526,6 +582,8 @@ function MenuWeeks() {
                             itemDateUsed={itemDateUsed}
                             activeDay={activeDay}
                             onToggle={(id) => toggleComposerItem(activeDay, id)}
+                            readOnly={locked}
+                            itemCounts={itemCounts}
                           />
                         </div>
                       ))}
@@ -542,23 +600,56 @@ function MenuWeeks() {
             )}
 
             <div className="flex gap-3 pt-5">
-              <button
-                type="button"
-                onClick={saveDraft}
-                disabled={saving || !isMonday(composerWeek)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-              >
-                {saving ? "Saving…" : "Save draft"}
-              </button>
-              <button
-                type="button"
-                onClick={publish}
-                disabled={publishing || (composerPublished && composerComplete) || !composerComplete || !isMonday(composerWeek)}
-                title={!composerComplete ? "Every day needs breakfast, lunch, and dinner items before publishing" : undefined}
-                className="px-4 py-2 bg-[#2E6B3E] text-white rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-              >
-                {publishing ? "Publishing…" : composerPublished && composerComplete ? "Published" : "Publish"}
-              </button>
+              {locked ? (
+                <button
+                  type="button"
+                  onClick={() => setShowUnlockModal(true)}
+                  disabled={!isMonday(composerWeek)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                >
+                  Edit menu
+                </button>
+              ) : composerPublished ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={discardChanges}
+                    disabled={saving}
+                    className="px-4 py-2 text-gray-500 text-sm font-semibold cursor-pointer disabled:opacity-50"
+                  >
+                    Discard changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveDraft}
+                    disabled={saving || !composerComplete || !isMonday(composerWeek)}
+                    title={!composerComplete ? "Every day needs breakfast, lunch, and dinner items before saving" : undefined}
+                    className="px-4 py-2 bg-[#2E6B3E] text-white rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                  >
+                    {saving ? "Saving…" : "Save changes"}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={saveDraft}
+                    disabled={saving || !isMonday(composerWeek)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                  >
+                    {saving ? "Saving…" : "Save draft"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={publish}
+                    disabled={publishing || !composerComplete || !isMonday(composerWeek)}
+                    title={!composerComplete ? "Every day needs breakfast, lunch, and dinner items before publishing" : undefined}
+                    className="px-4 py-2 bg-[#2E6B3E] text-white rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                  >
+                    {publishing ? "Publishing…" : "Publish"}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -705,6 +796,37 @@ function MenuWeeks() {
           )}
         </div>
       </div>
+
+      {showUnlockModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[12px] max-w-md w-full mx-4 p-6">
+            <h3 className="text-base font-bold text-gray-900 mb-2">Edit a published week?</h3>
+            <p className="text-sm text-gray-600 mb-5">
+              Customers who've already chosen aren't affected — their order stays as picked. This only changes what
+              people who haven't chosen yet will be offered.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowUnlockModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setUnlocked(true)
+                  setShowUnlockModal(false)
+                }}
+                className="px-4 py-2 bg-[#2E6B3E] text-white rounded-lg text-sm font-semibold cursor-pointer"
+              >
+                Edit anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
