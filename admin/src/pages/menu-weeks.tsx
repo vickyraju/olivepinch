@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
-import { api, ApiError } from "@/lib/api"
+import { api, ApiError, BASE_URL, getToken } from "@/lib/api"
 import { formatPhone } from "@/lib/status-styles"
 
 interface MenuItem {
@@ -243,6 +243,7 @@ function MenuWeeks() {
   const [pendingExpanded, setPendingExpanded] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
   const [showUnlockModal, setShowUnlockModal] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const locked = composerPublished && !unlocked
 
   const itemCountsQuery = useQuery({
@@ -369,6 +370,30 @@ function MenuWeeks() {
     }
   }
 
+  async function exportForKitchen() {
+    setExporting(true)
+    setComposerError("")
+    try {
+      const from = composerWeek
+      const to = addDays(composerWeek, 6)
+      const res = await fetch(`${BASE_URL}/orders/kitchen-export?from=${from}&to=${to}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!res.ok) throw new Error("Couldn't export this week's kitchen counts.")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `kitchen-export-${from}-to-${to}.xlsx`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setComposerError(err instanceof Error ? err.message : "Couldn't export this week's kitchen counts.")
+    } finally {
+      setExporting(false)
+    }
+  }
+
   async function loadPending(weekStart: string = pendingWeek) {
     setOverridingId(null)
     setPendingList(null)
@@ -438,8 +463,9 @@ function MenuWeeks() {
       <Header title="Weekly Menu" />
       <div className="flex-1 overflow-y-auto p-8">
         <p className="mb-6 text-sm text-gray-500">
-          Set a different lineup for each day of the week — no dish repeats — then publish and cover anyone who
-          hasn't chosen by the Tuesday 12AM UK cutoff.
+          Set a different lineup for each day of the week — no dish repeats — then publish by Tuesday night so
+          customers can choose Wednesday through Friday. Anyone who hasn't chosen by Friday end of day needs to be
+          assigned manually below.
         </p>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -600,6 +626,14 @@ function MenuWeeks() {
             )}
 
             <div className="flex gap-3 pt-5">
+              <button
+                type="button"
+                onClick={exportForKitchen}
+                disabled={exporting || !isMonday(composerWeek)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+              >
+                {exporting ? "Exporting…" : "Export for kitchen"}
+              </button>
               {locked ? (
                 <button
                   type="button"

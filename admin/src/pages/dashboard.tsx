@@ -54,7 +54,8 @@ function nextMondayIso(): string {
 // Admin's soft target is to publish next week's menu by Tuesday night — don't nag about an
 // unpublished week before then, since nextMondayIso() on a Monday points a week further out.
 function isPastPublishSoftDeadline(): boolean {
-  return new Date().getUTCDay() !== 1
+  const day = new Date().getUTCDay()
+  return day !== 1 && day !== 2
 }
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]

@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/admin"
+export const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/admin"
 const TOKEN_KEY = "olivepinch_admin_token"
 
 export class ApiError extends Error {
