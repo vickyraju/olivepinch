@@ -7,7 +7,7 @@ function getInitials(name: string): string {
   return (first + last).toUpperCase()
 }
 
-export function Header({ title }: { title: string }) {
+export function Header({ title, actions }: { title: string; actions?: React.ReactNode }) {
   const { admin } = useAuth()
 
   return (
@@ -16,6 +16,7 @@ export function Header({ title }: { title: string }) {
         <h1 className="text-[22px] font-bold text-[#111827] tracking-tight">{title}</h1>
       </div>
       <div className="flex items-center gap-6">
+        {actions}
         <div className="flex items-center gap-3 pl-4 border-l border-gray-200">
           <div className="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-sm shadow-sm ring-2 ring-white">
             {admin ? getInitials(admin.name) : ""}

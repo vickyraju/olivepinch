@@ -357,80 +357,86 @@ function CustomerDetail() {
           </div>
         ) : null}
 
-        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-[16px] font-bold text-gray-900">Payments</h3>
+        {/* Hidden for now — not needed yet. Set to true to bring back. */}
+        {false && (
+          <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-[16px] font-bold text-gray-900">Payments</h3>
+            </div>
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {customer.payments.map((p) => (
+                  <tr key={p.id}>
+                    <td className="py-3 px-6 text-gray-900">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
+                    <td className="py-3 px-6 text-gray-900 font-semibold">{formatGBP(Number(p.amount))}</td>
+                    <td className="py-3 px-6 text-gray-600">{p.status}</td>
+                    <td className="py-3 px-6 text-right">
+                      {p.status === "succeeded" ? (
+                        <button
+                          onClick={() => refund(p.id)}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">undo</span> Refund
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+                {customer.payments.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
+                      No payments yet.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
           </div>
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {customer.payments.map((p) => (
-                <tr key={p.id}>
-                  <td className="py-3 px-6 text-gray-900">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
-                  <td className="py-3 px-6 text-gray-900 font-semibold">{formatGBP(Number(p.amount))}</td>
-                  <td className="py-3 px-6 text-gray-600">{p.status}</td>
-                  <td className="py-3 px-6 text-right">
-                    {p.status === "succeeded" ? (
-                      <button
-                        onClick={() => refund(p.id)}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">undo</span> Refund
-                      </button>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-              {customer.payments.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
-                    No payments yet.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+        )}
 
-        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-[16px] font-bold text-gray-900">Support Action History</h3>
+        {/* Hidden for now — not needed yet. Set to true to bring back. */}
+        {false && (
+          <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-[16px] font-bold text-gray-900">Support Action History</h3>
+            </div>
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Admin</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Detail</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {(auditLogQuery.data ?? []).map((entry) => (
+                  <tr key={entry.id}>
+                    <td className="py-3 px-6 text-gray-900">{new Date(entry.createdAt).toLocaleString("en-GB")}</td>
+                    <td className="py-3 px-6 text-gray-900 font-semibold">{AUDIT_ACTION_LABELS[entry.action] ?? entry.action}</td>
+                    <td className="py-3 px-6 text-gray-600">{entry.admin.name}</td>
+                    <td className="py-3 px-6 text-gray-600">{entry.detail ?? "—"}</td>
+                  </tr>
+                ))}
+                {(auditLogQuery.data ?? []).length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
+                      No support actions recorded yet.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
           </div>
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Admin</th>
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Detail</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {(auditLogQuery.data ?? []).map((entry) => (
-                <tr key={entry.id}>
-                  <td className="py-3 px-6 text-gray-900">{new Date(entry.createdAt).toLocaleString("en-GB")}</td>
-                  <td className="py-3 px-6 text-gray-900 font-semibold">{AUDIT_ACTION_LABELS[entry.action] ?? entry.action}</td>
-                  <td className="py-3 px-6 text-gray-600">{entry.admin.name}</td>
-                  <td className="py-3 px-6 text-gray-600">{entry.detail ?? "—"}</td>
-                </tr>
-              ))}
-              {(auditLogQuery.data ?? []).length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
-                    No support actions recorded yet.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+        )}
       </div>
     </div>
   )

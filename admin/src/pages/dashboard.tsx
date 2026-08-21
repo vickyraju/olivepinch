@@ -1,9 +1,10 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router-dom"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
 import { TrendBarChart } from "@/components/trend-bar-chart"
-import { api } from "@/lib/api"
+import { api, BASE_URL, getToken } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { ORDER_STATUS_STYLES, ACCOUNT_STATUS_STYLES, MEAL_SLOT_STYLES } from "@/lib/status-styles"
 
@@ -48,6 +49,12 @@ function nextMondayIso(): string {
   const day = d.getUTCDay()
   const daysUntilMonday = day === 1 ? 7 : ((8 - day) % 7)
   d.setUTCDate(d.getUTCDate() + (daysUntilMonday || 7))
+  return d.toISOString().slice(0, 10)
+}
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00.000Z`)
+  d.setUTCDate(d.getUTCDate() + days)
   return d.toISOString().slice(0, 10)
 }
 
@@ -118,6 +125,30 @@ function DistributionRows({ rows, styles, loading, emptyText }: { rows: StatusCo
 
 function Dashboard() {
   const nextMonday = nextMondayIso()
+  const [exporting, setExporting] = useState(false)
+
+  async function exportForKitchen() {
+    setExporting(true)
+    try {
+      const from = nextMonday
+      const to = addDays(nextMonday, 6)
+      const res = await fetch(`${BASE_URL}/orders/kitchen-export?from=${from}&to=${to}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      })
+      if (!res.ok) throw new Error("Couldn't export the kitchen sheet.")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `kitchen-export-${from}-to-${to}.xlsx`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Couldn't export the kitchen sheet.")
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const revenueQuery = useQuery({
     queryKey: ["revenue", "daily"],
@@ -151,7 +182,19 @@ function Dashboard() {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
-      <Header title="Dashboard Overview" />
+      <Header
+        title="Dashboard Overview"
+        actions={
+          <button
+            type="button"
+            onClick={exportForKitchen}
+            disabled={exporting}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+          >
+            {exporting ? "Exporting…" : "Export for Kitchen"}
+          </button>
+        }
+      />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
           <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label="Revenue (30d)" value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
