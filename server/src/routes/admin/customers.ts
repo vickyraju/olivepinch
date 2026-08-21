@@ -44,13 +44,16 @@ adminCustomersRouter.get("/", async (req, res) => {
         addressStreet: true,
         addressArea: true,
         addressPostcode: true,
+        subscriptions: { where: { status: "ACTIVE" }, select: { id: true }, take: 1 },
       },
     }),
     prisma.customer.count({ where }),
   ])
 
   res.json({
-    customers: customers.map((c) => ({ ...c, address: formatAddress(c) })),
+    // "Subscribed"/"Unsubscribed" is the admin-facing status — whether they currently have an
+    // active subscription — distinct from accountStatus, which is the identity/login state.
+    customers: customers.map(({ subscriptions, ...c }) => ({ ...c, subscribed: subscriptions.length > 0, address: formatAddress(c) })),
     page,
     pageSize: PAGE_SIZE,
     total,
