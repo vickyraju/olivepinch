@@ -23,6 +23,15 @@ export function fridayCutoffFor(weekStart: Date): Date {
   return cutoff
 }
 
+// Once customer choosing opens (Wednesday before weekStart, i.e. fridayCutoffFor - 3 days /
+// weekStart - 5 days), a published week's roster is frozen — no more admin edits, so nobody's
+// already-made choice can ever be swapped out from under them by a later roster change.
+export function publishEditLockFor(weekStart: Date): Date {
+  const lock = new Date(weekStart)
+  lock.setUTCDate(lock.getUTCDate() - 5)
+  return lock
+}
+
 // Slots every subscription needs regardless of mealsPerDay (the union of SLOTS_BY_MEALS_PER_DAY)
 // — SNACKS is never a required slot, so a week can publish without it.
 const REQUIRED_SLOTS: MealSlot[] = ["BREAKFAST", "LUNCH", "DINNER"]

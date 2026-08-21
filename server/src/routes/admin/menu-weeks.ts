@@ -3,7 +3,7 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
-import { assertMonday, applyWeekSelection, weekDates, isWeekComplete } from "../../lib/menu-week.js"
+import { assertMonday, applyWeekSelection, weekDates, isWeekComplete, publishEditLockFor } from "../../lib/menu-week.js"
 import { formatAddress } from "../../lib/address.js"
 
 export const adminMenuWeeksRouter = Router()
@@ -66,6 +66,11 @@ adminMenuWeeksRouter.put("/:weekStart", validateBody(putWeekSchema), async (req,
       seenItemIds.add(menuItemId)
       rows.push({ menuItemId, date })
     }
+  }
+
+  const existing = await prisma.menuWeek.findUnique({ where: { weekStart } })
+  if (existing?.published && new Date() >= publishEditLockFor(weekStart)) {
+    return res.status(400).json({ error: "This week's menu is locked — customers have started choosing and it can no longer be edited" })
   }
 
   const menuWeek = await prisma.menuWeek.upsert({
