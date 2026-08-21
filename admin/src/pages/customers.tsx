@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { api } from "@/lib/api"
-import { getInitials } from "@/lib/status-styles"
+import { getInitials, formatPhone } from "@/lib/status-styles"
 
 interface CustomerRow {
   id: string
@@ -82,7 +82,7 @@ function Customers() {
                             </span>
                           </Link>
                         </td>
-                        <td className="py-4 px-6 text-gray-600">{c.phone ?? "—"}</td>
+                        <td className="py-4 px-6 text-gray-600">{c.phone ? formatPhone(c.phone) : "—"}</td>
                         <td className="py-4 px-6 text-gray-600 max-w-[220px] truncate" title={c.address ?? undefined}>
                           {c.address ?? c.postcode ?? "—"}
                         </td>

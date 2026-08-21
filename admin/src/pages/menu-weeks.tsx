@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { api, ApiError } from "@/lib/api"
+import { formatPhone } from "@/lib/status-styles"
 
 interface MenuItem {
   id: string
@@ -62,9 +63,16 @@ function weekDatesFrom(mondayIso: string): string[] {
   })
 }
 
+function ordinalSuffix(day: number): string {
+  if (day % 100 >= 11 && day % 100 <= 13) return "th"
+  return ["th", "st", "nd", "rd"][day % 10] ?? "th"
+}
+
 function formatDayLabel(iso: string): string {
   const d = new Date(`${iso}T00:00:00.000Z`)
-  return `${WEEKDAY_LABELS[(d.getUTCDay() + 6) % 7]}, ${d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })}`
+  const day = d.getUTCDate()
+  const month = d.toLocaleDateString("en-GB", { month: "short", timeZone: "UTC" })
+  return `${WEEKDAY_LABELS[(d.getUTCDay() + 6) % 7]} ${day}${ordinalSuffix(day)} ${month}`
 }
 
 function formatDayShort(iso: string): { weekday: string; day: string } {
@@ -589,7 +597,7 @@ function MenuWeeks() {
           {pendingList && pendingList.length > 0 && (
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                <tr className="text-left text-[10px] font-bold text-gray-900 uppercase tracking-wider">
                   <th className="pb-2 pr-4">Name</th>
                   <th className="pb-2 pr-4">Phone</th>
                   <th className="pb-2 pr-4">Address</th>
@@ -602,7 +610,7 @@ function MenuWeeks() {
                   <Fragment key={entry.subscriptionId}>
                     <tr id={`pending-${entry.subscriptionId}`} className="scroll-mt-4">
                       <td className="py-3 pr-4 font-semibold text-gray-900">{entry.customer.fullName}</td>
-                      <td className="py-3 pr-4 text-gray-600">{entry.customer.phone ?? "—"}</td>
+                      <td className="py-3 pr-4 text-gray-600">{entry.customer.phone ? formatPhone(entry.customer.phone) : "—"}</td>
                       <td className="py-3 pr-4 text-gray-600">{entry.customer.address ?? entry.customer.email}</td>
                       <td className="py-3 pr-4 text-gray-600">
                         {entry.missingDates.length} day{entry.missingDates.length === 1 ? "" : "s"}
@@ -623,31 +631,44 @@ function MenuWeeks() {
                       <tr>
                         <td colSpan={5} className="pb-4">
                           <div className="space-y-3 rounded-lg border border-gray-200 p-4">
-                            {entry.missingDates.map((date) => {
+                            {(() => {
                               const slots = SLOTS_BY_MEALS_PER_DAY[entry.mealsPerDay] ?? []
+                              const gridStyle = { gridTemplateColumns: `140px repeat(${slots.length}, 1fr)` }
                               return (
-                                <div key={date}>
-                                  <p className="text-xs font-semibold text-gray-500 mb-1.5">{date}</p>
-                                  <div className="grid grid-cols-3 gap-2">
-                                    {slots.map((slot, i) => (
-                                      <select
-                                        key={slot}
-                                        value={overrideSelections[date]?.[i] ?? ""}
-                                        onChange={(e) => setOverrideItem(date, i, e.target.value)}
-                                        className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-900"
-                                      >
-                                        <option value="">{slot}…</option>
-                                        {(pendingItemsByDateSlot.get(`${date}:${slot}`) ?? []).map((item) => (
-                                          <option key={item.id} value={item.id}>
-                                            {item.name}
-                                          </option>
+                                <div className="rounded-md border border-gray-100 overflow-hidden">
+                                  <div className="grid gap-2 bg-gray-50 px-2 py-1.5" style={gridStyle}>
+                                    <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Day</span>
+                                    {slots.map((slot) => (
+                                      <span key={slot} className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                        {slot}
+                                      </span>
+                                    ))}
+                                  </div>
+                                  <div className="divide-y divide-gray-100">
+                                    {entry.missingDates.map((date) => (
+                                      <div key={date} className="grid gap-2 items-center px-2 py-2" style={gridStyle}>
+                                        <span className="text-xs font-semibold text-gray-700">{formatDayLabel(date)}</span>
+                                        {slots.map((slot, i) => (
+                                          <select
+                                            key={slot}
+                                            value={overrideSelections[date]?.[i] ?? ""}
+                                            onChange={(e) => setOverrideItem(date, i, e.target.value)}
+                                            className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-900"
+                                          >
+                                            <option value="">Choose…</option>
+                                            {(pendingItemsByDateSlot.get(`${date}:${slot}`) ?? []).map((item) => (
+                                              <option key={item.id} value={item.id}>
+                                                {item.name}
+                                              </option>
+                                            ))}
+                                          </select>
                                         ))}
-                                      </select>
+                                      </div>
                                     ))}
                                   </div>
                                 </div>
                               )
-                            })}
+                            })()}
                             {overrideError && (
                               <p role="alert" className="text-sm text-status-red">
                                 {overrideError}

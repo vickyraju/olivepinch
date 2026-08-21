@@ -20,6 +20,12 @@ export const MEAL_SLOT_STYLES: Record<string, { label: string; className: string
   SNACKS: { label: "Snacks", className: "bg-green-50 text-green-700 border-green-200" },
 }
 
+// Stored/sent as "+448888888888" (no space) — display with a space after the UK
+// country code everywhere it's shown, e.g. "+44 8888888888".
+export function formatPhone(phone: string): string {
+  return phone.startsWith("+44") ? `+44 ${phone.slice(3)}` : phone
+}
+
 export function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
   const first = parts[0]?.[0] ?? ""

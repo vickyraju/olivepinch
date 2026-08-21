@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { api, ApiError } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
-import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES } from "@/lib/status-styles"
+import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, formatPhone } from "@/lib/status-styles"
 
 interface OrderItemRow {
   slot: string
@@ -229,7 +229,7 @@ function CustomerDetail() {
           </div>
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Phone</p>
-            <p className="text-gray-900 font-semibold">{customer.phone ?? "—"}</p>
+            <p className="text-gray-900 font-semibold">{customer.phone ? formatPhone(customer.phone) : "—"}</p>
           </div>
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Postcode</p>
