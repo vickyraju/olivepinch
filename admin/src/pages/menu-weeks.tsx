@@ -71,6 +71,121 @@ function formatDayShort(iso: string): { weekday: string; day: string } {
   }
 }
 
+function addDays(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00.000Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+function formatWeekRange(mondayIso: string): string {
+  const start = new Date(`${mondayIso}T00:00:00.000Z`)
+  const end = new Date(start)
+  end.setUTCDate(end.getUTCDate() + 6)
+  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" })
+  return `${fmt(start)} – ${fmt(end)}`
+}
+
+// A searchable multi-select for one meal slot — a flat wall of toggle buttons doesn't
+// scale once a slot has dozens of items, so this filters as you type and shows picks as chips.
+function SlotPicker({
+  slot,
+  items,
+  dayItemIds,
+  itemDateUsed,
+  activeDay,
+  onToggle,
+}: {
+  slot: string
+  items: MenuItem[]
+  dayItemIds: string[]
+  itemDateUsed: Map<string, string>
+  activeDay: string
+  onToggle: (id: string) => void
+}) {
+  const [query, setQuery] = useState("")
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", onClickOutside)
+    return () => document.removeEventListener("mousedown", onClickOutside)
+  }, [])
+
+  const selectedItems = items.filter((i) => dayItemIds.includes(i.id))
+  const q = query.trim().toLowerCase()
+  const matches = items.filter((i) => !dayItemIds.includes(i.id) && (!q || i.name.toLowerCase().includes(q)))
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div
+        onClick={() => setOpen(true)}
+        className="min-h-[42px] w-full border border-gray-200 rounded-lg px-2 py-1.5 flex flex-wrap items-center gap-1.5 cursor-text focus-within:ring-2 focus-within:ring-[#2E6B3E]/30 focus-within:border-[#2E6B3E]"
+      >
+        {selectedItems.map((item) => (
+          <span key={item.id} className="flex items-center gap-1 pl-2 pr-1 py-1 rounded-md bg-[#2E6B3E] text-white text-xs font-medium">
+            {item.name}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggle(item.id)
+              }}
+              className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-white/20 cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[13px]">close</span>
+            </button>
+          </span>
+        ))}
+        <input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setOpen(true)
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder={selectedItems.length ? "Add more…" : `Search ${slot.toLowerCase()} items…`}
+          className="flex-1 min-w-[120px] text-xs outline-none py-1"
+        />
+      </div>
+
+      {open && (
+        <div className="absolute z-10 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg py-1">
+          {matches.length === 0 && (
+            <p className="px-3 py-2 text-xs text-gray-400">
+              {items.length === 0 ? `No ${slot.toLowerCase()} items yet.` : "No matches."}
+            </p>
+          )}
+          {matches.map((item) => {
+            const usedOn = itemDateUsed.get(item.id)
+            const usedElsewhere = usedOn !== undefined && usedOn !== activeDay
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={usedElsewhere}
+                onClick={() => {
+                  onToggle(item.id)
+                  setQuery("")
+                }}
+                title={usedElsewhere ? `Already used on ${formatDayLabel(usedOn!)}` : undefined}
+                className={`w-full text-left px-3 py-1.5 text-xs ${
+                  usedElsewhere ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-50 cursor-pointer"
+                }`}
+              >
+                {item.name}
+                {usedElsewhere && <span className="text-gray-300"> · used on {formatDayLabel(usedOn!)}</span>}
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function MenuWeeks() {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
@@ -155,6 +270,7 @@ function MenuWeeks() {
   }
 
   const composerDates = weekDatesFrom(composerWeek)
+  const upcomingWeeks = [nextMondayIso(), addDays(nextMondayIso(), 7)]
 
   useEffect(() => {
     if (composerDates.length && !composerDates.includes(activeDay)) setActiveDay(composerDates[0]!)
@@ -306,31 +422,39 @@ function MenuWeeks() {
 
           <div className="bg-white rounded-[12px] border border-gray-200 p-6">
             <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-4">Compose a week</h3>
-            <div className="flex items-end gap-3 mb-4">
-              <div>
-                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                  Week start (Monday)
-                </label>
-                <input
-                  type="date"
-                  value={composerWeek}
-                  onChange={(e) => loadComposerWeek(e.target.value)}
-                  className="h-10 border border-gray-200 rounded-lg px-3 text-sm"
-                />
-              </div>
+            <div className="flex flex-wrap items-center gap-2 mb-5">
+              {upcomingWeeks.map((weekStart, i) => {
+                const active = weekStart === composerWeek
+                return (
+                  <button
+                    key={weekStart}
+                    type="button"
+                    onClick={() => loadComposerWeek(weekStart)}
+                    className={`px-4 py-2 rounded-lg border text-left cursor-pointer transition-colors ${
+                      active ? "bg-[#2E6B3E] text-white border-[#2E6B3E]" : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
+                    }`}
+                  >
+                    <span className="block text-sm font-semibold">{i === 0 ? "This week" : "Next week"}</span>
+                    <span className={`block text-[10px] font-medium mt-0.5 ${active ? "text-white/80" : "text-gray-400"}`}>
+                      {formatWeekRange(weekStart)}
+                    </span>
+                  </button>
+                )
+              })}
+              {!upcomingWeeks.includes(composerWeek) && composerWeek && (
+                <span className="px-3 py-2 rounded-lg border border-dashed border-gray-300 text-xs text-gray-500">
+                  Viewing {composerWeek}
+                </span>
+              )}
               {composerPublished && (
-                <span className="mb-2 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-[#F0F7F3] text-[#2E6B3E] border-[#cfe6d7]">
+                <span className="px-2 py-1 rounded-full text-[10px] font-semibold border bg-[#F0F7F3] text-[#2E6B3E] border-[#cfe6d7]">
                   Published
                 </span>
               )}
             </div>
 
-            {!isMonday(composerWeek) && composerWeek && (
-              <p className="text-sm text-status-red mb-4">Pick a Monday — weeks always start on a Monday.</p>
-            )}
-
             {composerDates.length === 0 && (
-              <p className="text-sm text-gray-400">Pick a valid Monday to start composing.</p>
+              <p className="text-sm text-gray-400">Pick a week from the left to start composing.</p>
             )}
 
             {composerDates.length > 0 && (
@@ -365,38 +489,18 @@ function MenuWeeks() {
                 {activeDay && (
                   <div className="border border-gray-100 rounded-lg p-4">
                     <p className="text-sm font-bold text-gray-900 mb-3">{formatDayLabel(activeDay)}</p>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {SLOTS.map((slot) => (
                         <div key={slot}>
                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{slot}</p>
-                          <div className="flex gap-2 flex-wrap">
-                            {(itemsBySlot.get(slot) ?? []).map((item) => {
-                              const selected = (composerItemsByDate[activeDay] ?? []).includes(item.id)
-                              const usedOn = itemDateUsed.get(item.id)
-                              const usedElsewhere = usedOn !== undefined && usedOn !== activeDay
-                              return (
-                                <button
-                                  key={item.id}
-                                  type="button"
-                                  disabled={usedElsewhere}
-                                  onClick={() => toggleComposerItem(activeDay, item.id)}
-                                  title={usedElsewhere ? `Already used on ${formatDayLabel(usedOn!)}` : undefined}
-                                  className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-colors ${
-                                    selected
-                                      ? "bg-[#2E6B3E] text-white border-[#2E6B3E] cursor-pointer"
-                                      : usedElsewhere
-                                        ? "bg-gray-50 border-gray-200 text-gray-300 cursor-not-allowed"
-                                        : "bg-white border-gray-300 text-gray-700 hover:border-gray-400 cursor-pointer"
-                                  }`}
-                                >
-                                  {item.name}
-                                </button>
-                              )
-                            })}
-                            {(itemsBySlot.get(slot) ?? []).length === 0 && (
-                              <span className="text-xs text-gray-400">No {slot.toLowerCase()} items yet.</span>
-                            )}
-                          </div>
+                          <SlotPicker
+                            slot={slot}
+                            items={itemsBySlot.get(slot) ?? []}
+                            dayItemIds={composerItemsByDate[activeDay] ?? []}
+                            itemDateUsed={itemDateUsed}
+                            activeDay={activeDay}
+                            onToggle={(id) => toggleComposerItem(activeDay, id)}
+                          />
                         </div>
                       ))}
                     </div>
