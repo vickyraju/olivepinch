@@ -27,9 +27,10 @@ function WeeklyMenu() {
     d.setDate(d.getDate() + 2)
     return d
   })())
+  // Saturday 12AM UK, the week the menu is served — mirrors fridayCutoffFor on the backend.
   const cutoff = toDateKey((() => {
     const d = fromDateKey(nextMonday)
-    d.setDate(d.getDate() - 2)
+    d.setDate(d.getDate() + 5)
     return d
   })())
 
@@ -109,7 +110,7 @@ function WeeklyMenu() {
           <div>
             <p className="font-semibold text-coral-600">Next week's menu is ready for you to choose</p>
             <p className="text-sm text-ink-muted mt-0.5">
-              Pick your meals below before Friday night — after that we'll go with what's already set.
+              Pick your meals below before Friday — after that we'll go with what's already set.
             </p>
           </div>
         </div>
@@ -156,7 +157,7 @@ function WeeklyMenu() {
 
         {nextWeekOrders.length > 0 && Array.isArray(nextWeekItems) && !cutoffPassed && (
           <>
-            <p className="text-sm text-ink-muted mb-4 mt-1">Choose by Friday night — otherwise we'll keep what's already set below.</p>
+            <p className="text-sm text-ink-muted mb-4 mt-1">Choose by Friday — otherwise we'll keep what's already set below.</p>
             <Accordion type="single" collapsible className="rounded-xl border border-border px-6">
               {nextWeekOrders.map((day) => (
                 <AccordionItem key={day.id} value={day.date}>
