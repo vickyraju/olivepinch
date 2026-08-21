@@ -16,6 +16,7 @@ interface WeekSummary {
   published: boolean
   publishedAt: string | null
   itemCount: number
+  complete: boolean
 }
 
 interface PendingEntry {
@@ -31,6 +32,9 @@ const SLOTS_BY_MEALS_PER_DAY: Record<number, string[]> = {
   2: ["BREAKFAST", "DINNER"],
   3: ["BREAKFAST", "LUNCH", "DINNER"],
 }
+// Every subscription needs one of these slots regardless of mealsPerDay — SNACKS is never
+// required, so a week can publish without it. Mirrors isWeekComplete on the backend.
+const REQUIRED_SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
 const WEEKDAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 function isMonday(iso: string): boolean {
@@ -277,9 +281,7 @@ function MenuWeeks() {
 
   // An item picked for one day can't also be picked for another — the week never repeats a dish.
   const itemDateUsed = new Map<string, string>()
-  let composerItemCount = 0
   for (const [date, ids] of Object.entries(composerItemsByDate)) {
-    composerItemCount += ids.length
     for (const id of ids) itemDateUsed.set(id, date)
   }
 
@@ -360,6 +362,16 @@ function MenuWeeks() {
 
   const itemsBySlot = new Map<string, MenuItem[]>()
   for (const item of allItems) itemsBySlot.set(item.slot, [...(itemsBySlot.get(item.slot) ?? []), item])
+  const itemsById = new Map(allItems.map((item) => [item.id, item]))
+
+  // Live completeness of whatever's currently in the composer (including unsaved edits) —
+  // every day needs all required slots filled before the week can publish.
+  const composerComplete =
+    composerDates.length > 0 &&
+    composerDates.every((date) => {
+      const slotsPresent = new Set((composerItemsByDate[date] ?? []).map((id) => itemsById.get(id)?.slot))
+      return REQUIRED_SLOTS.every((slot) => slotsPresent.has(slot))
+    })
 
   // Keyed by "date:slot" — the override dropdowns only offer items actually published for that day.
   const pendingItemsByDateSlot = new Map<string, MenuItem[]>()
@@ -375,7 +387,7 @@ function MenuWeeks() {
       <div className="flex-1 overflow-y-auto p-8">
         <p className="mb-6 text-sm text-gray-500">
           Set a different lineup for each day of the week — no dish repeats — then publish and cover anyone who
-          hasn't chosen by the Friday cutoff.
+          hasn't chosen by the Tuesday 12AM UK cutoff.
         </p>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
@@ -400,12 +412,14 @@ function MenuWeeks() {
                         <span className="font-semibold text-gray-900">{w.weekStart}</span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${
-                            w.published
+                            w.published && w.complete
                               ? "bg-[#F0F7F3] text-[#2E6B3E] border-[#cfe6d7]"
-                              : "bg-gray-50 text-gray-500 border-gray-200"
+                              : w.published
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-gray-50 text-gray-500 border-gray-200"
                           }`}
                         >
-                          {w.published ? "Published" : "Draft"}
+                          {w.published && w.complete ? "Published" : w.published ? "Incomplete" : "Draft"}
                         </span>
                       </div>
                       <div className="text-xs text-gray-500 mt-0.5">
@@ -445,8 +459,14 @@ function MenuWeeks() {
                 </span>
               )}
               {composerPublished && (
-                <span className="px-2 py-1 rounded-full text-[10px] font-semibold border bg-[#F0F7F3] text-[#2E6B3E] border-[#cfe6d7]">
-                  Published
+                <span
+                  className={`px-2 py-1 rounded-full text-[10px] font-semibold border ${
+                    composerComplete
+                      ? "bg-[#F0F7F3] text-[#2E6B3E] border-[#cfe6d7]"
+                      : "bg-amber-50 text-amber-700 border-amber-200"
+                  }`}
+                >
+                  {composerComplete ? "Published" : "Incomplete"}
                 </span>
               )}
             </div>
@@ -525,10 +545,11 @@ function MenuWeeks() {
               <button
                 type="button"
                 onClick={publish}
-                disabled={publishing || composerPublished || composerItemCount === 0 || !isMonday(composerWeek)}
+                disabled={publishing || (composerPublished && composerComplete) || !composerComplete || !isMonday(composerWeek)}
+                title={!composerComplete ? "Every day needs breakfast, lunch, and dinner items before publishing" : undefined}
                 className="px-4 py-2 bg-[#2E6B3E] text-white rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
               >
-                {publishing ? "Publishing…" : composerPublished ? "Published" : "Publish"}
+                {publishing ? "Publishing…" : composerPublished && composerComplete ? "Published" : "Publish"}
               </button>
             </div>
           </div>
