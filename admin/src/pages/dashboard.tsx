@@ -51,6 +51,12 @@ function nextMondayIso(): string {
   return d.toISOString().slice(0, 10)
 }
 
+// Admin's soft target is to publish next week's menu by Tuesday night — don't nag about an
+// unpublished week before then, since nextMondayIso() on a Monday points a week further out.
+function isPastPublishSoftDeadline(): boolean {
+  return new Date().getUTCDay() !== 1
+}
+
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
 function formatChartDate(isoDate: string): string {
@@ -139,7 +145,8 @@ function Dashboard() {
   const nextWeekEntry = weeksQuery.data?.find((w) => w.weekStart === nextMonday)
   const nextWeekPublished = nextWeekEntry?.published ?? false
   const pendingCount = pendingQuery.data?.length ?? 0
-  const showAlerts = !weeksQuery.isLoading && !pendingQuery.isLoading && (pendingCount > 0 || !nextWeekPublished)
+  const showPublishAlert = !nextWeekPublished && isPastPublishSoftDeadline()
+  const showAlerts = !weeksQuery.isLoading && !pendingQuery.isLoading && (pendingCount > 0 || showPublishAlert)
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
@@ -166,7 +173,7 @@ function Dashboard() {
                 <span className="text-xs font-semibold text-amber-700">Resolve →</span>
               </Link>
             )}
-            {!nextWeekPublished && (
+            {showPublishAlert && (
               <Link
                 to={`/menu-weeks?week=${nextMonday}`}
                 className="flex items-center justify-between bg-red-50 border border-red-200 rounded-[12px] px-5 py-3 hover:bg-red-100 transition-colors"
