@@ -329,7 +329,8 @@ function CustomerDetail() {
           </table>
         </div>
 
-        {activeSub ? (
+        {/* Hidden for now — not needed yet. Remove the `false &&` to bring back. */}
+        {false && activeSub ? (
           <div className="bg-white border border-gray-200 rounded-[12px] p-6">
             <h3 className="text-[16px] font-bold text-gray-900 mb-1">Support: Pause Override</h3>
             <p className="text-sm text-gray-500 mb-4">Bypasses the customer's 4-pauses-per-month cap for support cases.</p>
@@ -347,7 +348,7 @@ function CustomerDetail() {
                 />
               </div>
               <button
-                onClick={() => pauseOverride(activeSub.id)}
+                onClick={() => activeSub && pauseOverride(activeSub.id)}
                 className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer h-10"
               >
                 <span className="material-symbols-outlined text-[16px]">pause_circle</span> Pause That Day
