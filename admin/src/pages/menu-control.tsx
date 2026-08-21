@@ -22,6 +22,7 @@ interface MenuItem {
 const SLOTS = ["BREAKFAST", "LUNCH", "DINNER", "SNACKS"]
 const DIETS = ["MEAT", "FISH", "VEGAN", "VEGETARIAN", "EGG"]
 const GOALS = ["WEIGHT_LOSS", "WEIGHT_GAIN", "WEIGHT_MAINTENANCE", "MUSCLE_BUILDING"]
+const ALLERGENS = ["Gluten", "Dairy", "Tree Nuts", "Peanuts", "Shellfish", "Soy", "Eggs", "Sesame"]
 const GOAL_LABELS: Record<string, string> = {
   WEIGHT_LOSS: "Weight Loss",
   WEIGHT_GAIN: "Weight Gain",
@@ -51,7 +52,7 @@ const emptyForm = {
   photoUrl: "",
   slot: "LUNCH",
   dietTags: [] as string[],
-  allergenTags: "",
+  allergenTags: [] as string[],
   goalTags: [] as string[],
   tier: "BASIC",
   kcal: "",
@@ -182,7 +183,7 @@ function MenuControl() {
       photoUrl: item.photoUrl ?? "",
       slot: item.slot,
       dietTags: item.dietTags,
-      allergenTags: item.allergenTags.join(", "),
+      allergenTags: item.allergenTags,
       goalTags: item.goalTags,
       tier: item.tier,
       kcal: String(item.kcal),
@@ -204,8 +205,15 @@ function MenuControl() {
     setForm((f) => ({ ...f, dietTags: f.dietTags.includes(diet) ? f.dietTags.filter((d) => d !== diet) : [...f.dietTags, diet] }))
   }
 
-  function toggleGoal(goal: string) {
-    setForm((f) => ({ ...f, goalTags: f.goalTags.includes(goal) ? f.goalTags.filter((g) => g !== goal) : [...f.goalTags, goal] }))
+  function selectGoal(goal: string) {
+    setForm((f) => ({ ...f, goalTags: f.goalTags.includes(goal) ? [] : [goal] }))
+  }
+
+  function toggleAllergen(allergen: string) {
+    setForm((f) => ({
+      ...f,
+      allergenTags: f.allergenTags.includes(allergen) ? f.allergenTags.filter((a) => a !== allergen) : [...f.allergenTags, allergen],
+    }))
   }
 
   async function handlePhotoChange(e: ChangeEvent<HTMLInputElement>) {
@@ -250,7 +258,7 @@ function MenuControl() {
         photoUrl: form.photoUrl || undefined,
         slot: form.slot,
         dietTags: form.dietTags,
-        allergenTags: form.allergenTags ? form.allergenTags.split(",").map((s) => s.trim()).filter(Boolean) : [],
+        allergenTags: form.allergenTags,
         goalTags: form.goalTags,
         tier: form.tier,
         kcal: Number(form.kcal),
@@ -402,7 +410,7 @@ function MenuControl() {
                     <button
                       type="button"
                       key={g}
-                      onClick={() => toggleGoal(g)}
+                      onClick={() => selectGoal(g)}
                       className={`px-3 py-1.5 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
                         form.goalTags.includes(g) ? "bg-purple-600 text-white border-purple-600" : "bg-white border-gray-300 text-gray-700"
                       }`}
@@ -413,13 +421,21 @@ function MenuControl() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Allergen Tags (comma-separated)</label>
-                <input
-                  className="w-full h-10 border border-gray-200 rounded-lg px-3"
-                  placeholder="Gluten, Dairy"
-                  value={form.allergenTags}
-                  onChange={(e) => setForm((f) => ({ ...f, allergenTags: e.target.value }))}
-                />
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Allergen Tags</label>
+                <div className="flex gap-2 flex-wrap">
+                  {ALLERGENS.map((a) => (
+                    <button
+                      type="button"
+                      key={a}
+                      onClick={() => toggleAllergen(a)}
+                      className={`px-3 py-1.5 rounded-md border text-xs font-medium cursor-pointer transition-colors ${
+                        form.allergenTags.includes(a) ? "bg-amber-600 text-white border-amber-600" : "bg-white border-gray-300 text-gray-700"
+                      }`}
+                    >
+                      {a}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
