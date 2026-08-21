@@ -75,7 +75,9 @@ adminMenuWeeksRouter.put("/:weekStart", validateBody(putWeekSchema), async (req,
   })
   await prisma.$transaction([
     prisma.menuWeekItem.deleteMany({ where: { menuWeekId: menuWeek.id } }),
-    prisma.menuWeekItem.createMany({ data: rows.map((r) => ({ menuWeekId: menuWeek.id, menuItemId: r.menuItemId, date: r.date })) }),
+    prisma.menuWeekItem.createMany({
+      data: rows.map((r) => ({ menuWeekId: menuWeek.id, menuItemId: r.menuItemId, date: new Date(`${r.date}T00:00:00.000Z`) })),
+    }),
   ])
   await logAction(req.adminId!, "menu-week-compose", undefined, `week ${req.params.weekStart}, ${rows.length} items`)
   res.status(204).send()
