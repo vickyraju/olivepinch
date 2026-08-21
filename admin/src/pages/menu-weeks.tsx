@@ -89,6 +89,13 @@ function addDays(iso: string, days: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+// Mirrors publishEditLockFor on the backend — customer choosing opens the Wednesday before
+// weekStart, so a published week's roster is frozen from that moment on (weekStart - 5 days).
+function isPastEditLock(mondayIso: string): boolean {
+  if (!isMonday(mondayIso)) return false
+  return new Date() >= new Date(`${addDays(mondayIso, -5)}T00:00:00.000Z`)
+}
+
 function formatWeekRange(mondayIso: string): string {
   const start = new Date(`${mondayIso}T00:00:00.000Z`)
   const end = new Date(start)
@@ -556,8 +563,8 @@ function MenuWeeks() {
 
             {composerPublished && unlocked && (
               <p className="mb-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                Customers who've already chosen aren't affected — this only changes what people who haven't chosen
-                yet will see.
+                Safe to change — customers can't choose from this week's menu until Wednesday, so nobody has picked
+                anything yet.
               </p>
             )}
 
@@ -635,14 +642,23 @@ function MenuWeeks() {
                 {exporting ? "Exporting…" : "Export for kitchen"}
               </button>
               {locked ? (
-                <button
-                  type="button"
-                  onClick={() => setShowUnlockModal(true)}
-                  disabled={!isMonday(composerWeek)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-                >
-                  Edit menu
-                </button>
+                isPastEditLock(composerWeek) ? (
+                  <span
+                    title="Customers can choose from this week's menu starting Wednesday — the roster is locked from that point on"
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-400 cursor-not-allowed"
+                  >
+                    Locked
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowUnlockModal(true)}
+                    disabled={!isMonday(composerWeek)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                  >
+                    Edit menu
+                  </button>
+                )
               ) : composerPublished ? (
                 <>
                   <button
@@ -836,8 +852,8 @@ function MenuWeeks() {
           <div className="bg-white rounded-[12px] max-w-md w-full mx-4 p-6">
             <h3 className="text-base font-bold text-gray-900 mb-2">Edit a published week?</h3>
             <p className="text-sm text-gray-600 mb-5">
-              Customers who've already chosen aren't affected — their order stays as picked. This only changes what
-              people who haven't chosen yet will be offered.
+              Customers can't choose from this week's menu until Wednesday, so nothing's been picked yet — safe to
+              change until then. Once Wednesday arrives, this roster locks and can't be edited anymore.
             </p>
             <div className="flex justify-end gap-3">
               <button
