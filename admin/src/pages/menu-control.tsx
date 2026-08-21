@@ -69,9 +69,11 @@ function readImageDimensions(dataUrl: string): Promise<{ width: number; height: 
 
 function MenuItemCard({
   item,
+  onEdit,
   onRequestDelete,
 }: {
   item: MenuItem
+  onEdit: (item: MenuItem) => void
   onRequestDelete: (item: MenuItem) => void
 }) {
   return (
@@ -92,14 +94,24 @@ function MenuItemCard({
         >
           {TIER_LABELS[item.tier] ?? item.tier}
         </span>
-        <button
-          type="button"
-          onClick={() => onRequestDelete(item)}
-          title="Delete item"
-          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 text-status-red hover:bg-status-red hover:text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[18px]">delete</span>
-        </button>
+        <div className="absolute top-2 right-2 flex gap-1.5">
+          <button
+            type="button"
+            onClick={() => onEdit(item)}
+            title="Edit item"
+            className="w-8 h-8 rounded-full bg-white/90 text-gray-700 hover:bg-[#2E6B3E] hover:text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">edit</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onRequestDelete(item)}
+            title="Delete item"
+            className="w-8 h-8 rounded-full bg-white/90 text-status-red hover:bg-status-red hover:text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">delete</span>
+          </button>
+        </div>
       </div>
       <div className="p-5 flex-1 flex flex-col">
         <h3 className="text-[16px] font-bold text-gray-900 mb-1">{item.name}</h3>
@@ -131,6 +143,7 @@ function MenuControl() {
   const [search, setSearch] = useState("")
   const [slotFilter, setSlotFilter] = useState<SlotFilter>("ALL")
   const [showModal, setShowModal] = useState(false)
+  const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
   const [deletingItem, setDeletingItem] = useState<MenuItem | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
@@ -151,6 +164,40 @@ function MenuControl() {
     await api.del(`/menu-items/${item.id}`)
     setDeletingItem(null)
     await queryClient.invalidateQueries({ queryKey: ["menu-items"] })
+  }
+
+  function openCreateModal() {
+    setEditingItem(null)
+    setForm(emptyForm)
+    setPhotoError(undefined)
+    setError(undefined)
+    setShowModal(true)
+  }
+
+  function openEditModal(item: MenuItem) {
+    setEditingItem(item)
+    setForm({
+      name: item.name,
+      description: item.description,
+      photoUrl: item.photoUrl ?? "",
+      slot: item.slot,
+      dietTags: item.dietTags,
+      allergenTags: item.allergenTags.join(", "),
+      goalTags: item.goalTags,
+      tier: item.tier,
+      kcal: String(item.kcal),
+      protein: String(item.protein),
+    })
+    setPhotoError(undefined)
+    setError(undefined)
+    setShowModal(true)
+  }
+
+  function closeModal() {
+    setShowModal(false)
+    setEditingItem(null)
+    setForm(emptyForm)
+    setPhotoError(undefined)
   }
 
   function toggleDiet(diet: string) {
@@ -184,7 +231,12 @@ function MenuControl() {
     setForm((f) => ({ ...f, photoUrl: dataUrl }))
   }
 
-  async function handleCreate(e: FormEvent) {
+  function removePhoto() {
+    setForm((f) => ({ ...f, photoUrl: "" }))
+    setPhotoError(undefined)
+  }
+
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(undefined)
     setSaving(true)
@@ -192,7 +244,7 @@ function MenuControl() {
       if (!form.name.trim() || !form.dietTags.length || !form.kcal || !form.protein) {
         throw new Error("Fill in name, at least one diet tag, kcal, and protein.")
       }
-      await api.post("/menu-items", {
+      const payload = {
         name: form.name.trim(),
         description: form.description.trim(),
         photoUrl: form.photoUrl || undefined,
@@ -203,11 +255,14 @@ function MenuControl() {
         tier: form.tier,
         kcal: Number(form.kcal),
         protein: Number(form.protein),
-      })
+      }
+      if (editingItem) {
+        await api.patch(`/menu-items/${editingItem.id}`, payload)
+      } else {
+        await api.post("/menu-items", payload)
+      }
       await queryClient.invalidateQueries({ queryKey: ["menu-items"] })
-      setShowModal(false)
-      setForm(emptyForm)
-      setPhotoError(undefined)
+      closeModal()
     } catch (err) {
       setError(err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Could not save item")
     } finally {
@@ -230,7 +285,7 @@ function MenuControl() {
             />
           </div>
           <button
-            onClick={() => setShowModal(true)}
+            onClick={openCreateModal}
             className="flex items-center gap-2 bg-[#2E6B3E] text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">add</span> Add Menu Item
@@ -255,7 +310,7 @@ function MenuControl() {
           ) : (
             <>
               {items.map((item) => (
-                <MenuItemCard key={item.id} item={item} onRequestDelete={setDeletingItem} />
+                <MenuItemCard key={item.id} item={item} onEdit={openEditModal} onRequestDelete={setDeletingItem} />
               ))}
               {items.length === 0 ? <p className="col-span-full text-center text-sm text-gray-400 py-10">No menu items found.</p> : null}
             </>
@@ -267,12 +322,12 @@ function MenuControl() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-[16px] w-[480px] shadow-xl flex flex-col overflow-hidden">
             <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-              <h3 className="text-[18px] font-bold">Add Menu Item</h3>
-              <button onClick={() => setShowModal(false)} className="cursor-pointer">
+              <h3 className="text-[18px] font-bold">{editingItem ? "Edit Menu Item" : "Add Menu Item"}</h3>
+              <button onClick={closeModal} className="cursor-pointer">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-            <form onSubmit={handleCreate} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Item Name</label>
                 <input
@@ -391,22 +446,33 @@ function MenuControl() {
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Photo</label>
                 <p className="text-xs text-gray-500">
-                  Must be exactly {REQUIRED_PHOTO_WIDTH}×{REQUIRED_PHOTO_HEIGHT}px (PNG or JPEG)
+                  Must be exactly {REQUIRED_PHOTO_WIDTH}×{REQUIRED_PHOTO_HEIGHT}px (PNG or JPEG) — one photo per item
                 </p>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg"
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
-                  onChange={handlePhotoChange}
-                />
-                {photoError ? <p role="alert" className="text-sm text-status-red">{photoError}</p> : null}
                 {form.photoUrl ? (
-                  <img src={form.photoUrl} alt="Menu item preview" className="mt-2 h-24 w-auto rounded-lg border border-gray-200 object-cover" />
-                ) : null}
+                  <div className="relative inline-block">
+                    <img src={form.photoUrl} alt="Menu item preview" className="h-24 w-auto rounded-lg border border-gray-200 object-cover" />
+                    <button
+                      type="button"
+                      onClick={removePhoto}
+                      title="Remove photo"
+                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-status-red text-white flex items-center justify-center shadow-sm cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                  </div>
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg"
+                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
+                    onChange={handlePhotoChange}
+                  />
+                )}
+                {photoError ? <p role="alert" className="text-sm text-status-red">{photoError}</p> : null}
               </div>
               {error ? <p role="alert" className="text-sm text-status-red">{error}</p> : null}
               <div className="pt-4 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
+                <button type="button" onClick={closeModal} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
                   Cancel
                 </button>
                 <button
@@ -414,7 +480,7 @@ function MenuControl() {
                   disabled={saving}
                   className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm disabled:opacity-60 cursor-pointer"
                 >
-                  {saving ? "Saving..." : "Save Item"}
+                  {saving ? "Saving..." : editingItem ? "Save Changes" : "Save Item"}
                 </button>
               </div>
             </form>
