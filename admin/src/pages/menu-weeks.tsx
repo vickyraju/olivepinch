@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { Fragment, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
@@ -206,7 +206,7 @@ function MenuWeeks() {
   const [pendingExpanded, setPendingExpanded] = useState(false)
 
   const deepLinkWeek = searchParams.get("week")
-  const [pendingWeek, setPendingWeek] = useState(deepLinkWeek && isMonday(deepLinkWeek) ? deepLinkWeek : nextMondayIso())
+  const pendingWeek = deepLinkWeek && isMonday(deepLinkWeek) ? deepLinkWeek : nextMondayIso()
   const [pendingList, setPendingList] = useState<PendingEntry[] | null>(null)
   const [pendingWeekItems, setPendingWeekItems] = useState<MenuItem[]>([])
   const [overridingId, setOverridingId] = useState<string | null>(null)
@@ -241,10 +241,8 @@ function MenuWeeks() {
 
   useEffect(() => {
     loadComposerWeek(composerWeek)
-    if (searchParams.get("subscriptionId")) {
-      setPendingExpanded(true)
-      loadPending(pendingWeek)
-    }
+    if (searchParams.get("subscriptionId")) setPendingExpanded(true)
+    loadPending(pendingWeek)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -557,111 +555,109 @@ function MenuWeeks() {
 
           {pendingExpanded && (
             <div className="px-6 pb-6">
-              <div className="flex items-end gap-3 mb-5">
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
-                    Week start (Monday)
-                  </label>
-                  <input
-                    type="date"
-                    value={pendingWeek}
-                    onChange={(e) => setPendingWeek(e.target.value)}
-                    className="h-10 border border-gray-200 rounded-lg px-3 text-sm"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => loadPending()}
-                  disabled={!isMonday(pendingWeek)}
-                  className="h-10 px-4 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-                >
-                  Load
-                </button>
-              </div>
+              <p className="text-xs text-gray-500 mb-4">
+                Week of {formatWeekRange(pendingWeek)} — customers with a delivery this week who haven't picked yet.
+              </p>
+
+              {pendingList === null && <p className="text-sm text-gray-400">Loading…</p>}
 
               {pendingList && pendingList.length === 0 && (
             <p className="text-sm text-gray-400">Everyone with a delivery that week has already chosen.</p>
           )}
 
           {pendingList && pendingList.length > 0 && (
-            <ul className="divide-y divide-gray-100">
-              {pendingList.map((entry) => (
-                <li key={entry.subscriptionId} id={`pending-${entry.subscriptionId}`} className="py-4 scroll-mt-4">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{entry.customer.fullName}</p>
-                      <p className="text-xs text-gray-500">
-                        {[entry.customer.phone, entry.customer.address ?? entry.customer.email].filter(Boolean).join(" · ")}
-                        {" · missing "}
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="text-left text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                  <th className="pb-2 pr-4">Name</th>
+                  <th className="pb-2 pr-4">Phone</th>
+                  <th className="pb-2 pr-4">Address</th>
+                  <th className="pb-2 pr-4">Missing</th>
+                  <th className="pb-2" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {pendingList.map((entry) => (
+                  <Fragment key={entry.subscriptionId}>
+                    <tr id={`pending-${entry.subscriptionId}`} className="scroll-mt-4">
+                      <td className="py-3 pr-4 font-semibold text-gray-900">{entry.customer.fullName}</td>
+                      <td className="py-3 pr-4 text-gray-600">{entry.customer.phone ?? "—"}</td>
+                      <td className="py-3 pr-4 text-gray-600">{entry.customer.address ?? entry.customer.email}</td>
+                      <td className="py-3 pr-4 text-gray-600">
                         {entry.missingDates.length} day{entry.missingDates.length === 1 ? "" : "s"}
-                      </p>
-                    </div>
-                    {overridingId !== entry.subscriptionId && (
-                      <button
-                        type="button"
-                        onClick={() => startOverride(entry)}
-                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold cursor-pointer"
-                      >
-                        Set menu
-                      </button>
-                    )}
-                  </div>
-
-                  {overridingId === entry.subscriptionId && (
-                    <div className="mt-3 space-y-3 rounded-lg border border-gray-200 p-4">
-                      {entry.missingDates.map((date) => {
-                        const slots = SLOTS_BY_MEALS_PER_DAY[entry.mealsPerDay] ?? []
-                        return (
-                          <div key={date}>
-                            <p className="text-xs font-semibold text-gray-500 mb-1.5">{date}</p>
-                            <div className="grid grid-cols-3 gap-2">
-                              {slots.map((slot, i) => (
-                                <select
-                                  key={slot}
-                                  value={overrideSelections[date]?.[i] ?? ""}
-                                  onChange={(e) => setOverrideItem(date, i, e.target.value)}
-                                  className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-900"
-                                >
-                                  <option value="">{slot}…</option>
-                                  {(pendingItemsByDateSlot.get(`${date}:${slot}`) ?? []).map((item) => (
-                                    <option key={item.id} value={item.id}>
-                                      {item.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              ))}
+                      </td>
+                      <td className="py-3 text-right">
+                        {overridingId !== entry.subscriptionId && (
+                          <button
+                            type="button"
+                            onClick={() => startOverride(entry)}
+                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-semibold cursor-pointer"
+                          >
+                            Set menu
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                    {overridingId === entry.subscriptionId && (
+                      <tr>
+                        <td colSpan={5} className="pb-4">
+                          <div className="space-y-3 rounded-lg border border-gray-200 p-4">
+                            {entry.missingDates.map((date) => {
+                              const slots = SLOTS_BY_MEALS_PER_DAY[entry.mealsPerDay] ?? []
+                              return (
+                                <div key={date}>
+                                  <p className="text-xs font-semibold text-gray-500 mb-1.5">{date}</p>
+                                  <div className="grid grid-cols-3 gap-2">
+                                    {slots.map((slot, i) => (
+                                      <select
+                                        key={slot}
+                                        value={overrideSelections[date]?.[i] ?? ""}
+                                        onChange={(e) => setOverrideItem(date, i, e.target.value)}
+                                        className="h-9 w-full rounded-md border border-gray-200 bg-white px-2 text-xs text-gray-900"
+                                      >
+                                        <option value="">{slot}…</option>
+                                        {(pendingItemsByDateSlot.get(`${date}:${slot}`) ?? []).map((item) => (
+                                          <option key={item.id} value={item.id}>
+                                            {item.name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ))}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                            {overrideError && (
+                              <p role="alert" className="text-sm text-status-red">
+                                {overrideError}
+                              </p>
+                            )}
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                disabled={overrideSaving}
+                                onClick={() => saveOverride(entry)}
+                                className="px-3 py-1.5 bg-[#2E6B3E] text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50"
+                              >
+                                {overrideSaving ? "Saving…" : "Save"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setOverridingId(null)}
+                                disabled={overrideSaving}
+                                className="px-3 py-1.5 text-gray-500 text-xs font-semibold cursor-pointer disabled:opacity-50"
+                              >
+                                Cancel
+                              </button>
                             </div>
                           </div>
-                        )
-                      })}
-                      {overrideError && (
-                        <p role="alert" className="text-sm text-status-red">
-                          {overrideError}
-                        </p>
-                      )}
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          disabled={overrideSaving}
-                          onClick={() => saveOverride(entry)}
-                          className="px-3 py-1.5 bg-[#2E6B3E] text-white rounded-lg text-xs font-semibold cursor-pointer disabled:opacity-50"
-                        >
-                          {overrideSaving ? "Saving…" : "Save"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setOverridingId(null)}
-                          disabled={overrideSaving}
-                          className="px-3 py-1.5 text-gray-500 text-xs font-semibold cursor-pointer disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
           )}
             </div>
           )}
