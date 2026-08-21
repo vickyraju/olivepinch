@@ -13,13 +13,13 @@ export function assertMonday(dateIso: string): Date {
   return date
 }
 
-// Saturday 00:00 UK the week the menu is served — admin publishes by Tuesday night (a soft
-// target, not enforced here) so customers can choose Wed–Fri; this is what actually locks
-// the customer selection window once Saturday starts.
+// Selection for the week starting `weekStart` opens the Wednesday before and closes Saturday
+// 00:00 UK of the week before (i.e. Friday end of day) — admin publishes by Tuesday night (a
+// soft target, not enforced here) so customers can choose Wed–Fri ahead of that week.
 // ponytail: UK time treated as UTC (no DST handling), matching the rest of this file.
 export function fridayCutoffFor(weekStart: Date): Date {
   const cutoff = new Date(weekStart)
-  cutoff.setUTCDate(cutoff.getUTCDate() + 5)
+  cutoff.setUTCDate(cutoff.getUTCDate() - 2)
   return cutoff
 }
 
