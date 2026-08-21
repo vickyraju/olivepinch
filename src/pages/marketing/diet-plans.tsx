@@ -9,6 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
 import { GOALS, GOAL_PHOTOS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal } from "@/data/menu"
+import type { PlanTier } from "@/lib/subscribe-context"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { cn } from "@/lib/utils"
 
@@ -20,6 +21,7 @@ const TEASER_META: Record<Goal, { kcal: string; protein: string; from: string }>
 }
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
+const TIERS: PlanTier[] = ["Basic", "Advanced"]
 
 function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }) {
   const [expanded, setExpanded] = useState(false)
@@ -69,9 +71,10 @@ function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }
 
 function PriceEstimator() {
   const [goal, setGoal] = useState<Goal>("Muscle Building")
+  const [tier, setTier] = useState<PlanTier>("Basic")
   const [planDuration, setPlanDuration] = useState<7 | 14 | 28>(14)
   const plans = usePlans()
-  const total = priceFor(plans, goal, planDuration)
+  const total = priceFor(plans, goal, planDuration, tier)
 
   return (
     <Card className="p-6 sm:p-8">
@@ -103,6 +106,26 @@ function PriceEstimator() {
               )}
             >
               {d} days
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <label className="text-sm font-medium text-ink block mb-1.5">Tier</label>
+        <div className="grid grid-cols-2 gap-2.5">
+          {TIERS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              aria-pressed={tier === t}
+              onClick={() => setTier(t)}
+              className={cn(
+                "rounded-lg border-2 py-2.5 text-sm font-semibold transition-colors cursor-pointer",
+                tier === t ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+              )}
+            >
+              {t}
             </button>
           ))}
         </div>

@@ -7,7 +7,7 @@ import { PhoneInput } from "@/components/ui/phone-input"
 import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe, type DeliverySlot } from "@/lib/subscribe-context"
 import { api, ApiError } from "@/lib/api"
-import { DELIVERY_SLOT_TO_ENUM } from "@/lib/enum-map"
+import { DELIVERY_SLOT_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
 import { cn, splitFullName, joinFullName } from "@/lib/utils"
@@ -80,6 +80,7 @@ function Delivery() {
         planDuration: state.planDuration,
         startDate: state.startDate,
         mealsPerDay: state.mealsPerDay,
+        tier: TIER_TO_ENUM[state.tier],
         addressDoorNumber: deliveryAddress.doorNumber,
         addressBuildingName: deliveryAddress.buildingName || undefined,
         addressStreet: deliveryAddress.street,

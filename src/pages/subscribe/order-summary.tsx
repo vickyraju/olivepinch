@@ -25,7 +25,7 @@ function OrderSummary({
 } = {}) {
   const { state } = useSubscribe()
   const plans = usePlans()
-  const total = priceFor(plans, state.goal, state.planDuration)
+  const total = priceFor(plans, state.goal, state.planDuration, state.tier)
   const endDate = state.startDate ? computeEndDate(state.startDate, state.planDuration, []) : null
   const age = state.profile.dateOfBirth ? calculateAge(state.profile.dateOfBirth) : null
   const totalMeals = state.planDuration * state.mealsPerDay
@@ -46,6 +46,7 @@ function OrderSummary({
         <Row label="Plan length" value={`${state.planDuration} days`} />
         <Row label="Meals/day" value={String(state.mealsPerDay)} />
         <Row label="Goal" value={state.goal ?? "—"} />
+        <Row label="Tier" value={state.tier} />
         <Row label="Preferred food" value={state.dietTypes.join(", ") || "—"} />
         <Row label="Allergens" value={state.allergens.length ? state.allergens.join(", ") : "None"} />
       </dl>

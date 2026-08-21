@@ -25,6 +25,7 @@ function PhoneInput({
     <RPNInput
       id={id}
       international
+      limitMaxLength
       defaultCountry={defaultCountry}
       flags={flags}
       value={value}

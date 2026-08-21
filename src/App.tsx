@@ -10,6 +10,7 @@ import { ProtectedRoute } from '@/components/protected-route'
 import SubscribeLayout from '@/pages/subscribe/layout'
 import Postcode from '@/pages/subscribe/postcode'
 import Goal from '@/pages/subscribe/goal'
+import Tier from '@/pages/subscribe/tier'
 import Preferences from '@/pages/subscribe/preferences'
 import Meals from '@/pages/subscribe/meals'
 import Plan from '@/pages/subscribe/plan'
@@ -41,9 +42,10 @@ function App() {
       <Route path="/subscribe" element={<SubscribeLayout />}>
         <Route index element={<Postcode />} />
         <Route path="goal" element={<Goal />} />
+        <Route path="tier" element={<Tier />} />
+        <Route path="plan" element={<Plan />} />
         <Route path="preferences" element={<Preferences />} />
         <Route path="meals" element={<Meals />} />
-        <Route path="plan" element={<Plan />} />
         <Route path="menu" element={<Menu />} />
         <Route path="profile" element={<SubscribeProfile />} />
         <Route path="account-setup" element={<AccountSetup />} />

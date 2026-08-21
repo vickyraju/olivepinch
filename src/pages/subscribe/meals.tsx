@@ -28,7 +28,7 @@ function Meals() {
               aria-pressed={active}
               onClick={() => {
                 update({ mealsPerDay: opt.value })
-                setTimeout(() => navigate("/subscribe/plan"), 200)
+                setTimeout(() => navigate("/subscribe/menu"), 200)
               }}
               className={cn(
                 "rounded-2xl border-2 p-6 text-left transition-colors cursor-pointer",

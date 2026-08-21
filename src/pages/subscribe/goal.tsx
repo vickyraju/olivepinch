@@ -32,7 +32,7 @@ function Goal() {
               aria-pressed={active}
               onClick={() => {
                 update({ goal: goal.id })
-                setTimeout(() => navigate("/subscribe/preferences"), 200)
+                setTimeout(() => navigate("/subscribe/tier"), 200)
               }}
               className={cn(
                 "text-left rounded-2xl border-2 p-6 transition-colors cursor-pointer",

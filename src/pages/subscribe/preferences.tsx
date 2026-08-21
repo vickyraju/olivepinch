@@ -86,7 +86,7 @@ function Preferences() {
       </div>
 
       <StepNav
-        backTo="/subscribe/goal"
+        backTo="/subscribe/plan"
         continueDisabled={state.dietTypes.length === 0 || (!state.noAllergies && state.allergens.length === 0)}
         onContinue={() => navigate("/subscribe/meals")}
       />

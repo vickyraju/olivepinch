@@ -33,7 +33,7 @@ function Plan() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
         {DURATIONS.map((d) => {
           const active = state.planDuration === d.value
-          const total = priceFor(plans, state.goal, d.value)
+          const total = priceFor(plans, state.goal, d.value, state.tier)
           return (
             <button
               key={d.value}
@@ -69,9 +69,9 @@ function Plan() {
       />
 
       <StepNav
-        backTo="/subscribe/meals"
+        backTo="/subscribe/tier"
         continueDisabled={!state.startDate}
-        onContinue={() => navigate("/subscribe/menu")}
+        onContinue={() => navigate("/subscribe/preferences")}
       />
     </div>
   )

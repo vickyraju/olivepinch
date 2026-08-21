@@ -1,6 +1,6 @@
 import type { DietType, Goal, MealSlot } from "@/data/menu"
 import type { OrderStatus } from "@/lib/subscription"
-import type { DeliverySlot } from "@/lib/subscribe-context"
+import type { DeliverySlot, PlanTier } from "@/lib/subscribe-context"
 
 // Mirrors server/src/lib/enums.ts (labels) and the Prisma schema enums (values) — the
 // backend speaks WEIGHT_LOSS/MEAT/BREAKFAST, the frontend speaks "Weight Loss"/"Meat"/"Breakfast".
@@ -29,6 +29,11 @@ export const DELIVERY_SLOT_TO_ENUM: Record<DeliverySlot, string> = {
   Daily: "DAILY",
   Weekly: "WEEKLY",
   "Alternate days": "ALTERNATE",
+}
+
+export const TIER_TO_ENUM: Record<PlanTier, string> = {
+  Basic: "BASIC",
+  Advanced: "ADVANCED",
 }
 
 const ENUM_TO_GOAL = Object.fromEntries(Object.entries(GOAL_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, Goal>

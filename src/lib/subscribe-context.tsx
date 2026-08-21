@@ -5,6 +5,7 @@ import { SUBSCRIBE_STORAGE_KEY as STORAGE_KEY } from "@/lib/subscribe-storage"
 
 export type PlanDuration = 7 | 14 | 28
 export type MealsPerDay = 1 | 2 | 3
+export type PlanTier = "Basic" | "Advanced"
 export type Gender = "Female" | "Male" | "Non-binary" | "Prefer not to say"
 export type DeliverySlot = "Daily" | "Weekly" | "Alternate days"
 
@@ -38,6 +39,7 @@ export interface SubscribeState {
   startDate: string | null
   profile: CustomerProfile
   goal: Goal | null
+  tier: PlanTier
   dietTypes: DietType[]
   allergens: string[]
   noAllergies: boolean
@@ -78,6 +80,7 @@ const INITIAL_STATE: SubscribeState = {
   startDate: null,
   profile: EMPTY_PROFILE,
   goal: null,
+  tier: "Basic",
   dietTypes: [],
   allergens: [],
   noAllergies: false,
