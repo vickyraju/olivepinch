@@ -432,7 +432,7 @@ function MenuWeeks() {
                       active ? "bg-[#2E6B3E] text-white border-[#2E6B3E]" : "bg-white border-gray-200 text-gray-700 hover:border-gray-300"
                     }`}
                   >
-                    <span className="block text-sm font-semibold">{i === 0 ? "This week" : "Next week"}</span>
+                    <span className="block text-sm font-semibold">{i === 0 ? "Upcoming week" : "Week after"}</span>
                     <span className={`block text-[10px] font-medium mt-0.5 ${active ? "text-white/80" : "text-gray-400"}`}>
                       {formatWeekRange(weekStart)}
                     </span>
@@ -556,7 +556,7 @@ function MenuWeeks() {
           {pendingExpanded && (
             <div className="px-6 pb-6">
               <p className="text-xs text-gray-500 mb-4">
-                Week of {formatWeekRange(pendingWeek)} — customers with a delivery this week who haven't picked yet.
+                Week of {formatWeekRange(pendingWeek)} — customers with a delivery that week who haven't picked yet.
               </p>
 
               {pendingList === null && <p className="text-sm text-gray-400">Loading…</p>}
