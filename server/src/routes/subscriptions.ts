@@ -165,7 +165,7 @@ const weekSelectionSchema = z.object({
 })
 
 // Customer picks next week's menu from whatever the admin has published, up until the
-// Friday-midnight cutoff for that week.
+// Friday cutoff (locks out once Saturday starts) for that week.
 subscriptionsRouter.patch("/:id/menu-weeks/:weekStart", validateBody(weekSelectionSchema), async (req, res) => {
   await prisma.subscription.findFirstOrThrow({ where: { id: req.params.id as string, customerId: req.customerId } })
   const weekStart = assertMonday(req.params.weekStart as string)

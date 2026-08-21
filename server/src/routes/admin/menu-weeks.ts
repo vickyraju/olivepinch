@@ -3,7 +3,7 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
-import { assertMonday, applyWeekSelection, weekDates } from "../../lib/menu-week.js"
+import { assertMonday, applyWeekSelection, weekDates, isWeekComplete } from "../../lib/menu-week.js"
 import { formatAddress } from "../../lib/address.js"
 
 export const adminMenuWeeksRouter = Router()
@@ -16,21 +16,30 @@ function logAction(adminId: string, action: string, customerId?: string, detail?
 adminMenuWeeksRouter.get("/", async (_req, res) => {
   const weeks = await prisma.menuWeek.findMany({
     orderBy: { weekStart: "desc" },
-    include: { _count: { select: { items: true } } },
+    include: { items: { select: { date: true, menuItem: { select: { slot: true } } } } },
   })
-  res.json(weeks.map((w) => ({ weekStart: w.weekStart.toISOString().slice(0, 10), published: w.published, publishedAt: w.publishedAt, itemCount: w._count.items })))
+  res.json(
+    weeks.map((w) => ({
+      weekStart: w.weekStart.toISOString().slice(0, 10),
+      published: w.published,
+      publishedAt: w.publishedAt,
+      itemCount: w.items.length,
+      complete: isWeekComplete(w.items.map((i) => ({ date: i.date, slot: i.menuItem.slot })), w.weekStart),
+    }))
+  )
 })
 
 adminMenuWeeksRouter.get("/:weekStart", async (req, res) => {
   const weekStart = assertMonday(req.params.weekStart as string)
   const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart }, include: { items: { include: { menuItem: true } } } })
   if (!menuWeek) {
-    return res.json({ weekStart: req.params.weekStart, published: false, publishedAt: null, items: [] })
+    return res.json({ weekStart: req.params.weekStart, published: false, publishedAt: null, complete: false, items: [] })
   }
   res.json({
     weekStart: menuWeek.weekStart.toISOString().slice(0, 10),
     published: menuWeek.published,
     publishedAt: menuWeek.publishedAt,
+    complete: isWeekComplete(menuWeek.items.map((i) => ({ date: i.date, slot: i.menuItem.slot })), weekStart),
     items: menuWeek.items.map((wi) => ({ ...wi.menuItem, date: wi.date.toISOString().slice(0, 10) })),
   })
 })
@@ -74,9 +83,12 @@ adminMenuWeeksRouter.put("/:weekStart", validateBody(putWeekSchema), async (req,
 
 adminMenuWeeksRouter.post("/:weekStart/publish", async (req, res) => {
   const weekStart = assertMonday(req.params.weekStart as string)
-  const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart }, include: { _count: { select: { items: true } } } })
+  const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart }, include: { items: { include: { menuItem: true } } } })
   if (!menuWeek) return res.status(404).json({ error: "No menu drafted for that week yet" })
-  if (menuWeek._count.items === 0) return res.status(400).json({ error: "Add at least one item before publishing" })
+  if (menuWeek.items.length === 0) return res.status(400).json({ error: "Add at least one item before publishing" })
+  if (!isWeekComplete(menuWeek.items.map((i) => ({ date: i.date, slot: i.menuItem.slot })), weekStart)) {
+    return res.status(400).json({ error: "Every day needs breakfast, lunch, and dinner items before publishing" })
+  }
 
   await prisma.menuWeek.update({ where: { id: menuWeek.id }, data: { published: true, publishedAt: new Date() } })
   await logAction(req.adminId!, "menu-week-publish", undefined, `week ${req.params.weekStart}`)

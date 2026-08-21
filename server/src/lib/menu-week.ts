@@ -13,11 +13,33 @@ export function assertMonday(dateIso: string): Date {
   return date
 }
 
-// End of Friday the week before weekStart — i.e. Saturday 00:00 UTC, two days earlier.
+// Saturday 00:00 UK the week the menu is served — admin publishes by Tuesday night (a soft
+// target, not enforced here) so customers can choose Wed–Fri; this is what actually locks
+// the customer selection window once Saturday starts.
+// ponytail: UK time treated as UTC (no DST handling), matching the rest of this file.
 export function fridayCutoffFor(weekStart: Date): Date {
   const cutoff = new Date(weekStart)
-  cutoff.setUTCDate(cutoff.getUTCDate() - 2)
+  cutoff.setUTCDate(cutoff.getUTCDate() + 5)
   return cutoff
+}
+
+// Slots every subscription needs regardless of mealsPerDay (the union of SLOTS_BY_MEALS_PER_DAY)
+// — SNACKS is never a required slot, so a week can publish without it.
+const REQUIRED_SLOTS: MealSlot[] = ["BREAKFAST", "LUNCH", "DINNER"]
+
+// A week only counts as usable once every one of its 7 days has all required slots covered —
+// otherwise customers whose delivery falls on a thin day can't complete their selection.
+export function isWeekComplete(items: { date: Date; slot: MealSlot }[], weekStart: Date): boolean {
+  const slotsByDate = new Map<string, Set<MealSlot>>()
+  for (const item of items) {
+    const dateIso = item.date.toISOString().slice(0, 10)
+    if (!slotsByDate.has(dateIso)) slotsByDate.set(dateIso, new Set())
+    slotsByDate.get(dateIso)!.add(item.slot)
+  }
+  return weekDates(weekStart).every((d) => {
+    const slots = slotsByDate.get(d.toISOString().slice(0, 10))
+    return !!slots && REQUIRED_SLOTS.every((s) => slots.has(s))
+  })
 }
 
 export function weekDates(weekStart: Date): Date[] {
