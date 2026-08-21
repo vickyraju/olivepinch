@@ -445,28 +445,32 @@ function MenuControl() {
               </div>
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Photo</label>
-                <p className="text-xs text-gray-500">
-                  Must be exactly {REQUIRED_PHOTO_WIDTH}×{REQUIRED_PHOTO_HEIGHT}px (PNG or JPEG) — one photo per item
-                </p>
                 {form.photoUrl ? (
-                  <div className="relative inline-block">
-                    <img src={form.photoUrl} alt="Menu item preview" className="h-24 w-auto rounded-lg border border-gray-200 object-cover" />
+                  <div className="relative w-full">
+                    <img src={form.photoUrl} alt="Menu item preview" className="w-full h-40 rounded-lg border border-gray-200 object-cover" />
                     <button
                       type="button"
                       onClick={removePhoto}
                       title="Remove photo"
-                      className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-status-red text-white flex items-center justify-center shadow-sm cursor-pointer"
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 text-status-red hover:bg-status-red hover:text-white flex items-center justify-center shadow-sm cursor-pointer transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[14px]">close</span>
+                      <span className="material-symbols-outlined text-[16px]">close</span>
                     </button>
                   </div>
                 ) : (
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg"
-                    className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2"
-                    onChange={handlePhotoChange}
-                  />
+                  <label className="flex flex-col items-center justify-center gap-1.5 w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-[#2E6B3E] hover:bg-green-50/40 transition-colors">
+                    <span className="material-symbols-outlined text-[26px] text-gray-400">cloud_upload</span>
+                    <span className="text-sm font-medium text-gray-700">Click to upload photo</span>
+                    <span className="text-xs text-gray-400">
+                      PNG or JPEG, exactly {REQUIRED_PHOTO_WIDTH}×{REQUIRED_PHOTO_HEIGHT}px
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </label>
                 )}
                 {photoError ? <p role="alert" className="text-sm text-status-red">{photoError}</p> : null}
               </div>
