@@ -97,6 +97,21 @@ adminMenuWeeksRouter.post("/:weekStart/publish", async (req, res) => {
   res.status(204).send()
 })
 
+// How many customer orders already reference each menu item in this week — lets the admin
+// see the blast radius of removing/swapping a roster item before doing so. Safe either way:
+// OrderItem.menuItemId is set at selection time and independent of the week's roster.
+adminMenuWeeksRouter.get("/:weekStart/item-counts", async (req, res) => {
+  const weekStart = assertMonday(req.params.weekStart as string)
+  const weekEnd = new Date(weekStart)
+  weekEnd.setUTCDate(weekEnd.getUTCDate() + 6)
+  const rows = await prisma.orderItem.groupBy({
+    by: ["menuItemId"],
+    where: { order: { deliveryDate: { gte: weekStart, lte: weekEnd } } },
+    _count: { _all: true },
+  })
+  res.json(Object.fromEntries(rows.map((r) => [r.menuItemId, r._count._all])))
+})
+
 // Customers/subscriptions with at least one delivery in this week whose menu hasn't been
 // explicitly chosen yet (still on the goal/diet default) — the list an admin works through
 // after the Friday cutoff for anyone who didn't pick in time.
