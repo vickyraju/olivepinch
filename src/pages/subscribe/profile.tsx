@@ -26,7 +26,7 @@ function daysInMonth(month: number, year: number) {
 }
 
 const CURRENT_YEAR = new Date().getFullYear()
-const DOB_YEARS = Array.from({ length: 100 - 16 + 1 }, (_, i) => CURRENT_YEAR - 16 - i)
+const DOB_YEARS = Array.from({ length: 100 }, (_, i) => CURRENT_YEAR - i)
 
 function Profile() {
   const { state, update } = useSubscribe()
