@@ -63,7 +63,7 @@ function DashboardLayoutInner() {
             <div className="mt-2 md:mt-4 md:border-t md:border-border md:pt-4">
               <a
                 href="/contact"
-                className="flex items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm font-medium whitespace-nowrap bg-olive-600 text-white hover:bg-olive-700"
+                className="flex items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm font-medium whitespace-nowrap border border-border text-ink hover:bg-cream-100"
               >
                 <HelpCircle className="h-4 w-4 shrink-0" /> Need help?
               </a>

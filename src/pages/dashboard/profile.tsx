@@ -5,6 +5,7 @@ import { useDashboard } from "@/lib/dashboard-context"
 import type { DeliveryAddress } from "@/lib/subscribe-context"
 import { formatAddress } from "@/lib/address"
 import { calculateAge } from "@/lib/subscription"
+import { formatPhone } from "@/lib/utils"
 import { api } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -139,7 +140,7 @@ function Profile() {
         </div>
         {!editingAddress ? (
           <div className="mt-2 space-y-1">
-            <p className="text-ink">{customer.phone || "No phone number on file"}</p>
+            <p className="text-ink">{customer.phone ? formatPhone(customer.phone) : "No phone number on file"}</p>
             <p className="text-ink">{formatAddress(customer.address) || "No address on file"}</p>
           </div>
         ) : (
