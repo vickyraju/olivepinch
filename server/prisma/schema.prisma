@@ -143,6 +143,7 @@ model MenuItem {
   dietTags      DietType[]
   allergenTags  String[]    @default([])
   goalTags      Goal[]
+  tier          PlanTier    @default(BASIC)
   kcal          Int
   protein       Int
 
