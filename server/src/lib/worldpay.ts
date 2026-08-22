@@ -22,7 +22,7 @@ interface CreateHostedPaymentArgs {
 
 export async function createHostedPayment(args: CreateHostedPaymentArgs): Promise<{ redirectUrl: string; statusQueryUrl: string }> {
   const mediaType = "application/vnd.worldpay.payment_pages-v1.hal+json"
-  const res = await fetch(`${worldpayConfig!.apiUrl}/paymentPages`, {
+  const res = await fetch(`${worldpayConfig!.apiUrl}/payment_pages`, {
     method: "POST",
     headers: { Authorization: authHeader(), "Content-Type": mediaType, Accept: mediaType },
     body: JSON.stringify({
