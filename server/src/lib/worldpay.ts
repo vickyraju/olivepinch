@@ -49,6 +49,9 @@ export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succ
   const res = await fetch(statusQueryUrl, { headers: { Authorization: authHeader(), Accept: "application/hal+json" } })
   if (!res.ok) throw new Error(`Worldpay status query failed: ${res.status} ${await res.text()}`)
   const raw = (await res.json()) as unknown
+  // ponytail: temporary — log the real shape so we can fix the guessed outcome
+  // parsing below against an actual sandbox response. Remove once confirmed.
+  console.log("[worldpay] status query raw response:", JSON.stringify(raw))
   // TODO: confirm exact field/value against live Worldpay docs before enabling real
   // credentials — this can't be verified without a real sandbox payment to inspect.
   const outcome = (raw as { outcome?: string; lastEvent?: string; status?: string })
