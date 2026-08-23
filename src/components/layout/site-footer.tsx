@@ -33,9 +33,9 @@ function SiteFooter() {
         <div>
           <h4 className="text-sm font-semibold text-ink mb-3">Legal</h4>
           <ul className="space-y-2 text-sm text-ink-muted">
-            <li><a href="#" className="hover:text-olive-600">Privacy Policy</a></li>
+            <li><Link to="/privacy-policy" className="hover:text-olive-600">Privacy Policy</Link></li>
             <li><a href="#" className="hover:text-olive-600">Terms &amp; Conditions</a></li>
-            <li><a href="#" className="hover:text-olive-600">Cookie Settings</a></li>
+            <li><Link to="/privacy-policy#cookies" className="hover:text-olive-600">Cookie Settings</Link></li>
           </ul>
         </div>
       </div>

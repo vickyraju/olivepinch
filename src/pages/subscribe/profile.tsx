@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
@@ -196,7 +196,7 @@ function Profile() {
               I consent to OlivePinch collecting my height, weight, and body measurements
               to calculate my BMI and recommend meals for my goal. This is special category
               health data under UK GDPR — see our{" "}
-              <a href="#" className="text-olive-600 underline">Privacy Policy</a>.
+              <Link to="/privacy-policy" target="_blank" className="text-olive-600 underline">Privacy Policy</Link>.
             </Label>
           </div>
         </div>

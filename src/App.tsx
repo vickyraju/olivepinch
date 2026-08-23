@@ -4,6 +4,7 @@ import Home from '@/pages/marketing/home'
 import About from '@/pages/marketing/about'
 import DietPlans from '@/pages/marketing/diet-plans'
 import Contact from '@/pages/marketing/contact'
+import PrivacyPolicy from '@/pages/marketing/privacy-policy'
 import Login from '@/pages/login'
 import CompleteAccount from '@/pages/complete-account'
 import { ProtectedRoute } from '@/components/protected-route'
@@ -36,6 +37,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/diet-plans" element={<DietPlans />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/complete-account" element={<CompleteAccount />} />
