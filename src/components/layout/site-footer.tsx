@@ -42,7 +42,7 @@ function SiteFooter() {
 
       <div className="border-t border-border">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-5 text-xs text-ink-muted flex flex-col sm:flex-row gap-2 sm:justify-between">
-          <span>© {new Date().getFullYear()} OlivePinch. UK pilot.</span>
+          <span>© {new Date().getFullYear()} OlivePinch.</span>
           <span>Prices in GBP (£). Delivering to Birmingham postcodes only.</span>
         </div>
       </div>

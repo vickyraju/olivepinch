@@ -108,7 +108,7 @@ function PrivacyPolicy() {
     <section className="pt-14 pb-20 sm:pt-20 sm:pb-28">
       <div className="mx-auto max-w-3xl px-5 sm:px-8">
         <h1 className="text-4xl sm:text-5xl text-ink mb-3">Privacy Policy</h1>
-        <p className="text-ink-muted mb-12">Last updated 24 August 2026 · UK pilot</p>
+        <p className="text-ink-muted mb-12">Last updated 24 August 2026</p>
 
         <div className="space-y-10">
           {SECTIONS.map((section) => (
