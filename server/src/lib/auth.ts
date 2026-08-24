@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken"
 
 const JWT_SECRET = process.env.JWT_SECRET ?? "dev-only-secret-change-in-production"
 
-// Admin auth only — customer auth is handled by Supabase (see middleware/auth.ts).
+// Admin auth only — customer auth is handled by Firebase (see middleware/auth.ts).
 export function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12)
 }

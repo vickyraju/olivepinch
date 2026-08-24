@@ -3,34 +3,34 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
 import { calculateAge } from "../lib/age.js"
-import { requireAuth, verifySupabaseUser } from "../middleware/auth.js"
+import { requireAuth, verifyFirebaseUser } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 
 export const customersRouter = Router()
 
-// Called right after a Supabase sign-in (OTP or OAuth) succeeds, whether that's finishing
-// signup or a returning login — both cases just need "find the Customer for this verified
-// email and attach this Supabase user id to it". Doesn't use requireAuth: there's no linked
-// Customer to resolve to yet, that's exactly what this endpoint creates.
+// Called right after a Firebase phone sign-in succeeds, whether that's finishing signup or
+// a returning login — both cases just need "find the Customer for this verified phone number
+// and attach this Firebase uid to it". Doesn't use requireAuth: there's no linked Customer to
+// resolve to yet, that's exactly what this endpoint creates.
 customersRouter.post("/link-account", async (req, res) => {
-  const supaUser = await verifySupabaseUser(req.headers.authorization)
-  const customer = await prisma.customer.findUnique({ where: { email: supaUser.email } })
+  const firebaseUser = await verifyFirebaseUser(req.headers.authorization)
+  const customer = await prisma.customer.findUnique({ where: { phone: firebaseUser.phone } })
   if (!customer) {
-    return res.status(404).json({ error: "No OlivePinch account found for this email — start your plan first." })
+    return res.status(404).json({ error: "No OlivePinch account found for this phone number — start your plan first." })
   }
-  // Already linked to a *different* Supabase user than the one making this call — never
-  // fall through and hand back someone else's profile just because the emails happen to
-  // match right now (e.g. after an email change on either side). Refuse instead of guessing.
-  if (customer.supabaseUserId && customer.supabaseUserId !== supaUser.id) {
-    return res.status(409).json({ error: "This email is already linked to a different account." })
+  // Already linked to a *different* Firebase user than the one making this call — never
+  // fall through and hand back someone else's profile just because the phone numbers happen
+  // to match right now. Refuse instead of guessing.
+  if (customer.firebaseUid && customer.firebaseUid !== firebaseUser.uid) {
+    return res.status(409).json({ error: "This phone number is already linked to a different account." })
   }
-  if (!customer.supabaseUserId) {
+  if (!customer.firebaseUid) {
     await prisma.customer.update({
       where: { id: customer.id },
       data: {
-        supabaseUserId: supaUser.id,
+        firebaseUid: firebaseUser.uid,
         ...(customer.accountStatus === "PROVISIONAL" ? { accountStatus: "ACTIVE" as const } : {}),
       },
     })
@@ -40,11 +40,11 @@ customersRouter.post("/link-account", async (req, res) => {
   res.json(safe)
 })
 
-export const PHONE_REGEX = /^[0-9+\-\s()]{7,20}$/
+export const PHONE_REGEX = /^\+[1-9]\d{6,14}$/
 
 const provisionalSchema = z.object({
   fullName: z.string().min(1),
-  email: z.string().email(),
+  email: z.string().email().optional(),
   phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number"),
   gender: z.string().optional(),
   dateOfBirth: z
@@ -65,18 +65,18 @@ const provisionalSchema = z.object({
 customersRouter.post("/provisional", validateBody(provisionalSchema), async (req, res) => {
   const body = req.body as z.infer<typeof provisionalSchema>
 
-  const existing = await prisma.customer.findUnique({ where: { email: body.email }, select: { accountStatus: true } })
-  // ACTIVE and READ_ONLY both mean a real password already exists on this email — only
+  const existing = await prisma.customer.findUnique({ where: { phone: body.phone }, select: { accountStatus: true } })
+  // ACTIVE and READ_ONLY both mean this phone number is already a real account — only
   // PROVISIONAL (mid-signup) and DELETED (scrubbed) are safe to upsert over.
   if (existing && (existing.accountStatus === "ACTIVE" || existing.accountStatus === "READ_ONLY")) {
-    return res.status(409).json({ error: "An account with this email already exists — log in instead." })
+    return res.status(409).json({ error: "An account with this phone number already exists — log in instead." })
   }
 
   const customer = await prisma.customer.upsert({
-    where: { email: body.email },
+    where: { phone: body.phone },
     update: {
       fullName: body.fullName,
-      phone: body.phone,
+      email: body.email,
       gender: body.gender,
       dateOfBirth: new Date(body.dateOfBirth),
       heightCm: body.heightCm,
@@ -202,10 +202,10 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
       where: { id: customerId },
       data: {
         fullName: "Deleted customer",
-        email: `deleted-${customerId}@olivepinch.invalid`,
-        supabaseUserId: null,
+        email: null,
+        phone: `deleted-${customerId}`,
+        firebaseUid: null,
         passwordHash: null,
-        phone: null,
         gender: null,
         dateOfBirth: null,
         heightCm: null,

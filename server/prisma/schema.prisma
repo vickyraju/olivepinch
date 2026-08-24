@@ -64,9 +64,9 @@ enum MealSlot {
 model Customer {
   id              String        @id @default(cuid())
   fullName        String
-  email           String        @unique
-  phone           String?
-  supabaseUserId  String?       @unique
+  email           String?       @unique
+  phone           String        @unique
+  firebaseUid     String?       @unique
   passwordHash    String?
   gender          String?
   dateOfBirth     DateTime?     @db.Date

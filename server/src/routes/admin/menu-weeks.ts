@@ -148,7 +148,7 @@ adminMenuWeeksRouter.get("/:weekStart/pending", async (req, res) => {
 
   const bySubscription = new Map<
     string,
-    { subscriptionId: string; customer: { id: string; fullName: string; email: string; phone: string | null; address: string | null }; mealsPerDay: number; missingDates: string[] }
+    { subscriptionId: string; customer: { id: string; fullName: string; email: string | null; phone: string | null; address: string | null }; mealsPerDay: number; missingDates: string[] }
   >()
   for (const order of orders) {
     const key = order.subscriptionId

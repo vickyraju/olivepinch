@@ -63,8 +63,8 @@ paymentsRouter.post(
 )
 
 async function activateSubscription(subscriptionId: string) {
-  // Identity verification (email OTP / Google / Apple, via Supabase) is a separate step the
-  // frontend drives directly against Supabase — payment succeeding doesn't trigger it here.
+  // Identity verification (phone OTP via Firebase) is a separate step the frontend drives
+  // directly against Firebase — payment succeeding doesn't trigger it here.
   return prisma.subscription.update({
     where: { id: subscriptionId },
     data: { status: "ACTIVE" },
@@ -109,7 +109,7 @@ paymentsRouter.post(
     // so "only one exists" is what distinguishes initial signup from a renewal) — send the
     // welcome/confirmation email. Never let an email failure fail a paid checkout's response.
     const subscriptionCount = await prisma.subscription.count({ where: { customerId: subscription.customerId } })
-    if (subscriptionCount === 1) {
+    if (subscriptionCount === 1 && subscription.customer.email) {
       try {
         const total = await subscriptionTotal(subscriptionId)
         const { subject, text, html } = subscriptionConfirmationEmail({
