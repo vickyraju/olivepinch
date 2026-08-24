@@ -21,6 +21,13 @@ function Login() {
   const [error, setError] = useState("")
   const [sending, setSending] = useState(false)
   const [verifying, setVerifying] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setTimeout(() => setResendCooldown((s) => s - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
 
   useEffect(() => {
     if (isAuthenticated) navigate("/dashboard")
@@ -43,6 +50,7 @@ function Login() {
     try {
       await sendOtp(phone)
       setStage("otp")
+      setResendCooldown(30)
     } catch {
       setError("Couldn't send a code to that number — check it and try again.")
     } finally {
@@ -50,8 +58,21 @@ function Login() {
     }
   }
 
-  async function handleVerify(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleResend() {
+    setError("")
+    setCode("")
+    setSending(true)
+    try {
+      await sendOtp(phone)
+      setResendCooldown(30)
+    } catch {
+      setError("Couldn't resend the code — try again in a moment.")
+    } finally {
+      setSending(false)
+    }
+  }
+
+  async function verifyCode() {
     setError("")
     setVerifying(true)
     try {
@@ -62,6 +83,16 @@ function Login() {
       setVerifying(false)
     }
   }
+
+  function handleVerify(e: React.FormEvent) {
+    e.preventDefault()
+    verifyCode()
+  }
+
+  useEffect(() => {
+    if (stage === "otp" && code.length === 6 && !verifying) verifyCode()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code])
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-2">
@@ -111,9 +142,20 @@ function Login() {
                 <Lock className="h-4 w-4" />
                 {verifying ? "Verifying…" : "Verify code"}
               </Button>
+              <div className="flex items-center justify-center gap-1 text-sm">
+                <span className="text-ink-muted">Didn't get a code?</span>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendCooldown > 0 || sending}
+                  className="font-medium text-olive-600 underline disabled:no-underline disabled:text-ink-muted disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend"}
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={() => { setStage("phone"); setCode(""); setError("") }}
+                onClick={() => { setStage("phone"); setCode(""); setError(""); setResendCooldown(0) }}
                 className="w-full text-center text-sm text-ink-muted hover:text-ink cursor-pointer"
               >
                 Use a different number

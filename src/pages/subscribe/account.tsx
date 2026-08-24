@@ -17,10 +17,17 @@ function Account() {
   const [stage, setStage] = useState<"sending" | "otp" | "verifying" | "done">("sending")
   const [otp, setOtp] = useState("")
   const [error, setError] = useState("")
+  const [resendCooldown, setResendCooldown] = useState(0)
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setTimeout(() => setResendCooldown((s) => s - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
 
   useEffect(() => {
     sendOtp(phone)
-      .then(() => setStage("otp"))
+      .then(() => { setStage("otp"); setResendCooldown(30) })
       .catch(() => {
         setError("Couldn't send your verification code — try again.")
         setStage("otp")
@@ -28,6 +35,17 @@ function Account() {
     // Only ever send once per visit to this page, regardless of email prop identity churn.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  async function handleResend() {
+    setError("")
+    setOtp("")
+    try {
+      await sendOtp(phone)
+      setResendCooldown(30)
+    } catch {
+      setError("Couldn't resend the code — try again in a moment.")
+    }
+  }
 
   useEffect(() => {
     if (isAuthenticated && stage === "verifying") setStage("done")
@@ -40,8 +58,7 @@ function Account() {
     }
   }, [authError])
 
-  async function handleVerify(e: React.FormEvent) {
-    e.preventDefault()
+  async function verifyCode() {
     setError("")
     setStage("verifying")
     try {
@@ -52,6 +69,16 @@ function Account() {
       setStage("otp")
     }
   }
+
+  function handleVerify(e: React.FormEvent) {
+    e.preventDefault()
+    verifyCode()
+  }
+
+  useEffect(() => {
+    if (stage === "otp" && otp.length === 6) verifyCode()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otp])
 
   return (
     <div className="max-w-md mx-auto">
@@ -90,6 +117,17 @@ function Account() {
             <Lock className="h-4 w-4" />
             {stage === "verifying" ? "Verifying…" : "Verify code"}
           </Button>
+          <div className="mt-4 flex items-center justify-center gap-1 text-sm">
+            <span className="text-ink-muted">Didn't get a code?</span>
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendCooldown > 0 || stage === "verifying"}
+              className="font-medium text-olive-600 underline disabled:no-underline disabled:text-ink-muted disabled:cursor-not-allowed cursor-pointer"
+            >
+              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend"}
+            </button>
+          </div>
         </form>
       )}
 
