@@ -1,4 +1,4 @@
-import { supabase } from "./supabase"
+import { auth } from "./firebase"
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api"
 
@@ -12,8 +12,8 @@ export class ApiError extends Error {
 }
 
 async function authHeader(): Promise<Record<string, string>> {
-  const { data: { session } } = await supabase.auth.getSession()
-  return session ? { Authorization: `Bearer ${session.access_token}` } : {}
+  const token = await auth.currentUser?.getIdToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 interface RequestOptions {

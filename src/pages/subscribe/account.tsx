@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { CheckCircle2, Mail, Lock } from "lucide-react"
+import { CheckCircle2, Phone, Lock } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { useAuth } from "@/lib/auth"
 import { Input } from "@/components/ui/input"
@@ -12,14 +12,14 @@ function Account() {
   const { state, reset } = useSubscribe()
   const { isAuthenticated, authError, sendOtp, verifyOtp } = useAuth()
   const navigate = useNavigate()
-  const email = state.profile.email || "your email"
+  const phone = state.profile.phone
 
   const [stage, setStage] = useState<"sending" | "otp" | "verifying" | "done">("sending")
   const [otp, setOtp] = useState("")
   const [error, setError] = useState("")
 
   useEffect(() => {
-    sendOtp(email)
+    sendOtp(phone)
       .then(() => setStage("otp"))
       .catch(() => {
         setError("Couldn't send your verification code — try again.")
@@ -45,10 +45,10 @@ function Account() {
     setError("")
     setStage("verifying")
     try {
-      await verifyOtp(email, otp)
+      await verifyOtp(otp)
       // isAuthenticated flips once link-account + profile load resolve — the effect above advances to "done".
     } catch {
-      setError("That code isn't right — check your email and try again.")
+      setError("That code isn't right — check your phone and try again.")
       setStage("otp")
     }
   }
@@ -57,17 +57,17 @@ function Account() {
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-olive-50">
-          {(stage === "sending" || stage === "otp" || stage === "verifying") && <Mail className="h-6 w-6 text-olive-600" />}
+          {(stage === "sending" || stage === "otp" || stage === "verifying") && <Phone className="h-6 w-6 text-olive-600" />}
           {stage === "done" && <CheckCircle2 className="h-6 w-6 text-olive-600" />}
         </div>
         <h1 className="text-3xl text-ink">
           {stage === "sending" && "Sending your code…"}
-          {(stage === "otp" || stage === "verifying") && "Verify your email"}
+          {(stage === "otp" || stage === "verifying") && "Verify your phone"}
           {stage === "done" && "You're all set"}
         </h1>
         <p className="mt-3 text-ink-muted">
           {stage === "sending" && "Payment successful — just a moment."}
-          {(stage === "otp" || stage === "verifying") && <>We've sent a 6-digit code to <strong className="text-ink">{email}</strong>.</>}
+          {(stage === "otp" || stage === "verifying") && <>We've sent a 6-digit code to <strong className="text-ink">{phone}</strong>.</>}
           {stage === "done" && "Your OlivePinch account and subscription are ready."}
         </p>
       </div>
@@ -86,7 +86,6 @@ function Account() {
             className="tracking-[0.5em] text-center text-lg"
           />
           <FieldError>{error}</FieldError>
-          <p className="mt-2 text-xs text-ink-muted">Dev mode: check the server console for your code if email isn't configured.</p>
           <Button type="submit" variant="accent" size="lg" className="w-full mt-5" disabled={stage === "verifying" || otp.length !== 6}>
             <Lock className="h-4 w-4" />
             {stage === "verifying" ? "Verifying…" : "Verify code"}
@@ -97,7 +96,7 @@ function Account() {
       {stage === "done" && (
         <div className="rounded-2xl bg-surface border border-border p-8 shadow-soft text-center">
           <p className="text-sm text-ink-muted mb-6">
-            Log in any time with <strong className="text-ink">{email}</strong> — we'll email you a fresh code, no password needed.
+            Log in any time with <strong className="text-ink">{phone}</strong> — we'll text you a fresh code, no password needed.
           </p>
           <Button
             variant="accent"
@@ -112,6 +111,8 @@ function Account() {
           </Button>
         </div>
       )}
+
+      <div id="recaptcha-container" />
     </div>
   )
 }

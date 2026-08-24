@@ -36,7 +36,8 @@ const SECTIONS = [
       <>
         <p>We share only what's needed to run the service, with these processors:</p>
         <ul className="list-disc pl-5 space-y-1 mt-2">
-          <li><strong>Supabase</strong> — hosts our database and handles account sign-in.</li>
+          <li><strong>Supabase</strong> — hosts our database.</li>
+          <li><strong>Firebase (Google)</strong> — handles phone-based account sign-in.</li>
           <li><strong>Worldpay</strong> — processes card payments securely; card details go directly to Worldpay.</li>
           <li><strong>Resend</strong> — sends transactional emails (order confirmations, account recovery).</li>
         </ul>

@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import type { DietType, Goal } from "@/data/menu"
-import { useAuth } from "@/lib/auth"
 import { SUBSCRIBE_STORAGE_KEY as STORAGE_KEY } from "@/lib/subscribe-storage"
 
 export type PlanDuration = 7 | 14 | 28
@@ -114,24 +113,10 @@ function loadInitial(): SubscribeState {
 
 export function SubscribeProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<SubscribeState>(loadInitial)
-  const { customer } = useAuth()
 
   useEffect(() => {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   }, [state])
-
-  // A social sign-in started mid-funnel (account-setup.tsx) completes asynchronously via the
-  // global auth listener, which has no reference to this provider's in-memory state — it can
-  // only write the resulting customerId to sessionStorage directly. Pick that up here once the
-  // auth side confirms it, rather than leaving this provider's state stale.
-  useEffect(() => {
-    if (!customer || state.customerId === customer.id) return
-    const raw = sessionStorage.getItem(STORAGE_KEY)
-    const stored = raw ? (JSON.parse(raw) as SubscribeState) : null
-    if (stored?.customerId === customer.id) {
-      setState((s) => ({ ...s, customerId: customer.id, profile: { ...s.profile, email: customer.email } }))
-    }
-  }, [customer, state.customerId])
 
   const update = (patch: Partial<SubscribeState>) => setState((s) => ({ ...s, ...patch }))
 
