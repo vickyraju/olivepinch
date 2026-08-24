@@ -8,7 +8,7 @@ function SiteFooter() {
         <div className="col-span-2 md:col-span-1">
           <Logo className="text-xl" />
           <p className="mt-3 text-sm text-ink-muted max-w-xs">
-            Freshly prepared, goal-based meal plans delivered daily, one UK city at a time.
+            Meals cooked fresh each morning and matched to your goal, delivered daily across Birmingham.
           </p>
         </div>
 

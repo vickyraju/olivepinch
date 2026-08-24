@@ -20,8 +20,8 @@ function Contact() {
         <div className="max-w-xl mb-14">
           <h1 className="text-4xl sm:text-5xl text-ink mb-4">Get in touch</h1>
           <p className="text-ink-muted leading-relaxed">
-            Questions about the pilot, a delivery, or your subscription? Reach out and
-            our team will get back to you within one business day.
+            Question about a delivery, your subscription, or whether we cover your postcode?
+            Send us a message and we'll get back to you within one business day.
           </p>
         </div>
 

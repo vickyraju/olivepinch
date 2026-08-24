@@ -2,17 +2,17 @@ const STEPS = [
   {
     number: "01",
     title: "Check your postcode",
-    description: "We're piloting in one UK city right now. Enter your postcode to confirm we deliver to you.",
+    description: "We currently deliver across Birmingham. Enter your postcode to confirm we cover your address.",
   },
   {
     number: "02",
     title: "Set your goal & menu",
-    description: "Share your goal, diet type, and allergies. We build your daily menu — or you customize every meal.",
+    description: "Tell us your goal, diet type, and allergies. We build your daily menu — or you customize every meal yourself.",
   },
   {
     number: "03",
     title: "Fresh, delivered daily",
-    description: "Your meals are prepared fresh each morning and delivered within your chosen window.",
+    description: "Each meal is cooked the morning it's delivered, and arrives within the window you choose.",
   },
 ]
 
@@ -21,7 +21,7 @@ function HowItWorks() {
     <section id="how-it-works" className="py-20 sm:py-28 bg-cream-100 border-y border-border">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <p className="eyebrow mb-3">How it works</p>
-        <h2 className="text-3xl sm:text-4xl text-ink max-w-lg mb-14">Restaurant-quality, on your terms.</h2>
+        <h2 className="text-3xl sm:text-4xl text-ink max-w-lg mb-14">Three steps, no cooking required.</h2>
 
         <div className="grid gap-10 sm:grid-cols-3">
           {STEPS.map((step) => (

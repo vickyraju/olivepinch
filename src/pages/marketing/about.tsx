@@ -29,17 +29,17 @@ function About() {
 
           <div className="order-1 lg:order-2">
             <h1 className="text-4xl sm:text-5xl text-ink mb-5">
-              Built for one city, one fresh delivery at a time
+              One kitchen. One city. No compromise on fresh.
             </h1>
             <p className="text-ink-muted leading-relaxed mb-4">
-              OlivePinch started with a simple idea: healthy, structured eating shouldn't
-              mean choosing between cooking every meal yourself or settling for generic
-              takeaway. We prepare every meal fresh, match it to your goal and diet, and
-              deliver it to your door each morning.
+              OlivePinch exists because healthy, structured eating shouldn't mean choosing
+              between cooking every meal yourself or settling for generic takeaway. We cook
+              every meal fresh, match it to your goal and diet, and deliver it to your door
+              each morning.
             </p>
             <p className="text-ink-muted leading-relaxed mb-8">
-              We're currently piloting exclusively in Birmingham, with one kitchen serving
-              the whole zone — so every meal is made close to where it's delivered.
+              Right now, that means Birmingham only — one kitchen serving the whole city,
+              so every meal is made close to where it's delivered.
             </p>
 
             <div className="grid grid-cols-3 gap-6">
@@ -58,7 +58,7 @@ function About() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="max-w-xl mx-auto text-center mb-14">
             <h2 className="text-3xl sm:text-4xl text-ink">What makes it work</h2>
-            <p className="mt-3 text-ink-muted">The parts of the service we designed around, not bolted onto.</p>
+            <p className="mt-3 text-ink-muted">These aren't add-ons — they're what the service was designed around from day one.</p>
           </div>
           <div className="grid gap-6 sm:grid-cols-2">
             {VALUES.map((v) => (

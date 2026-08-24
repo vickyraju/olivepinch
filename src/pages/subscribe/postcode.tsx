@@ -59,7 +59,7 @@ function Postcode() {
         </div>
         <h1 className="text-3xl sm:text-4xl text-ink">Where should we deliver?</h1>
         <p className="mt-3 text-ink-muted">
-          We're currently piloting OlivePinch across Birmingham postcodes only.
+          We currently deliver to Birmingham postcodes only.
         </p>
       </div>
 
@@ -101,7 +101,7 @@ function Postcode() {
               <div>
                 <p className="font-semibold text-coral-600">We don't deliver to {formatPostcode(postcode)} yet</p>
                 <p className="text-sm text-ink-muted mt-0.5">
-                  We're only piloting in Birmingham right now. Leave your email and we'll let you know the moment we launch in your area.
+                  We're Birmingham-only for now. Leave your email and we'll let you know the moment we launch in your area.
                 </p>
               </div>
             </div>

@@ -17,8 +17,8 @@ function DietPlansTeaser() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-14">
           <div className="max-w-xl">
-            <p className="eyebrow mb-3">This week's plans</p>
-            <h2 className="text-3xl sm:text-4xl text-ink">Plans built around your goal</h2>
+            <p className="eyebrow mb-3">Pick your goal</p>
+            <h2 className="text-3xl sm:text-4xl text-ink">One menu, four ways to eat</h2>
           </div>
           <Button asChild variant="outline" size="md" className="hidden sm:inline-flex">
             <Link to="/diet-plans">View all plans <ArrowRight className="h-4 w-4" /></Link>

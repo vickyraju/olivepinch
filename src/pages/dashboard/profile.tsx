@@ -40,7 +40,7 @@ function Profile() {
     try {
       const check = await api.post<{ valid: boolean; postcode: string }>("/postcode/check", { postcode: addressInput.postcode })
       if (!check.valid) {
-        setAddressError("We don't currently deliver to that postcode — we're only piloting in Birmingham right now.")
+        setAddressError("We don't currently deliver to that postcode — we're Birmingham-only for now.")
         setSavingAddress(false)
         return
       }

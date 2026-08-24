@@ -148,10 +148,10 @@ function DietPlans() {
     <div>
       <section className="pt-14 pb-16 sm:pt-20 sm:pb-20">
         <div className="mx-auto max-w-3xl px-5 sm:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl text-ink">Diet plans for every goal</h1>
+          <h1 className="text-4xl sm:text-5xl text-ink">A plan for whatever your goal is</h1>
           <p className="mt-4 text-lg text-ink-muted">
-            Every plan starts from a goal-matched default menu — filtered to your diet type and
-            allergies, and yours to customize meal by meal.
+            Every plan starts from a menu matched to your goal, filtered to your diet type
+            and allergies — and you can still swap any meal you want.
           </p>
         </div>
       </section>

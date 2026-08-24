@@ -1,7 +1,7 @@
 const FAQS = [
   {
     q: "Do you deliver outside Birmingham?",
-    a: "Not yet — we're running a single-zone pilot right now. Enter your postcode at checkout and we'll email you the moment we launch in your area.",
+    a: "Not yet — we're currently a single-city service, delivering to Birmingham postcodes only. Enter your postcode at checkout and we'll email you the moment we launch in your area.",
   },
   {
     q: "When does my plan start?",

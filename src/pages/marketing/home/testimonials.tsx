@@ -29,8 +29,8 @@ function Testimonials() {
     <section className="py-20 sm:py-28 bg-cream-100 border-y border-border">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="max-w-xl mx-auto text-center mb-14">
-          <p className="eyebrow mb-3">Loved by home kitchens</p>
-          <h2 className="text-3xl sm:text-4xl text-ink">Small pauses. Big reactions.</h2>
+          <p className="eyebrow mb-3">From our customers</p>
+          <h2 className="text-3xl sm:text-4xl text-ink">What people are saying</h2>
         </div>
 
         <div className="flex gap-5 overflow-x-auto pb-4 snap-x snap-mandatory -mx-5 px-5 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:overflow-visible">

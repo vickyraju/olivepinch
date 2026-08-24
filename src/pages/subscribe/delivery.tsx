@@ -59,7 +59,7 @@ function Delivery() {
     try {
       const res = await api.post<{ valid: boolean; postcode: string }>("/postcode/check", { postcode })
       if (!res.valid) {
-        setError("We don't currently deliver to that postcode — we're only piloting in Birmingham right now.")
+        setError("We don't currently deliver to that postcode — we're Birmingham-only for now.")
         setStatus("idle")
         return
       }
