@@ -17,6 +17,7 @@ const createSchema = z.object({
   planDuration: z.union([z.literal(7), z.literal(14), z.literal(28)]),
   startDate: z.string(), // YYYY-MM-DD
   mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  email: z.string().email(),
   addressDoorNumber: z.string().min(1),
   addressBuildingName: z.string().optional(),
   addressStreet: z.string().min(1),
@@ -98,6 +99,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
   await prisma.customer.update({
     where: { id: customer.id },
     data: {
+      email: body.email,
       addressDoorNumber: body.addressDoorNumber,
       addressBuildingName: body.addressBuildingName,
       addressStreet: body.addressStreet,
