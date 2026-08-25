@@ -34,7 +34,7 @@ export interface DayMenu {
 export interface SubscribeState {
   postcode: string
   postcodeConfirmed: boolean
-  planDuration: PlanDuration
+  planDuration: PlanDuration | null
   startDate: string | null
   profile: CustomerProfile
   goal: Goal | null
@@ -42,13 +42,13 @@ export interface SubscribeState {
   dietTypes: DietType[]
   allergens: string[]
   noAllergies: boolean
-  mealsPerDay: MealsPerDay
+  mealsPerDay: MealsPerDay | null
   dayMenus: DayMenu[]
   /** Real MenuItem prices encountered while fetching published weeks during the menu step —
    * lets order-summary/payment price the plan without depending on the dayMenus payload shape. */
   menuItemPrices: Record<string, number>
   deliveryAddress: DeliveryAddress
-  deliverySlot: DeliverySlot
+  deliverySlot: DeliverySlot | null
   paymentAttempted: boolean
   customerId: string | null
   subscriptionId: string | null
@@ -75,7 +75,7 @@ const EMPTY_ADDRESS: DeliveryAddress = {
 const INITIAL_STATE: SubscribeState = {
   postcode: "",
   postcodeConfirmed: false,
-  planDuration: 7,
+  planDuration: null,
   startDate: null,
   profile: EMPTY_PROFILE,
   goal: null,
@@ -83,11 +83,11 @@ const INITIAL_STATE: SubscribeState = {
   dietTypes: [],
   allergens: [],
   noAllergies: false,
-  mealsPerDay: 2,
+  mealsPerDay: null,
   dayMenus: [],
   menuItemPrices: {},
   deliveryAddress: EMPTY_ADDRESS,
-  deliverySlot: "Daily",
+  deliverySlot: null,
   paymentAttempted: false,
   customerId: null,
   subscriptionId: null,

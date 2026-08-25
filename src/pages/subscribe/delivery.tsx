@@ -49,7 +49,8 @@ function Delivery() {
     doorNumber.trim() &&
     street.trim() &&
     area.trim() &&
-    postcode.trim()
+    postcode.trim() &&
+    state.deliverySlot
   )
 
   async function handlePay() {
@@ -86,7 +87,7 @@ function Delivery() {
         addressStreet: deliveryAddress.street,
         addressArea: deliveryAddress.area,
         addressPostcode: deliveryAddress.postcode,
-        deliverySlot: DELIVERY_SLOT_TO_ENUM[state.deliverySlot],
+        deliverySlot: DELIVERY_SLOT_TO_ENUM[state.deliverySlot ?? "Daily"],
         dayMenus: state.dayMenus,
       })
       update({ subscriptionId: subscription.subscriptionId })

@@ -70,7 +70,7 @@ function Plan() {
 
       <StepNav
         backTo="/subscribe/tier"
-        continueDisabled={!state.startDate}
+        continueDisabled={!state.planDuration || !state.startDate}
         onContinue={() => navigate("/subscribe/preferences")}
       />
     </div>

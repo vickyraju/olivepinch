@@ -34,7 +34,7 @@ function Menu() {
 
   const [weeks, setWeeks] = useState<Record<string, PublishedMenuItem[] | "unpublished" | "error"> | null>(null)
 
-  const deliveryDates = state.startDate ? buildDeliveryDates(state.startDate, state.planDuration) : []
+  const deliveryDates = state.startDate && state.planDuration ? buildDeliveryDates(state.startDate, state.planDuration) : []
   const spannedWeeks = [...new Set(deliveryDates.map(mondayOf))]
 
   useEffect(() => {
@@ -81,7 +81,7 @@ function Menu() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deliveryDates.join(",")])
 
-  if (!state.goal || state.dietTypes.length === 0 || !state.startDate) {
+  if (!state.goal || state.dietTypes.length === 0 || !state.startDate || !state.mealsPerDay) {
     return <p className="text-ink-muted">Loading your menu…</p>
   }
 

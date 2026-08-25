@@ -25,10 +25,10 @@ function OrderSummary({
 } = {}) {
   const { state } = useSubscribe()
   const plans = usePlans()
-  const total = priceFor(plans, state.goal, state.planDuration, state.tier)
-  const endDate = state.startDate ? computeEndDate(state.startDate, state.planDuration, []) : null
+  const total = state.planDuration ? priceFor(plans, state.goal, state.planDuration, state.tier) : null
+  const endDate = state.startDate && state.planDuration ? computeEndDate(state.startDate, state.planDuration, []) : null
   const age = state.profile.dateOfBirth ? calculateAge(state.profile.dateOfBirth) : null
-  const totalMeals = state.planDuration * state.mealsPerDay
+  const totalMeals = (state.planDuration ?? 0) * (state.mealsPerDay ?? 0)
   const perMeal = total !== null && totalMeals > 0 ? total / totalMeals : null
 
   return (
@@ -43,8 +43,8 @@ function OrderSummary({
       </dl>
 
       <dl className="space-y-2.5 border-t border-border pt-4">
-        <Row label="Plan length" value={`${state.planDuration} days`} />
-        <Row label="Meals/day" value={String(state.mealsPerDay)} />
+        <Row label="Plan length" value={state.planDuration ? `${state.planDuration} days` : "—"} />
+        <Row label="Meals/day" value={state.mealsPerDay ? String(state.mealsPerDay) : "—"} />
         <Row label="Goal" value={state.goal ?? "—"} />
         <Row label="Tier" value={state.tier ?? "—"} />
         <Row label="Preferred food" value={state.dietTypes.join(", ") || "—"} />
@@ -52,7 +52,7 @@ function OrderSummary({
       </dl>
 
       <dl className="space-y-2.5 border-t border-border pt-4">
-        <Row label="Delivery" value={state.deliverySlot} />
+        <Row label="Delivery" value={state.deliverySlot ?? "—"} />
         <Row label="Start date" value={state.startDate ? new Date(state.startDate).toLocaleDateString("en-GB") : "—"} />
         <Row label="End date" value={endDate ? new Date(endDate).toLocaleDateString("en-GB") : "—"} />
       </dl>
