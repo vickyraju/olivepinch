@@ -46,6 +46,7 @@ function Delivery() {
     firstName.trim() &&
     lastName.trim() &&
     p.phone.trim() &&
+    /\S+@\S+\.\S+/.test(p.email) &&
     doorNumber.trim() &&
     street.trim() &&
     area.trim() &&
@@ -82,6 +83,7 @@ function Delivery() {
         startDate: state.startDate,
         mealsPerDay: state.mealsPerDay,
         tier: TIER_TO_ENUM[state.tier ?? "Basic"],
+        email: p.email.trim(),
         addressDoorNumber: deliveryAddress.doorNumber,
         addressBuildingName: deliveryAddress.buildingName || undefined,
         addressStreet: deliveryAddress.street,
@@ -117,7 +119,7 @@ function Delivery() {
       <p className="text-ink-muted mb-8">Where should we drop off your meals?</p>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft order-2 lg:order-1">
+        <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft lg:order-1">
           <section className="space-y-5">
             <div>
               <h2 className="text-lg text-ink mb-1">Your details</h2>
@@ -143,13 +145,26 @@ function Delivery() {
                 />
               </div>
             </div>
-            <div>
-              <Label htmlFor="phone">Phone number</Label>
-              <PhoneInput
-                id="phone"
-                value={p.phone}
-                onChange={(v) => update({ profile: { ...p, phone: v } })}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="phone">Phone number</Label>
+                <PhoneInput
+                  id="phone"
+                  value={p.phone}
+                  onChange={(v) => update({ profile: { ...p, phone: v } })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">Email address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={p.email}
+                  onChange={(e) => update({ profile: { ...p, email: e.target.value } })}
+                />
+              </div>
             </div>
           </section>
 
@@ -241,7 +256,7 @@ function Delivery() {
           </div>
         </div>
 
-        <div className="order-1 lg:order-2">
+        <div className="lg:order-2">
           <OrderSummary
             onPay={handlePay}
             payDisabled={!canContinue || status === "checking" || status === "processing"}
