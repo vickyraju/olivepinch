@@ -46,7 +46,11 @@ export async function createHostedPayment(args: CreateHostedPaymentArgs): Promis
 }
 
 export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succeeded: boolean; raw: unknown }> {
-  const res = await fetch(statusQueryUrl, { headers: { Authorization: authHeader(), Accept: "application/hal+json" } })
+  // The self link returned by POST /payment_pages is a payment_pages resource — Worldpay
+  // 406s a generic application/hal+json Accept header on it, same as the create call needs
+  // its vendor-specific media type.
+  const mediaType = "application/vnd.worldpay.payment_pages-v1.hal+json"
+  const res = await fetch(statusQueryUrl, { headers: { Authorization: authHeader(), Accept: mediaType } })
   if (!res.ok) throw new Error(`Worldpay status query failed: ${res.status} ${await res.text()}`)
   const raw = (await res.json()) as unknown
   // ponytail: temporary — log the real shape so we can fix the guessed outcome
