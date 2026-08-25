@@ -7,7 +7,7 @@ import { PhoneInput } from "@/components/ui/phone-input"
 import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe, type DeliverySlot } from "@/lib/subscribe-context"
 import { api, ApiError } from "@/lib/api"
-import { DELIVERY_SLOT_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
+import { DELIVERY_SLOT_TO_ENUM, TIER_TO_ENUM, GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
 import { cn, splitFullName, joinFullName } from "@/lib/utils"
@@ -75,10 +75,33 @@ function Delivery() {
       update({ deliveryAddress })
 
       setStatus("processing")
-      if (!state.customerId) throw new Error("Missing your profile — go back and complete the earlier steps.")
+      let customerId = state.customerId
+      if (!customerId) {
+        if (!state.goal || state.dietTypes.length === 0) throw new Error("Missing your goal and diet preferences — go back and complete the earlier steps.")
+        const provisional = await api.post<{ customerId: string }>("/customers/provisional", {
+          fullName: p.fullName.trim(),
+          phone: p.phone.trim(),
+          gender: p.gender || undefined,
+          dateOfBirth: p.dateOfBirth,
+          heightCm: Number(p.heightCm),
+          weightKg: Number(p.weightKg),
+          healthConsent: true,
+          marketingOptIn: false,
+        })
+        // Goal/diet/allergens were picked several steps ago in "Choose" but couldn't be saved
+        // until now — that PATCH is customer-scoped, and this is the first point a customerId exists.
+        await api.patch(`/customers/${provisional.customerId}/preferences`, {
+          goal: GOAL_TO_ENUM[state.goal],
+          dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
+          allergens: state.allergens,
+          postcode: state.postcode,
+        })
+        customerId = provisional.customerId
+        update({ customerId })
+      }
 
       const subscription = await api.post<{ subscriptionId: string }>("/subscriptions", {
-        customerId: state.customerId,
+        customerId,
         planDuration: state.planDuration,
         startDate: state.startDate,
         mealsPerDay: state.mealsPerDay,
@@ -265,7 +288,7 @@ function Delivery() {
         </div>
       </div>
 
-      <StepNav backTo="/subscribe/account-setup" hideContinue />
+      <StepNav backTo="/subscribe/profile" hideContinue />
     </div>
   )
 }
