@@ -1,7 +1,7 @@
 import flags from "react-phone-number-input/flags"
 import { cn } from "@/lib/utils"
 
-const GbFlag = flags.GB
+const GbFlag = flags.GB!
 
 interface PhoneInputProps {
   id?: string
