@@ -72,11 +72,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("sendOtp failed:", err)
-      // A failed attempt leaves the invisible reCAPTCHA widget already "solved" — reused as-is,
-      // the next sendOtp (retry or resend) fails with "reCAPTCHA has already been rendered".
-      recaptchaVerifier.current.clear()
-      recaptchaVerifier.current = null
       throw err
+    } finally {
+      // The invisible widget is single-use and bound to the #recaptcha-container DOM node,
+      // which doesn't outlive this page (it unmounts on route change) — recaptchaVerifier
+      // itself lives in AuthProvider and survives navigation, so a stale reference left after
+      // a successful send makes the next attempt fail with "reCAPTCHA client element has been
+      // removed". Always clear it so every call starts fresh against whatever container exists.
+      recaptchaVerifier.current?.clear()
+      recaptchaVerifier.current = null
     }
   }, [])
 

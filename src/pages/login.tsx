@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Lock, Phone } from "lucide-react"
 import { formatPhoneNumberIntl } from "react-phone-number-input"
@@ -35,12 +35,16 @@ function Login() {
     if (isAuthenticated) navigate("/dashboard")
   }, [isAuthenticated, navigate])
 
-  // Discard a previous visit's leftover error/redirect state so returning to this
-  // page (e.g. after being sent to /subscribe) starts clean instead of re-firing it.
-  useEffect(() => {
-    clearAuthError()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // Discard a previous visit's leftover error/redirect state so returning to this page
+  // (e.g. after being sent to /subscribe) starts clean instead of re-firing it. Done as a
+  // render-phase guard rather than a mount effect: an effect here would read the stale
+  // authError in the same commit it schedules the clear, so the display effect below would
+  // still fire once with the old value before it took effect.
+  const clearedStaleError = useRef(false)
+  if (!clearedStaleError.current) {
+    clearedStaleError.current = true
+    if (authError) clearAuthError()
+  }
 
   useEffect(() => {
     if (!authError) return
