@@ -80,7 +80,7 @@ function Delivery() {
         planDuration: state.planDuration,
         startDate: state.startDate,
         mealsPerDay: state.mealsPerDay,
-        tier: TIER_TO_ENUM[state.tier],
+        tier: TIER_TO_ENUM[state.tier ?? "Basic"],
         addressDoorNumber: deliveryAddress.doorNumber,
         addressBuildingName: deliveryAddress.buildingName || undefined,
         addressStreet: deliveryAddress.street,

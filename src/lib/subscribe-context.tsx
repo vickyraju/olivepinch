@@ -38,7 +38,7 @@ export interface SubscribeState {
   startDate: string | null
   profile: CustomerProfile
   goal: Goal | null
-  tier: PlanTier
+  tier: PlanTier | null
   dietTypes: DietType[]
   allergens: string[]
   noAllergies: boolean
@@ -79,7 +79,7 @@ const INITIAL_STATE: SubscribeState = {
   startDate: null,
   profile: EMPTY_PROFILE,
   goal: null,
-  tier: "Basic",
+  tier: null,
   dietTypes: [],
   allergens: [],
   noAllergies: false,

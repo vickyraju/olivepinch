@@ -23,10 +23,10 @@ export function usePlans(): Plan[] {
   return plans
 }
 
-export function priceFor(plans: Plan[], goal: Goal | null, planDuration: number, tier: PlanTier = "Basic"): number | null {
+export function priceFor(plans: Plan[], goal: Goal | null, planDuration: number, tier: PlanTier | null = "Basic"): number | null {
   if (!goal) return null
   const enumGoal = GOAL_TO_ENUM[goal]
-  const enumTier = TIER_TO_ENUM[tier]
+  const enumTier = TIER_TO_ENUM[tier ?? "Basic"]
   const plan = plans.find((p) => p.goal === enumGoal && p.planDuration === planDuration && p.tier === enumTier)
   return plan ? Number(plan.price) : null
 }
