@@ -23,6 +23,7 @@ interface AuthContextValue {
   sendOtp: (phone: string) => Promise<void>
   verifyOtp: (code: string) => Promise<void>
   logout: () => Promise<void>
+  clearAuthError: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -88,8 +89,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCustomer(null)
   }, [])
 
+  const clearAuthError = useCallback(() => {
+    setAuthError(null)
+    setAccountNotFound(false)
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, authError, accountNotFound, sendOtp, verifyOtp, logout }}>
+    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, authError, accountNotFound, sendOtp, verifyOtp, logout, clearAuthError }}>
       {children}
     </AuthContext.Provider>
   )

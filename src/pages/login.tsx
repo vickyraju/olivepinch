@@ -11,7 +11,7 @@ import { Logo } from "@/components/ui/logo"
 import { FoodPhoto } from "@/components/ui/food-photo"
 
 function Login() {
-  const { isAuthenticated, authError, accountNotFound, sendOtp, verifyOtp } = useAuth()
+  const { isAuthenticated, authError, accountNotFound, sendOtp, verifyOtp, clearAuthError } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -32,6 +32,13 @@ function Login() {
   useEffect(() => {
     if (isAuthenticated) navigate("/dashboard")
   }, [isAuthenticated, navigate])
+
+  // Discard a previous visit's leftover error/redirect state so returning to this
+  // page (e.g. after being sent to /subscribe) starts clean instead of re-firing it.
+  useEffect(() => {
+    clearAuthError()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (!authError) return
@@ -105,7 +112,7 @@ function Login() {
           <h1 className="text-3xl sm:text-4xl text-ink mb-2">Welcome back</h1>
           <p className="text-ink-muted mb-8">
             {stage === "phone" && "Log in to manage your deliveries, pause a week, or renew your plan."}
-            {stage === "otp" && <>We've sent a 6-digit code to <strong className="text-ink">{phone}</strong>.</>}
+            {stage === "otp" && <>We've sent a 6-digit code to <strong className="text-ink">{phone.replace(/^(\+44)(\d)/, "$1 $2")}</strong>.</>}
           </p>
 
           {stage === "phone" && (
