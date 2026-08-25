@@ -46,21 +46,14 @@ export async function createHostedPayment(args: CreateHostedPaymentArgs): Promis
 }
 
 export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succeeded: boolean; raw: unknown }> {
-  // The self link returned by POST /payment_pages is a payment_pages resource — Worldpay
-  // 406s a generic application/hal+json Accept header on it, same as the create call needs
-  // its vendor-specific media type.
-  const mediaType = "application/vnd.worldpay.payment_pages-v1.hal+json"
+  // The self link returned by POST /payment_pages points at the separate Payment Queries API
+  // (/paymentQueries/payments?transactionReference=...), which has its own media type —
+  // confirmed against the live sandbox, since Worldpay's docs don't state it plainly.
+  const mediaType = "application/vnd.worldpay.payment-queries-v1.hal+json"
   const res = await fetch(statusQueryUrl, { headers: { Authorization: authHeader(), Accept: mediaType } })
   if (!res.ok) throw new Error(`Worldpay status query failed: ${res.status} ${await res.text()}`)
-  const raw = (await res.json()) as unknown
-  // ponytail: temporary — log the real shape so we can fix the guessed outcome
-  // parsing below against an actual sandbox response. Remove once confirmed.
-  console.log("[worldpay] status query raw response:", JSON.stringify(raw))
-  // TODO: confirm exact field/value against live Worldpay docs before enabling real
-  // credentials — this can't be verified without a real sandbox payment to inspect.
-  const outcome = (raw as { outcome?: string; lastEvent?: string; status?: string })
-  const succeeded = ["authorized", "captured", "settled", "sentForSettlement"].includes(
-    outcome.outcome ?? outcome.lastEvent ?? outcome.status ?? ""
-  )
+  const raw = (await res.json()) as { _embedded?: { payments?: { lastEvent?: string }[] } }
+  const lastEvent = raw._embedded?.payments?.[0]?.lastEvent ?? ""
+  const succeeded = ["authorized", "captured", "settled", "sentForSettlement"].includes(lastEvent)
   return { succeeded, raw }
 }
