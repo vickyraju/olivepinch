@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Package, CalendarDays, Repeat, AlertCircle, ShieldCheck } from "lucide-react"
+import { Package, CalendarDays, Repeat, AlertCircle } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
@@ -259,15 +259,8 @@ function Delivery() {
             </div>
           </section>
 
-          <div className="mt-8 pt-8 border-t border-border space-y-4">
-            <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
-              <ShieldCheck className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-ink-muted">
-                You'll be redirected to Worldpay's secure payment page to enter your card details — we never see or store your card number.
-              </p>
-            </div>
-
-            {status === "failed" && (
+          {status === "failed" && (
+            <div className="mt-8 pt-8 border-t border-border">
               <div role="alert" className="rounded-lg bg-coral-50 p-4 flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-coral-600 shrink-0 mt-0.5" />
                 <div>
@@ -275,8 +268,8 @@ function Delivery() {
                   <p className="text-sm text-ink-muted mt-0.5">{declineMessage}</p>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="lg:order-2">

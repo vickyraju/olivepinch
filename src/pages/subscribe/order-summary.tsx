@@ -1,5 +1,5 @@
 import { formatPhoneNumberIntl } from "react-phone-number-input"
-import { Lock } from "lucide-react"
+import { Lock, ShieldCheck } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { computeEndDate, calculateAge } from "@/lib/subscription"
@@ -70,7 +70,13 @@ function OrderSummary({
       </div>
 
       {onPay && (
-        <div className="border-t border-border pt-4">
+        <div className="border-t border-border pt-4 space-y-4">
+          <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
+            <ShieldCheck className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-ink-muted">
+              You'll be redirected to Worldpay's secure payment page to enter your card details — we never see or store your card number.
+            </p>
+          </div>
           <Button type="button" variant="accent" size="lg" className="w-full" disabled={payDisabled} onClick={onPay}>
             <Lock className="h-4 w-4" />
             {payLabel}
