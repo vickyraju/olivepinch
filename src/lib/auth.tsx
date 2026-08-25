@@ -65,11 +65,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const sendOtp = useCallback(async (phone: string) => {
     if (!recaptchaVerifier.current) {
-      recaptchaVerifier.current = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible" })
+      recaptchaVerifier.current = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible", badge: "bottomright" })
     }
     try {
       confirmationResult.current = await signInWithPhoneNumber(auth, phone, recaptchaVerifier.current)
     } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error("sendOtp failed:", err)
       // A failed attempt leaves the invisible reCAPTCHA widget already "solved" — reused as-is,
       // the next sendOtp (retry or resend) fails with "reCAPTCHA has already been rendered".
       recaptchaVerifier.current.clear()

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { Lock, Phone } from "lucide-react"
+import { formatPhoneNumberIntl } from "react-phone-number-input"
 import { useAuth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -22,6 +23,7 @@ function Login() {
   const [sending, setSending] = useState(false)
   const [verifying, setVerifying] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
+  const [codeFocused, setCodeFocused] = useState(false)
 
   useEffect(() => {
     if (resendCooldown <= 0) return
@@ -112,14 +114,14 @@ function Login() {
           <h1 className="text-3xl sm:text-4xl text-ink mb-2">Welcome back</h1>
           <p className="text-ink-muted mb-8">
             {stage === "phone" && "Log in to manage your deliveries, pause a week, or renew your plan."}
-            {stage === "otp" && <>We've sent a 6-digit code to <strong className="text-ink">{phone.replace(/^(\+44)(\d)/, "$1 $2")}</strong>.</>}
+            {stage === "otp" && <>We've sent a 6-digit code to <strong className="text-ink">{formatPhoneNumberIntl(phone) || phone}</strong>.</>}
           </p>
 
           {stage === "phone" && (
             <form onSubmit={handleSendCode} className="space-y-4">
               <div>
                 <Label htmlFor="phone">Phone number</Label>
-                <PhoneInput id="phone" value={phone} onChange={setPhone} />
+                <PhoneInput id="phone" value={phone} onChange={setPhone} international />
               </div>
               <FieldError>{error}</FieldError>
               <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending || !phone.trim()}>
@@ -137,10 +139,12 @@ function Login() {
                   id="code"
                   inputMode="numeric"
                   maxLength={6}
-                  placeholder="123456"
+                  placeholder={codeFocused ? "" : "123456"}
                   autoComplete="one-time-code"
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                  onFocus={() => setCodeFocused(true)}
+                  onBlur={() => setCodeFocused(false)}
                   className="tracking-[0.5em] text-center text-lg"
                 />
               </div>
