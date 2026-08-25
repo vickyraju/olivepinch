@@ -35,18 +35,15 @@ function Login() {
     if (isAuthenticated) navigate("/dashboard")
   }, [isAuthenticated, navigate])
 
-  // Discard a previous visit's leftover error/redirect state so returning to this page
-  // (e.g. after being sent to /subscribe) starts clean instead of re-firing it. Done as a
-  // render-phase guard rather than a mount effect: an effect here would read the stale
-  // authError in the same commit it schedules the clear, so the display effect below would
-  // still fire once with the old value before it took effect.
-  const clearedStaleError = useRef(false)
-  if (!clearedStaleError.current) {
-    clearedStaleError.current = true
-    if (authError) clearAuthError()
-  }
-
+  // Skip the first run so a leftover authError from a previous visit (e.g. bouncing back
+  // from /subscribe) gets cleared silently instead of re-displaying/re-redirecting.
+  const isFirstRun = useRef(true)
   useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false
+      if (authError) clearAuthError()
+      return
+    }
     if (!authError) return
     if (accountNotFound) {
       setError("Looks like you don't have a plan with us yet — taking you to get started…")

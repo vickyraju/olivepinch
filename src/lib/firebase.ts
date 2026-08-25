@@ -19,3 +19,9 @@ const app = initializeApp({
 })
 
 export const auth = getAuth(app)
+
+// Skips the real reCAPTCHA widget entirely when signing in with a Firebase
+// Console-whitelisted test phone number — must be set before any RecaptchaVerifier is created.
+if (import.meta.env.DEV) {
+  auth.settings.appVerificationDisabledForTesting = true
+}
