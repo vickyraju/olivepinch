@@ -40,9 +40,9 @@ type SlotFilter = "ALL" | "BREAKFAST" | "LUNCH" | "DINNER" | "SNACKS"
 
 const slotFilters: { key: SlotFilter; label: string }[] = [
   { key: "ALL", label: "All" },
-  { key: "BREAKFAST", label: "Breakfast" },
-  { key: "LUNCH", label: "Lunch" },
-  { key: "DINNER", label: "Dinner" },
+  { key: "BREAKFAST", label: "Box1" },
+  { key: "LUNCH", label: "Box2" },
+  { key: "DINNER", label: "Box3" },
   { key: "SNACKS", label: "Snacks" },
 ]
 

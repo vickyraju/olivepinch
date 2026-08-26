@@ -14,9 +14,9 @@ export const ACCOUNT_STATUS_STYLES: Record<string, { label: string; className: s
 }
 
 export const MEAL_SLOT_STYLES: Record<string, { label: string; className: string }> = {
-  BREAKFAST: { label: "Breakfast", className: "bg-amber-50 text-amber-700 border-amber-200" },
-  LUNCH: { label: "Lunch", className: "bg-blue-50 text-blue-700 border-blue-200" },
-  DINNER: { label: "Dinner", className: "bg-purple-50 text-purple-700 border-purple-200" },
+  BREAKFAST: { label: "Box1", className: "bg-amber-50 text-amber-700 border-amber-200" },
+  LUNCH: { label: "Box2", className: "bg-blue-50 text-blue-700 border-blue-200" },
+  DINNER: { label: "Box3", className: "bg-purple-50 text-purple-700 border-purple-200" },
   SNACKS: { label: "Snacks", className: "bg-green-50 text-green-700 border-green-200" },
 }
 

@@ -64,7 +64,7 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
   reactivate: "Reactivate",
 }
 
-const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Breakfast", LUNCH: "Lunch", DINNER: "Dinner" }
+const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
 const WEEKDAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
 function mondayOf(date: Date): Date {
