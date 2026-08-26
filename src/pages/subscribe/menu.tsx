@@ -194,7 +194,7 @@ function Menu() {
         </>
       )}
 
-      <StepNav backTo="/subscribe/meals" continueDisabled={!weeks || !canContinue} onContinue={() => navigate("/subscribe/profile")} />
+      <StepNav backTo="/subscribe/preferences" continueDisabled={!weeks || !canContinue} onContinue={() => navigate("/subscribe/profile")} />
     </div>
   )
 }

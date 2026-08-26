@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import { Calendar } from "@/components/ui/calendar"
-import { useSubscribe, type PlanDuration } from "@/lib/subscribe-context"
+import { useSubscribe, type PlanDuration, type MealsPerDay } from "@/lib/subscribe-context"
 import { toDateKey, fromDateKey } from "@/lib/subscription"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { StepNav } from "./step-nav"
@@ -10,6 +10,12 @@ const DURATIONS: { value: PlanDuration; label: string; hint: string }[] = [
   { value: 7, label: "7 days", hint: "Try it out" },
   { value: 14, label: "14 days", hint: "Most flexible" },
   { value: 28, label: "28 days", hint: "Best value" },
+]
+
+const MEALS_OPTIONS: { value: MealsPerDay; label: string; slots: string }[] = [
+  { value: 1, label: "1 meal", slots: "Box2" },
+  { value: 2, label: "2 meals", slots: "Box1 + Box3" },
+  { value: 3, label: "3 meals", slots: "Box1 + Box2 + Box3" },
 ]
 
 function minStartDate(): Date {
@@ -68,9 +74,33 @@ function Plan() {
         onSelect={(date) => update({ startDate: toDateKey(date) })}
       />
 
+      <h2 className="text-xl text-ink mb-1 mt-10">How many meals a day?</h2>
+      <p className="text-sm text-ink-muted mb-4">This sets how many meal slots we fill for every day of your plan.</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {MEALS_OPTIONS.map((opt) => {
+          const active = state.mealsPerDay === opt.value
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              aria-pressed={active}
+              onClick={() => update({ mealsPerDay: opt.value })}
+              className={cn(
+                "rounded-xl border-2 p-5 text-left transition-colors cursor-pointer",
+                active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
+              )}
+            >
+              <div className="font-display text-2xl font-bold text-ink">{opt.value}</div>
+              <div className="text-sm font-medium text-ink">{opt.label}/day</div>
+              <div className="text-xs text-ink-muted mt-2">{opt.slots}</div>
+            </button>
+          )
+        })}
+      </div>
+
       <StepNav
         backTo="/subscribe/tier"
-        continueDisabled={!state.planDuration || !state.startDate}
+        continueDisabled={!state.planDuration || !state.startDate || !state.mealsPerDay}
         onContinue={() => navigate("/subscribe/preferences")}
       />
     </div>

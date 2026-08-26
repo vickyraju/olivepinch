@@ -13,7 +13,6 @@ import Postcode from '@/pages/subscribe/postcode'
 import Goal from '@/pages/subscribe/goal'
 import Tier from '@/pages/subscribe/tier'
 import Preferences from '@/pages/subscribe/preferences'
-import Meals from '@/pages/subscribe/meals'
 import Plan from '@/pages/subscribe/plan'
 import Menu from '@/pages/subscribe/menu'
 import SubscribeProfile from '@/pages/subscribe/profile'
@@ -46,7 +45,6 @@ function App() {
         <Route path="tier" element={<Tier />} />
         <Route path="plan" element={<Plan />} />
         <Route path="preferences" element={<Preferences />} />
-        <Route path="meals" element={<Meals />} />
         <Route path="menu" element={<Menu />} />
         <Route path="profile" element={<SubscribeProfile />} />
         <Route path="delivery" element={<SubscribeDelivery />} />

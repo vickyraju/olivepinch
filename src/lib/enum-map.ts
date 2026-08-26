@@ -3,7 +3,7 @@ import type { OrderStatus } from "@/lib/subscription"
 import type { DeliverySlot, PlanTier } from "@/lib/subscribe-context"
 
 // Mirrors server/src/lib/enums.ts (labels) and the Prisma schema enums (values) — the
-// backend speaks WEIGHT_LOSS/MEAT/BREAKFAST, the frontend speaks "Weight Loss"/"Meat"/"Breakfast".
+// backend speaks WEIGHT_LOSS/MEAT/BREAKFAST, the frontend speaks "Weight Loss"/"Meat"/"Box1".
 export const GOAL_TO_ENUM: Record<Goal, string> = {
   "Weight Loss": "WEIGHT_LOSS",
   "Weight Gain": "WEIGHT_GAIN",
@@ -20,9 +20,9 @@ export const DIET_TO_ENUM: Record<DietType, string> = {
 }
 
 export const MEAL_SLOT_TO_ENUM: Record<MealSlot, string> = {
-  Breakfast: "BREAKFAST",
-  Lunch: "LUNCH",
-  Dinner: "DINNER",
+  Box1: "BREAKFAST",
+  Box2: "LUNCH",
+  Box3: "DINNER",
 }
 
 export const DELIVERY_SLOT_TO_ENUM: Record<DeliverySlot, string> = {
