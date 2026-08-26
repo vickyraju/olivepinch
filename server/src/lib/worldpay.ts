@@ -53,7 +53,10 @@ export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succ
   const res = await fetch(statusQueryUrl, { headers: { Authorization: authHeader(), Accept: mediaType } })
   if (!res.ok) throw new Error(`Worldpay status query failed: ${res.status} ${await res.text()}`)
   const raw = (await res.json()) as { _embedded?: { payments?: { lastEvent?: string }[] } }
-  const lastEvent = raw._embedded?.payments?.[0]?.lastEvent ?? ""
-  const succeeded = ["authorized", "captured", "settled", "sentForSettlement"].includes(lastEvent)
+  const lastEvent = (raw._embedded?.payments?.[0]?.lastEvent ?? "").toLowerCase()
+  // Confirmed against a real sandbox payment: after redirect, HPP payments land on
+  // "authorized" then progress through settlement ("settlementrequestsubmitted" ->
+  // "settled") — all of these mean the card was successfully charged.
+  const succeeded = ["authorized", "settlementrequestsubmitted", "settled", "sentforsettlement"].includes(lastEvent)
   return { succeeded, raw }
 }
