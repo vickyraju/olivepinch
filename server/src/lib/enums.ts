@@ -22,9 +22,9 @@ export const DELIVERY_SLOT_LABELS: Record<DeliverySlot, string> = {
 }
 
 export const MEAL_SLOT_LABELS: Record<MealSlot, string> = {
-  BREAKFAST: "Breakfast",
-  LUNCH: "Lunch",
-  DINNER: "Dinner",
+  BREAKFAST: "Box1",
+  LUNCH: "Box2",
+  DINNER: "Box3",
   SNACKS: "Snacks",
 }
 
