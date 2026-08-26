@@ -45,7 +45,10 @@ export async function createHostedPayment(args: CreateHostedPaymentArgs): Promis
   return { redirectUrl: json.url, statusQueryUrl: json._links.self.href }
 }
 
-export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succeeded: boolean; raw: unknown }> {
+const SUCCESS_EVENTS = ["authorized", "settlementrequestsubmitted", "settled", "sentforsettlement"]
+const FAILURE_EVENTS = ["refused", "cancelled", "error", "expired", "settlementfailed", "refundfailed"]
+
+async function fetchPaymentStatus(statusQueryUrl: string): Promise<{ lastEvent: string; raw: unknown }> {
   // The self link returned by POST /payment_pages points at the separate Payment Queries API
   // (/paymentQueries/payments?transactionReference=...), which has its own media type —
   // confirmed against the live sandbox, since Worldpay's docs don't state it plainly.
@@ -54,9 +57,21 @@ export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succ
   if (!res.ok) throw new Error(`Worldpay status query failed: ${res.status} ${await res.text()}`)
   const raw = (await res.json()) as { _embedded?: { payments?: { lastEvent?: string }[] } }
   const lastEvent = (raw._embedded?.payments?.[0]?.lastEvent ?? "").toLowerCase()
-  // Confirmed against a real sandbox payment: after redirect, HPP payments land on
-  // "authorized" then progress through settlement ("settlementrequestsubmitted" ->
-  // "settled") — all of these mean the card was successfully charged.
-  const succeeded = ["authorized", "settlementrequestsubmitted", "settled", "sentforsettlement"].includes(lastEvent)
-  return { succeeded, raw }
+  return { lastEvent, raw }
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succeeded: boolean; raw: unknown }> {
+  // Right after the HPP redirect, Worldpay's Payment Queries index can briefly lag behind the
+  // actual payment outcome — confirmed against a real sandbox payment where the query returned
+  // an empty payments list moments before the transaction was indexed. Retry until we see a
+  // known terminal event rather than treating "not indexed yet" the same as "declined".
+  let result = { lastEvent: "", raw: undefined as unknown }
+  for (let attempt = 0; attempt < 5; attempt++) {
+    result = await fetchPaymentStatus(statusQueryUrl)
+    if (SUCCESS_EVENTS.includes(result.lastEvent) || FAILURE_EVENTS.includes(result.lastEvent)) break
+    if (attempt < 4) await sleep(1500)
+  }
+  return { succeeded: SUCCESS_EVENTS.includes(result.lastEvent), raw: result.raw }
 }
