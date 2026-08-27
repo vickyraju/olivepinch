@@ -4,12 +4,11 @@ import { Logo } from "@/components/logo"
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: "dashboard" },
-  { path: "/orders", label: "Order Board", icon: "list_alt" },
   { path: "/menu", label: "Menu Control", icon: "restaurant_menu" },
   { path: "/menu-weeks", label: "Weekly Menu", icon: "calendar_month" },
   { path: "/plans", label: "Plans", icon: "sell" },
   { path: "/customers", label: "Customers", icon: "group" },
-  { path: "/zones", label: "Zones", icon: "location_on" },
+  { path: "/zones", label: "Postcode Coverage", icon: "location_on" },
   { path: "/promo-codes", label: "Promo Codes", icon: "confirmation_number" },
 ]
 

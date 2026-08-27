@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/skeleton"
 import { TrendBarChart } from "@/components/trend-bar-chart"
 import { api, BASE_URL, getToken } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
-import { ORDER_STATUS_STYLES, ACCOUNT_STATUS_STYLES, MEAL_SLOT_STYLES } from "@/lib/status-styles"
+import { ACCOUNT_STATUS_STYLES } from "@/lib/status-styles"
 
 interface RevenueResponse {
   series: { date: string; total: number }[]
@@ -24,8 +24,7 @@ interface DashboardSummary {
   accountStatusBreakdown: StatusCount[]
   subscriptionStatusBreakdown: StatusCount[]
   subscriptionDurationBreakdown: StatusCount[]
-  ordersTodayByStatus: StatusCount[]
-  ordersTodayBySlot: StatusCount[]
+  upcomingRenewals: { customerId: string; customerName: string; endDate: string }[]
   refunds: { succeeded: number; refunded: number; refundRate: number }
   recentActivity: {
     id: string
@@ -172,7 +171,6 @@ function Dashboard() {
   const trendData = (data?.series ?? []).map((s) => ({ label: formatChartDate(s.date), value: s.total }))
 
   const activeSubscriptions = summary?.subscriptionStatusBreakdown.find((s) => s.status === "ACTIVE")?.count ?? 0
-  const ordersToday = summary?.ordersTodayByStatus.reduce((sum, s) => sum + s.count, 0) ?? 0
 
   const nextWeekEntry = weeksQuery.data?.find((w) => w.weekStart === nextMonday)
   const nextWeekPublished = nextWeekEntry?.published ?? false
@@ -196,11 +194,10 @@ function Dashboard() {
         }
       />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px]">
           <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label="Revenue (30d)" value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
           <KpiCard icon="person_add" iconBg="bg-purple-50" iconColor="text-purple-600" label="New Customers (7d)" value={summary ? String(summary.newCustomersThisWeek) : "—"} loading={summaryQuery.isLoading} />
           <KpiCard icon="verified" iconBg="bg-green-50" iconColor="text-primary" label="Active Subscriptions" value={summary ? String(activeSubscriptions) : "—"} loading={summaryQuery.isLoading} />
-          <KpiCard icon="local_shipping" iconBg="bg-amber-50" iconColor="text-amber-600" label="Orders Today" value={summary ? String(ordersToday) : "—"} loading={summaryQuery.isLoading} />
         </div>
 
         {showAlerts && (
@@ -250,10 +247,30 @@ function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px]">
           <div className="bg-white p-[24px] border border-gray-200 rounded-[12px]">
-            <h2 className="text-[16px] font-bold text-gray-900 mb-5">Today's Orders</h2>
-            <DistributionRows rows={summary?.ordersTodayByStatus ?? []} styles={ORDER_STATUS_STYLES} loading={summaryQuery.isLoading} emptyText="No orders scheduled today." />
-            <h3 className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider mt-6 mb-3">By Meal Slot</h3>
-            <DistributionRows rows={summary?.ordersTodayBySlot ?? []} styles={MEAL_SLOT_STYLES} loading={summaryQuery.isLoading} emptyText="No meals scheduled today." />
+            <h2 className="text-[16px] font-bold text-gray-900 mb-5">Upcoming Renewals</h2>
+            {summaryQuery.isLoading ? (
+              <div className="space-y-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <Skeleton key={i} className="h-6 w-full" />
+                ))}
+              </div>
+            ) : !summary?.upcomingRenewals.length ? (
+              <p className="text-sm text-gray-400">No renewals due in the next 14 days.</p>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {summary.upcomingRenewals.map((r) => (
+                  <li key={r.customerId}>
+                    <Link
+                      to={`/customers/${r.customerId}`}
+                      className="flex items-center justify-between py-2.5 hover:bg-gray-50/50 -mx-2 px-2 rounded-lg transition-colors"
+                    >
+                      <span className="text-sm font-semibold text-gray-900">{r.customerName}</span>
+                      <span className="text-sm text-gray-500">{new Date(r.endDate).toLocaleDateString("en-GB")}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <div className="bg-white p-[24px] border border-gray-200 rounded-[12px] space-y-6">
             <div>

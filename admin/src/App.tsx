@@ -11,7 +11,6 @@ import Zones from '@/pages/zones'
 import PromoCodes from '@/pages/promo-codes'
 import Customers from '@/pages/customers'
 import CustomerDetail from '@/pages/customer-detail'
-import Orders from '@/pages/orders'
 import Admins from '@/pages/admins'
 
 const queryClient = new QueryClient({
@@ -31,7 +30,6 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/orders" element={<Orders />} />
             <Route path="/menu" element={<MenuControl />} />
             <Route path="/menu-weeks" element={<MenuWeeks />} />
             <Route path="/plans" element={<Plans />} />

@@ -9,6 +9,8 @@ interface MenuItem {
   id: string
   name: string
   slot: string
+  carbs: number
+  fat: number
   date?: string
 }
 
@@ -27,14 +29,15 @@ interface PendingEntry {
   missingDates: string[]
 }
 
-const SLOTS = ["BREAKFAST", "LUNCH", "DINNER", "SNACKS"]
+const SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
+const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
 const SLOTS_BY_MEALS_PER_DAY: Record<number, string[]> = {
   1: ["LUNCH"],
   2: ["BREAKFAST", "DINNER"],
   3: ["BREAKFAST", "LUNCH", "DINNER"],
 }
-// Every subscription needs one of these slots regardless of mealsPerDay — SNACKS is never
-// required, so a week can publish without it. Mirrors isWeekComplete on the backend.
+// Every subscription needs one of these slots regardless of mealsPerDay. Mirrors
+// isWeekComplete on the backend.
 const REQUIRED_SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
 const WEEKDAY_LABELS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -607,7 +610,7 @@ function MenuWeeks() {
                     <div className="space-y-4">
                       {SLOTS.map((slot) => (
                         <div key={slot}>
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{slot}</p>
+                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{SLOT_LABELS[slot] ?? slot}</p>
                           <SlotPicker
                             slot={slot}
                             items={itemsBySlot.get(slot) ?? []}
@@ -781,7 +784,7 @@ function MenuWeeks() {
                                     <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">Day</span>
                                     {slots.map((slot) => (
                                       <span key={slot} className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
-                                        {slot}
+                                        {SLOT_LABELS[slot] ?? slot}
                                       </span>
                                     ))}
                                   </div>

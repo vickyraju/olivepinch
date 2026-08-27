@@ -17,9 +17,12 @@ interface MenuItem {
   tier: string
   kcal: number
   protein: number
+  carbs: number
+  fat: number
 }
 
-const SLOTS = ["BREAKFAST", "LUNCH", "DINNER", "SNACKS"]
+const SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
+const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
 const DIETS = ["MEAT", "FISH", "VEGAN", "VEGETARIAN", "EGG"]
 const GOALS = ["WEIGHT_LOSS", "WEIGHT_GAIN", "WEIGHT_MAINTENANCE", "MUSCLE_BUILDING"]
 const ALLERGENS = ["Gluten", "Dairy", "Tree Nuts", "Peanuts", "Shellfish", "Soy", "Eggs", "Sesame"]
@@ -36,14 +39,13 @@ const TIER_LABELS: Record<string, string> = { BASIC: "Basic", ADVANCED: "Advance
 const REQUIRED_PHOTO_WIDTH = 1200
 const REQUIRED_PHOTO_HEIGHT = 800
 
-type SlotFilter = "ALL" | "BREAKFAST" | "LUNCH" | "DINNER" | "SNACKS"
+type SlotFilter = "ALL" | "BREAKFAST" | "LUNCH" | "DINNER"
 
 const slotFilters: { key: SlotFilter; label: string }[] = [
   { key: "ALL", label: "All" },
   { key: "BREAKFAST", label: "Box1" },
   { key: "LUNCH", label: "Box2" },
   { key: "DINNER", label: "Box3" },
-  { key: "SNACKS", label: "Snacks" },
 ]
 
 const emptyForm = {
@@ -57,6 +59,8 @@ const emptyForm = {
   tier: "BASIC",
   kcal: "",
   protein: "",
+  carbs: "",
+  fat: "",
 }
 
 function readImageDimensions(dataUrl: string): Promise<{ width: number; height: number }> {
@@ -86,7 +90,7 @@ function MenuItemCard({
           <span className="material-symbols-outlined text-[48px] text-gray-300">restaurant</span>
         )}
         <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 text-gray-700 shadow-sm">
-          {item.slot}
+          {SLOT_LABELS[item.slot] ?? item.slot}
         </span>
         <span
           className={`absolute bottom-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-semibold shadow-sm ${
@@ -129,10 +133,14 @@ function MenuItemCard({
             </span>
           ))}
         </div>
-        <div className="mt-auto flex items-center gap-3 text-sm text-gray-600">
+        <div className="mt-auto flex items-center gap-3 text-sm text-gray-600 flex-wrap">
           <span>{item.kcal} kcal</span>
           <span>·</span>
           <span>{item.protein}g protein</span>
+          <span>·</span>
+          <span>{item.carbs}g carbs</span>
+          <span>·</span>
+          <span>{item.fat}g fat</span>
         </div>
       </div>
     </article>
@@ -188,6 +196,8 @@ function MenuControl() {
       tier: item.tier,
       kcal: String(item.kcal),
       protein: String(item.protein),
+      carbs: String(item.carbs),
+      fat: String(item.fat),
     })
     setPhotoError(undefined)
     setError(undefined)
@@ -249,8 +259,8 @@ function MenuControl() {
     setError(undefined)
     setSaving(true)
     try {
-      if (!form.name.trim() || !form.dietTags.length || !form.kcal || !form.protein) {
-        throw new Error("Fill in name, at least one diet tag, kcal, and protein.")
+      if (!form.name.trim() || !form.dietTags.length || !form.kcal || !form.protein || !form.carbs || !form.fat) {
+        throw new Error("Fill in name, at least one diet tag, kcal, protein, carbs, and fat.")
       }
       const payload = {
         name: form.name.trim(),
@@ -263,6 +273,8 @@ function MenuControl() {
         tier: form.tier,
         kcal: Number(form.kcal),
         protein: Number(form.protein),
+        carbs: Number(form.carbs),
+        fat: Number(form.fat),
       }
       if (editingItem) {
         await api.patch(`/menu-items/${editingItem.id}`, payload)
@@ -364,7 +376,7 @@ function MenuControl() {
                 >
                   {SLOTS.map((s) => (
                     <option key={s} value={s}>
-                      {s}
+                      {SLOT_LABELS[s] ?? s}
                     </option>
                   ))}
                 </select>
@@ -456,6 +468,26 @@ function MenuControl() {
                     className="w-full h-10 border border-gray-200 rounded-lg px-3"
                     value={form.protein}
                     onChange={(e) => setForm((f) => ({ ...f, protein: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Carbs (g)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full h-10 border border-gray-200 rounded-lg px-3"
+                    value={form.carbs}
+                    onChange={(e) => setForm((f) => ({ ...f, carbs: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Fat (g)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="w-full h-10 border border-gray-200 rounded-lg px-3"
+                    value={form.fat}
+                    onChange={(e) => setForm((f) => ({ ...f, fat: e.target.value }))}
                   />
                 </div>
               </div>
