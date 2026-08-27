@@ -17,6 +17,10 @@ import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
 
+// Mirrors REMINDER_OFFSET_DAYS in server/src/routes/internal.ts — the Renew section only
+// becomes actionable once the renewal-reminder email would've gone out, not right after signup.
+const REMINDER_OFFSET_DAYS: Record<number, number> = { 7: 2, 14: 4, 28: 7 }
+
 function Subscription() {
   const { customer, endDate, renew, confirmRenewal } = useDashboard()
   const { customer: authCustomer } = useAuth()
@@ -39,6 +43,8 @@ function Subscription() {
 
   const plans = usePlans()
   const isExpired = sub.status === "expired"
+  const daysUntilEnd = Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  const showRenewal = isExpired || daysUntilEnd <= (REMINDER_OFFSET_DAYS[sub.planDuration] ?? 7)
   const rawTotal = priceFor(plans, goal, duration)
   const total = rawTotal !== null && promoDiscount ? Math.max(0, rawTotal - promoDiscount) : rawTotal
 
@@ -136,8 +142,9 @@ function Subscription() {
             <div>
               <p className="font-semibold text-coral-600">Your plan has expired</p>
               <p className="text-sm text-ink-muted mt-1">
-                Your account stays accessible in read-only mode for 3 months. We'll email a warning at the
-                2-month mark before anything is deleted — renew any time to pick up where you left off.
+                Deliveries have stopped, but your account and data are still here — renew any time to
+                pick up where you left off. If your plan stays inactive for a while, we'll email you
+                about closing the account, with the option to export or delete your data first.
               </p>
             </div>
           </div>
@@ -166,6 +173,17 @@ function Subscription() {
         </dl>
       </Card>
 
+      {!showRenewal && (
+        <Card className="p-6 sm:p-8">
+          <h2 className="text-lg text-ink mb-1">Renew your subscription</h2>
+          <p className="text-sm text-ink-muted">
+            Renews by renewing before {new Date(endDate).toLocaleDateString("en-GB")} — we'll email you a
+            reminder closer to the date.
+          </p>
+        </Card>
+      )}
+
+      {showRenewal && (
       <form onSubmit={handleRenew}>
         <Card className="p-6 sm:p-8 space-y-6">
           <div>
@@ -343,6 +361,7 @@ function Subscription() {
           </Button>
         </Card>
       </form>
+      )}
     </div>
   )
 }
