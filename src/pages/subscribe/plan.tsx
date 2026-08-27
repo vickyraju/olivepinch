@@ -25,10 +25,17 @@ function minStartDate(): Date {
   return d
 }
 
+function maxStartDate(): Date {
+  const d = minStartDate()
+  d.setDate(d.getDate() + 30)
+  return d
+}
+
 function Plan() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
   const min = minStartDate()
+  const max = maxStartDate()
   const plans = usePlans()
 
   return (
@@ -70,6 +77,7 @@ function Plan() {
       </p>
       <Calendar
         minDate={min}
+        maxDate={max}
         selected={state.startDate ? fromDateKey(state.startDate) : null}
         onSelect={(date) => update({ startDate: toDateKey(date) })}
       />

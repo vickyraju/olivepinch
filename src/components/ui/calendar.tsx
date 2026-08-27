@@ -34,6 +34,7 @@ function Calendar({ minDate, maxDate, selected, onSelect }: CalendarProps) {
   const monthLabel = viewDate.toLocaleDateString("en-GB", { month: "long", year: "numeric" })
 
   const goPrevDisabled = viewDate.getFullYear() === min.getFullYear() && viewDate.getMonth() === min.getMonth()
+  const goNextDisabled = !!max && viewDate.getFullYear() === max.getFullYear() && viewDate.getMonth() === max.getMonth()
 
   return (
     <div className="rounded-xl border border-border bg-surface p-4 w-full max-w-sm">
@@ -51,8 +52,9 @@ function Calendar({ minDate, maxDate, selected, onSelect }: CalendarProps) {
         <button
           type="button"
           aria-label="Next month"
+          disabled={goNextDisabled}
           onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
-          className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-cream-100 cursor-pointer"
+          className="h-9 w-9 flex items-center justify-center rounded-full hover:bg-cream-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
