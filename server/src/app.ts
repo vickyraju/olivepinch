@@ -11,6 +11,7 @@ import { menuWeeksRouter } from "./routes/menu-weeks.js"
 import { pricingRouter } from "./routes/pricing.js"
 import { plansRouter } from "./routes/plans.js"
 import { promoCodesRouter } from "./routes/promo-codes.js"
+import { deliveryTimeSlotsRouter } from "./routes/delivery-time-slots.js"
 import { adminRouter } from "./routes/admin/index.js"
 import { internalRouter } from "./routes/internal.js"
 import { errorHandler } from "./middleware/error.js"
@@ -41,6 +42,7 @@ export function createApp() {
   app.use("/api/pricing", pricingRouter)
   app.use("/api/plans", plansRouter)
   app.use("/api/promo-codes", promoCodesRouter)
+  app.use("/api/delivery-time-slots", deliveryTimeSlotsRouter)
   app.use("/api/admin", adminRouter)
   app.use("/api/internal", internalRouter)
 

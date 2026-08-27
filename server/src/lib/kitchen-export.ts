@@ -1,6 +1,5 @@
 import ExcelJS from "exceljs"
 import { prisma } from "./prisma.js"
-import { DELIVERY_TIME_SLOT_LABELS } from "./enums.js"
 
 interface Row {
   date: string
@@ -41,7 +40,7 @@ async function buildRows(from: string, to: string): Promise<Row[]> {
         itemName: item.menuItem.name,
         customerName: order.subscription.customer.fullName,
         type: TIER_LABELS[order.subscription.tier] ?? order.subscription.tier,
-        deliveryTime: DELIVERY_TIME_SLOT_LABELS[order.subscription.deliveryTimeSlot],
+        deliveryTime: order.subscription.deliveryTimeSlot,
       })
     }
   }

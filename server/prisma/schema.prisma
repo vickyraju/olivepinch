@@ -46,12 +46,6 @@ enum DeliverySlot {
   ALTERNATE
 }
 
-enum DeliveryTimeSlot {
-  SLOT_6_7
-  SLOT_7_8
-  SLOT_8_9
-}
-
 enum OrderStatus {
   SCHEDULED
   OUT_FOR_DELIVERY
@@ -127,7 +121,7 @@ model Subscription {
   status         SubscriptionStatus @default(PENDING_PAYMENT)
   pausedDates    DateTime[]         @default([]) @db.Date
   deliverySlot   DeliverySlot       @default(DAILY)
-  deliveryTimeSlot DeliveryTimeSlot @default(SLOT_6_7)
+  deliveryTimeSlot String           @default("6:00 – 7:00")
   promoCodeId    String?
   promoCode      PromoCode?         @relation(fields: [promoCodeId], references: [id])
   discountAmount Decimal            @default(0) @db.Decimal(8, 2)
@@ -289,6 +283,18 @@ model Zone {
   name             String
   postcodePrefixes String[]
   isActive         Boolean  @default(true)
+}
+
+// Admin-managed list of delivery windows offered at signup/renewal (e.g. "6:00 – 7:00").
+// Subscription.deliveryTimeSlot stores the chosen label directly rather than an id, so
+// editing a slot's label here doesn't retroactively rewrite past subscriptions.
+model DeliveryTimeSlot {
+  id        String   @id @default(cuid())
+  label     String   @unique
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Lead {

@@ -3,7 +3,7 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
-import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, DELIVERY_TIME_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
+import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
 import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
@@ -25,7 +25,7 @@ const createSchema = z.object({
   addressArea: z.string().min(1),
   addressPostcode: z.string().min(1),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]).default("DAILY"),
-  deliveryTimeSlot: z.enum(DELIVERY_TIME_SLOT_VALUES as [string, ...string[]]),
+  deliveryTimeSlot: z.string().min(1),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   // Optional per-day menu customization from the "customize your menu" funnel step.
   // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
@@ -46,6 +46,9 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
   }
   if (!(await isPostcodeInActiveZone(body.addressPostcode))) {
     return res.status(400).json({ error: "We don't currently deliver to that postcode" })
+  }
+  if (!(await prisma.deliveryTimeSlot.findFirst({ where: { label: body.deliveryTimeSlot, active: true } }))) {
+    return res.status(400).json({ error: "Invalid delivery time slot" })
   }
 
   const slots = SLOTS_BY_MEALS_PER_DAY[body.mealsPerDay]
@@ -217,7 +220,7 @@ const renewSchema = z.object({
   allergens: z.array(z.string()).default([]),
   mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]),
-  deliveryTimeSlot: z.enum(DELIVERY_TIME_SLOT_VALUES as [string, ...string[]]),
+  deliveryTimeSlot: z.string().min(1),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   promoCode: z.string().optional(),
 })
@@ -226,6 +229,9 @@ const renewSchema = z.object({
 // stays on the same session — caller keeps using their existing JWT, no re-login.
 subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, res) => {
   const body = req.body as z.infer<typeof renewSchema>
+  if (!(await prisma.deliveryTimeSlot.findFirst({ where: { label: body.deliveryTimeSlot, active: true } }))) {
+    return res.status(400).json({ error: "Invalid delivery time slot" })
+  }
   await prisma.customer.update({
     where: { id: req.customerId },
     data: { goal: body.goal as never, dietTypes: body.dietTypes as never, allergens: body.allergens },
