@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs"
 import { prisma } from "./prisma.js"
+import { DELIVERY_TIME_SLOT_LABELS } from "./enums.js"
 
 interface Row {
   date: string
@@ -7,6 +8,7 @@ interface Row {
   itemName: string
   customerName: string
   type: string
+  deliveryTime: string
 }
 
 const SLOT_FILL: Record<string, string> = {
@@ -39,6 +41,7 @@ async function buildRows(from: string, to: string): Promise<Row[]> {
         itemName: item.menuItem.name,
         customerName: order.subscription.customer.fullName,
         type: TIER_LABELS[order.subscription.tier] ?? order.subscription.tier,
+        deliveryTime: DELIVERY_TIME_SLOT_LABELS[order.subscription.deliveryTimeSlot],
       })
     }
   }
@@ -46,6 +49,7 @@ async function buildRows(from: string, to: string): Promise<Row[]> {
   return rows.sort(
     (a, b) =>
       a.date.localeCompare(b.date) ||
+      a.deliveryTime.localeCompare(b.deliveryTime) ||
       a.slot.localeCompare(b.slot) ||
       a.itemName.localeCompare(b.itemName) ||
       a.customerName.localeCompare(b.customerName)
@@ -59,6 +63,7 @@ export async function buildKitchenExportWorkbook(from: string, to: string): Prom
   const sheet = workbook.addWorksheet("Kitchen prep")
   sheet.columns = [
     { header: "Date", key: "date", width: 14 },
+    { header: "Delivery Time", key: "deliveryTime", width: 16 },
     { header: "Meal Slot", key: "slot", width: 14 },
     { header: "Item", key: "item", width: 32 },
     { header: "Customer Name", key: "customerName", width: 24 },
@@ -74,6 +79,7 @@ export async function buildKitchenExportWorkbook(from: string, to: string): Prom
   for (const row of rows) {
     const excelRow = sheet.addRow({
       date: row.date,
+      deliveryTime: row.deliveryTime,
       slot: row.slot,
       item: row.itemName,
       customerName: row.customerName,

@@ -46,6 +46,12 @@ enum DeliverySlot {
   ALTERNATE
 }
 
+enum DeliveryTimeSlot {
+  SLOT_6_7
+  SLOT_7_8
+  SLOT_8_9
+}
+
 enum OrderStatus {
   SCHEDULED
   OUT_FOR_DELIVERY
@@ -121,6 +127,7 @@ model Subscription {
   status         SubscriptionStatus @default(PENDING_PAYMENT)
   pausedDates    DateTime[]         @default([]) @db.Date
   deliverySlot   DeliverySlot       @default(DAILY)
+  deliveryTimeSlot DeliveryTimeSlot @default(SLOT_6_7)
   promoCodeId    String?
   promoCode      PromoCode?         @relation(fields: [promoCodeId], references: [id])
   discountAmount Decimal            @default(0) @db.Decimal(8, 2)

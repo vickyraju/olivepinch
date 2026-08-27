@@ -3,7 +3,7 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
-import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
+import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, DELIVERY_TIME_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
 import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
@@ -25,6 +25,7 @@ const createSchema = z.object({
   addressArea: z.string().min(1),
   addressPostcode: z.string().min(1),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]).default("DAILY"),
+  deliveryTimeSlot: z.enum(DELIVERY_TIME_SLOT_VALUES as [string, ...string[]]),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   // Optional per-day menu customization from the "customize your menu" funnel step.
   // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
@@ -100,6 +101,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
       mealsPerDay: body.mealsPerDay,
       tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
+      deliveryTimeSlot: body.deliveryTimeSlot as never,
       status: "PENDING_PAYMENT",
       promoCodeId,
       discountAmount,
@@ -215,6 +217,7 @@ const renewSchema = z.object({
   allergens: z.array(z.string()).default([]),
   mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]),
+  deliveryTimeSlot: z.enum(DELIVERY_TIME_SLOT_VALUES as [string, ...string[]]),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   promoCode: z.string().optional(),
 })
@@ -264,6 +267,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
       discountAmount,
       tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
+      deliveryTimeSlot: body.deliveryTimeSlot as never,
       status: "PENDING_PAYMENT",
       orders: {
         create: dayItems.map((day) => ({
