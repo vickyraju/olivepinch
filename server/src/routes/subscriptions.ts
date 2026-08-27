@@ -79,7 +79,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
     })
   )
 
-  const price = await planPrice(customer.goal as Goal, body.planDuration, body.tier as PlanTier)
+  const price = await planPrice(customer.goal as Goal, body.planDuration, body.tier as PlanTier, body.mealsPerDay)
   let promoCodeId: string | undefined
   let discountAmount = 0
   if (body.promoCode) {
@@ -213,6 +213,7 @@ const renewSchema = z.object({
   goal: z.enum(GOAL_VALUES as [string, ...string[]]),
   dietTypes: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1),
   allergens: z.array(z.string()).default([]),
+  mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   promoCode: z.string().optional(),
@@ -227,7 +228,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     data: { goal: body.goal as never, dietTypes: body.dietTypes as never, allergens: body.allergens },
   })
 
-  const slots = SLOTS_BY_MEALS_PER_DAY[2]
+  const slots = SLOTS_BY_MEALS_PER_DAY[body.mealsPerDay]
   const startDate = new Date()
   startDate.setUTCHours(0, 0, 0, 0)
   const deliveryDates = buildDeliveryDates(startDate, body.planDuration, [])
@@ -243,7 +244,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     )
   )
 
-  const price = await planPrice(body.goal as Goal, body.planDuration, body.tier as PlanTier)
+  const price = await planPrice(body.goal as Goal, body.planDuration, body.tier as PlanTier, body.mealsPerDay)
   let promoCodeId: string | undefined
   let discountAmount = 0
   if (body.promoCode) {
@@ -258,7 +259,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
       customerId: req.customerId!,
       planDuration: body.planDuration,
       startDate,
-      mealsPerDay: 2,
+      mealsPerDay: body.mealsPerDay,
       promoCodeId,
       discountAmount,
       tier: body.tier as PlanTier,

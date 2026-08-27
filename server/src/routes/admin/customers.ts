@@ -7,6 +7,7 @@ import { formatAddress } from "../../lib/address.js"
 import { isPostcodeInActiveZone } from "../../lib/postcode.js"
 import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
 import { PHONE_REGEX } from "../customers.js"
+import { computeEndDate } from "../../lib/subscription.js"
 
 export const adminCustomersRouter = Router()
 adminCustomersRouter.use(requireAdminAuth)
@@ -18,11 +19,70 @@ const SORTABLE = { newest: { createdAt: "desc" as const }, oldest: { createdAt: 
 adminCustomersRouter.get("/", async (req, res) => {
   const search = String(req.query.search ?? "").trim()
   const status = String(req.query.status ?? "").trim()
+  const subscribed = String(req.query.subscribed ?? "").trim()
   const sort = String(req.query.sort ?? "newest")
   const page = Math.max(1, Number(req.query.page ?? 1) || 1)
   const where = {
     ...(search ? { OR: [{ fullName: { contains: search, mode: "insensitive" as const } }, { email: { contains: search, mode: "insensitive" as const } }] } : {}),
     ...(status ? { accountStatus: status as never } : {}),
+    ...(subscribed === "true" ? { subscriptions: { some: { status: "ACTIVE" as const } } } : {}),
+    ...(subscribed === "false" ? { subscriptions: { none: { status: "ACTIVE" as const } } } : {}),
+  }
+
+  const select = {
+    id: true,
+    fullName: true,
+    email: true,
+    phone: true,
+    postcode: true,
+    accountStatus: true,
+    goal: true,
+    createdAt: true,
+    addressDoorNumber: true,
+    addressBuildingName: true,
+    addressStreet: true,
+    addressArea: true,
+    addressPostcode: true,
+    // Most recent subscription regardless of status — renewals create a new row per plan, so
+    // this doubles as both "their current plan" (for goal/duration/end-date columns) and,
+    // via its status, whether they're presently subscribed.
+    subscriptions: {
+      orderBy: { createdAt: "desc" as const },
+      select: { status: true, planDuration: true, startDate: true, pausedDates: true },
+      take: 1,
+    },
+  }
+
+  function toRow(c: Awaited<ReturnType<typeof prisma.customer.findFirstOrThrow<{ select: typeof select }>>>) {
+    const latest = c.subscriptions[0]
+    const planEndDate = latest ? computeEndDate(latest.startDate, latest.planDuration, latest.pausedDates) : null
+    const { subscriptions, ...c2 } = c
+    return {
+      ...c2,
+      // "Subscribed"/"Unsubscribed" is the admin-facing status — whether they currently have an
+      // active subscription — distinct from accountStatus, which is the identity/login state.
+      subscribed: latest?.status === "ACTIVE",
+      planDuration: latest?.planDuration ?? null,
+      planEndDate,
+      address: formatAddress(c),
+    }
+  }
+
+  if (sort === "planEndDate") {
+    // ponytail: plan end date is computed (startDate + duration + pauses), not a sortable DB
+    // column, so this sorts in memory rather than at the DB. Fine at this customer-base scale
+    // (single-city delivery); move to a stored/generated column if the table grows large.
+    const all = await prisma.customer.findMany({ where, select })
+    const total = all.length
+    const rows = all
+      .map(toRow)
+      .sort((a, b) => {
+        if (a.planEndDate === null) return 1
+        if (b.planEndDate === null) return -1
+        return b.planEndDate.getTime() - a.planEndDate.getTime()
+      })
+      .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+    return res.json({ customers: rows, page, pageSize: PAGE_SIZE, total, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) })
   }
 
   const [customers, total] = await Promise.all([
@@ -31,29 +91,13 @@ adminCustomersRouter.get("/", async (req, res) => {
       orderBy: SORTABLE[sort as keyof typeof SORTABLE] ?? SORTABLE.newest,
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        phone: true,
-        postcode: true,
-        accountStatus: true,
-        createdAt: true,
-        addressDoorNumber: true,
-        addressBuildingName: true,
-        addressStreet: true,
-        addressArea: true,
-        addressPostcode: true,
-        subscriptions: { where: { status: "ACTIVE" }, select: { id: true }, take: 1 },
-      },
+      select,
     }),
     prisma.customer.count({ where }),
   ])
 
   res.json({
-    // "Subscribed"/"Unsubscribed" is the admin-facing status — whether they currently have an
-    // active subscription — distinct from accountStatus, which is the identity/login state.
-    customers: customers.map(({ subscriptions, ...c }) => ({ ...c, subscribed: subscriptions.length > 0, address: formatAddress(c) })),
+    customers: customers.map(toRow),
     page,
     pageSize: PAGE_SIZE,
     total,

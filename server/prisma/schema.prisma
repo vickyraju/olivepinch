@@ -230,19 +230,20 @@ model Payment {
   createdAt      DateTime      @default(now())
 }
 
-// Source of truth for FR-C10/FR-C12 pricing — a flat price per (planDuration, goal)
-// combination, set by admin staff. Replaces the old per-menu-item pricing sum.
+// Source of truth for FR-C10/FR-C12 pricing — a flat price per (planDuration, goal, tier,
+// mealsPerDay) combination, set by admin staff. Replaces the old per-menu-item pricing sum.
 model Plan {
   id           String   @id @default(cuid())
   planDuration Int
   goal         Goal
   tier         PlanTier @default(BASIC)
+  mealsPerDay  Int      @default(2)
   price        Decimal  @db.Decimal(8, 2)
   active       Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  @@unique([planDuration, goal, tier])
+  @@unique([planDuration, goal, tier, mealsPerDay])
 }
 
 model PromoCode {

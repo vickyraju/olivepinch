@@ -13,6 +13,7 @@ const validateSchema = z.object({
   goal: z.enum(GOAL_VALUES as [string, ...string[]]),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   planDuration: z.union([z.literal(7), z.literal(14), z.literal(28)]),
+  mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]).default(2),
   customerId: z.string().optional(),
 })
 
@@ -21,7 +22,7 @@ const validateSchema = z.object({
 // when customerId is absent.
 promoCodesRouter.post("/validate", validateBody(validateSchema), async (req, res) => {
   const body = req.body as z.infer<typeof validateSchema>
-  const price = await planPrice(body.goal as Goal, body.planDuration, body.tier as PlanTier)
+  const price = await planPrice(body.goal as Goal, body.planDuration, body.tier as PlanTier, body.mealsPerDay)
   const result = await validatePromoCode(body.code, { goal: body.goal as Goal, tier: body.tier as PlanTier, planDuration: body.planDuration, customerId: body.customerId }, price)
   if ("error" in result) return res.status(400).json({ error: result.error })
   res.json({

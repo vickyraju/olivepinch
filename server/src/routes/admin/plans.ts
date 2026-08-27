@@ -16,6 +16,7 @@ const planSchema = z.object({
   planDuration: z.union([z.literal(7), z.literal(14), z.literal(28)]),
   goal: z.enum(GOAL_VALUES as [string, ...string[]]),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]),
+  mealsPerDay: z.union([z.literal(1), z.literal(2), z.literal(3)]),
   price: z.number().positive(),
   active: z.boolean().default(true),
 })

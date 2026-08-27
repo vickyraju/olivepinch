@@ -6,7 +6,7 @@ import { validateBody } from "../middleware/validate.js"
 import { sendEmail } from "../lib/email.js"
 import { subscriptionConfirmationEmail } from "../lib/email-templates.js"
 import { planPrice } from "../lib/pricing.js"
-import type { Goal } from "@prisma/client"
+import type { Goal, PlanTier } from "@prisma/client"
 
 export const paymentsRouter = Router()
 
@@ -15,7 +15,12 @@ async function subscriptionTotal(subscriptionId: string) {
     where: { id: subscriptionId },
     include: { customer: true },
   })
-  const price = await planPrice(subscription.customer.goal as Goal, subscription.planDuration)
+  const price = await planPrice(
+    subscription.customer.goal as Goal,
+    subscription.planDuration,
+    subscription.tier as PlanTier,
+    subscription.mealsPerDay as 1 | 2 | 3
+  )
   return Math.max(0, price - Number(subscription.discountAmount))
 }
 

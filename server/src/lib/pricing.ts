@@ -19,13 +19,15 @@ export async function defaultMenuItemFor(goal: Goal, dietTypes: DietType[], alle
   return chosen
 }
 
-// Price is plan-based, goal-based and tier-based — a flat rate admin sets per (days, goal,
-// tier) combination (see the Plan model), not a sum of the day's actual menu items. The
-// customer funnel doesn't offer tier selection yet, so checkout defaults to Basic.
-export async function planPrice(goal: Goal, planDuration: number, tier: PlanTier = "BASIC"): Promise<number> {
-  const plan = await prisma.plan.findUnique({ where: { planDuration_goal_tier: { planDuration, goal, tier } } })
+// Price is plan-based, goal-based, tier-based and meals-based — a flat rate admin sets per
+// (days, goal, tier, mealsPerDay) combination (see the Plan model), not a sum of the day's
+// actual menu items.
+export async function planPrice(goal: Goal, planDuration: number, tier: PlanTier = "BASIC", mealsPerDay: 1 | 2 | 3 = 2): Promise<number> {
+  const plan = await prisma.plan.findUnique({
+    where: { planDuration_goal_tier_mealsPerDay: { planDuration, goal, tier, mealsPerDay } },
+  })
   if (!plan) {
-    throw Object.assign(new Error(`No plan configured for ${planDuration} days / ${goal} / ${tier}`), { status: 400 })
+    throw Object.assign(new Error(`No plan configured for ${planDuration} days / ${goal} / ${tier} / ${mealsPerDay} meals`), { status: 400 })
   }
   return Number(plan.price)
 }
