@@ -51,9 +51,11 @@ async function main() {
 
   for (const plan of PLANS) {
     await prisma.plan.upsert({
-      where: { planDuration_goal: { planDuration: plan.planDuration, goal: plan.goal as never } },
+      where: {
+        planDuration_goal_tier: { planDuration: plan.planDuration, goal: plan.goal as never, tier: "BASIC" as never },
+      },
       update: { price: plan.price },
-      create: plan as never,
+      create: { ...plan, tier: "BASIC" } as never,
     })
   }
 

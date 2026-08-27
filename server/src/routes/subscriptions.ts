@@ -5,9 +5,10 @@ import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
-import { computeEndDate, pausesUsedThisMonth, buildDeliveryDates, MAX_PAUSES_PER_MONTH } from "../lib/subscription.js"
+import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
+import { validatePromoCode } from "../lib/promo.js"
 import type { Goal, DietType, MealSlot, PlanTier } from "@prisma/client"
 
 export const subscriptionsRouter = Router()
@@ -29,6 +30,7 @@ const createSchema = z.object({
   // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
   // Falls back to the goal/diet-matched default when omitted.
   dayMenus: z.array(z.object({ date: z.string(), items: z.array(z.string()) })).optional(),
+  promoCode: z.string().optional(),
 })
 
 // Builds every day's menu server-side (source of truth for FR-C10/FR-C12 pricing) — either
@@ -77,6 +79,19 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
     })
   )
 
+  const price = await planPrice(customer.goal as Goal, body.planDuration, body.tier as PlanTier)
+  let promoCodeId: string | undefined
+  let discountAmount = 0
+  if (body.promoCode) {
+    // Re-checked here, authoritatively — the signup-time /promo-codes/validate preview
+    // doesn't know the customerId yet, so per-customer/first-subscription rules only get
+    // enforced at this point.
+    const result = await validatePromoCode(body.promoCode, { goal: customer.goal as Goal, tier: body.tier as PlanTier, planDuration: body.planDuration, customerId: customer.id }, price)
+    if ("error" in result) return res.status(400).json({ error: result.error })
+    promoCodeId = result.promoCode.id
+    discountAmount = result.discountAmount
+  }
+
   const subscription = await prisma.subscription.create({
     data: {
       customerId: customer.id,
@@ -86,6 +101,8 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
       tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
       status: "PENDING_PAYMENT",
+      promoCodeId,
+      discountAmount,
       orders: {
         create: dayItems.map((day) => ({
           deliveryDate: day[0].date,
@@ -108,7 +125,7 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
     },
   })
 
-  const total = await planPrice(customer.goal as Goal, body.planDuration, body.tier as PlanTier)
+  const total = Math.max(0, price - discountAmount)
 
   res.status(201).json({ subscriptionId: subscription.id, total, dayCount: subscription.orders.length })
 })
@@ -124,7 +141,12 @@ subscriptionsRouter.get("/current", async (req, res) => {
   if (!subscription) return res.status(404).json({ error: "No active subscription" })
 
   const endDate = computeEndDate(subscription.startDate, subscription.planDuration, subscription.pausedDates)
-  res.json({ ...subscription, endDate, pausesUsedThisMonth: pausesUsedThisMonth(subscription.pausedDates) })
+  res.json({
+    ...subscription,
+    endDate,
+    pausesUsedTotal: pausesUsedTotal(subscription.pausedDates),
+    pauseLimit: PAUSE_LIMITS_BY_DURATION[subscription.planDuration as 7 | 14 | 28],
+  })
 })
 
 const pauseSchema = z.object({ date: z.string() })
@@ -133,10 +155,14 @@ subscriptionsRouter.post("/:id/pause", validateBody(pauseSchema), async (req, re
   const subscription = await prisma.subscription.findFirstOrThrow({
     where: { id: req.params.id as string, customerId: req.customerId },
   })
-  if (pausesUsedThisMonth(subscription.pausedDates) >= MAX_PAUSES_PER_MONTH) {
-    return res.status(400).json({ error: `You've used all ${MAX_PAUSES_PER_MONTH} pauses for this month.` })
-  }
   const date = new Date(`${(req.body as z.infer<typeof pauseSchema>).date}T00:00:00.000Z`)
+  if (!canPauseDate(date)) {
+    return res.status(400).json({ error: "Changes to this day must be made by noon the day before" })
+  }
+  const limit = PAUSE_LIMITS_BY_DURATION[subscription.planDuration as 7 | 14 | 28]
+  if (pausesUsedTotal(subscription.pausedDates) >= limit) {
+    return res.status(400).json({ error: `You've used all ${limit} pauses for this plan.` })
+  }
   const updated = await prisma.subscription.update({
     where: { id: subscription.id },
     data: { pausedDates: { push: date } },
@@ -149,14 +175,17 @@ subscriptionsRouter.post("/:id/resume", validateBody(pauseSchema), async (req, r
   const subscription = await prisma.subscription.findFirstOrThrow({
     where: { id: req.params.id as string, customerId: req.customerId },
   })
-  const target = new Date(`${(req.body as z.infer<typeof pauseSchema>).date}T00:00:00.000Z`).getTime()
-  const nextPaused = subscription.pausedDates.filter((d) => d.getTime() !== target)
+  const target = new Date(`${(req.body as z.infer<typeof pauseSchema>).date}T00:00:00.000Z`)
+  if (!canPauseDate(target)) {
+    return res.status(400).json({ error: "Changes to this day must be made by noon the day before" })
+  }
+  const nextPaused = subscription.pausedDates.filter((d) => d.getTime() !== target.getTime())
   const updated = await prisma.subscription.update({
     where: { id: subscription.id },
     data: { pausedDates: { set: nextPaused } },
   })
   await prisma.order.updateMany({
-    where: { subscriptionId: subscription.id, deliveryDate: new Date(target) },
+    where: { subscriptionId: subscription.id, deliveryDate: target },
     data: { status: "SCHEDULED" },
   })
   res.json({ pausedDates: updated.pausedDates })
@@ -186,6 +215,7 @@ const renewSchema = z.object({
   allergens: z.array(z.string()).default([]),
   deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]),
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
+  promoCode: z.string().optional(),
 })
 
 // FR-C23: preferences carry over (client sends current values, editable before confirming);
@@ -213,12 +243,24 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     )
   )
 
+  const price = await planPrice(body.goal as Goal, body.planDuration, body.tier as PlanTier)
+  let promoCodeId: string | undefined
+  let discountAmount = 0
+  if (body.promoCode) {
+    const result = await validatePromoCode(body.promoCode, { goal: body.goal as Goal, tier: body.tier as PlanTier, planDuration: body.planDuration, customerId: req.customerId! }, price)
+    if ("error" in result) return res.status(400).json({ error: result.error })
+    promoCodeId = result.promoCode.id
+    discountAmount = result.discountAmount
+  }
+
   const subscription = await prisma.subscription.create({
     data: {
       customerId: req.customerId!,
       planDuration: body.planDuration,
       startDate,
       mealsPerDay: 2,
+      promoCodeId,
+      discountAmount,
       tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
       status: "PENDING_PAYMENT",
@@ -232,7 +274,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     include: { orders: { include: { items: { include: { menuItem: true } } } } },
   })
 
-  const total = await planPrice(body.goal as Goal, body.planDuration, body.tier as PlanTier)
+  const total = Math.max(0, price - discountAmount)
 
   // Renewal goes through the same /payments/intent + /payments/confirm chain as initial
   // checkout (see payment.tsx) — that's the only place real-Worldpay-vs-dev-mode is

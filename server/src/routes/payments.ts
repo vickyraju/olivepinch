@@ -15,7 +15,8 @@ async function subscriptionTotal(subscriptionId: string) {
     where: { id: subscriptionId },
     include: { customer: true },
   })
-  return planPrice(subscription.customer.goal as Goal, subscription.planDuration)
+  const price = await planPrice(subscription.customer.goal as Goal, subscription.planDuration)
+  return Math.max(0, price - Number(subscription.discountAmount))
 }
 
 // Only two return destinations ever legitimately exist (the funnel's default, computed
@@ -65,10 +66,21 @@ paymentsRouter.post(
 async function activateSubscription(subscriptionId: string) {
   // Identity verification (phone OTP via Firebase) is a separate step the frontend drives
   // directly against Firebase — payment succeeding doesn't trigger it here.
-  return prisma.subscription.update({
-    where: { id: subscriptionId },
-    data: { status: "ACTIVE" },
-    include: { customer: true },
+  // Redemption is recorded here (post-payment), not at checkout start, so abandoned
+  // checkouts never count against a promo code's redemption caps.
+  const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.subscription.update({
+      where: { id: subscriptionId },
+      data: { status: "ACTIVE" },
+      include: { customer: true },
+    })
+    if (subscription.promoCodeId) {
+      await tx.promoRedemption.create({
+        data: { promoCodeId: subscription.promoCodeId, customerId: subscription.customerId, subscriptionId },
+      })
+    }
+    return updated
   })
 }
 
