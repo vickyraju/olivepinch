@@ -394,7 +394,7 @@ function Subscription() {
                   variant="accent"
                   size="lg"
                   className="flex-1 sm:flex-none"
-                  disabled={renewing || total === null || (!noAllergies && allergens.length === 0)}
+                  disabled={renewing || total === null || dietTypes.length === 0 || (!noAllergies && allergens.length === 0)}
                 >
                   {renewing
                     ? "Renewing…"
