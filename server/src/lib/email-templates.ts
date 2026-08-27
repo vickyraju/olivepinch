@@ -99,3 +99,23 @@ Renew here: ${p.dashboardUrl}
   `)
   return { subject, text, html }
 }
+
+export function lapsedRetentionEmail(p: {
+  name: string
+  privacyUrl: string
+}): { subject: string; text: string; html: string } {
+  const subject = "Your OlivePinch account has been inactive for a while"
+  const text = `Hi ${p.name},
+
+It's been a while since your last OlivePinch plan ended, so we wanted to check in. Renew any time to pick up where you left off.
+
+If you'd rather we close your account, you can export or delete your data yourself here: ${p.privacyUrl}
+
+— The OlivePinch team`
+  const html = emailShell(`
+    <h1 style="font-size:22px;margin:0 0 16px;">Still there, ${escapeHtml(p.name)}?</h1>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 16px;">It's been a while since your last OlivePinch plan ended. Renew any time to pick up where you left off, or manage your data below.</p>
+    ${button("Manage my data", p.privacyUrl)}
+  `)
+  return { subject, text, html }
+}

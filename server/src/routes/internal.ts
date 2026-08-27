@@ -1,7 +1,7 @@
 import { Router, type Request } from "express"
 import { prisma } from "../lib/prisma.js"
 import { sendEmail } from "../lib/email.js"
-import { renewalReminderEmail } from "../lib/email-templates.js"
+import { renewalReminderEmail, lapsedRetentionEmail } from "../lib/email-templates.js"
 import { computeEndDate, addDays } from "../lib/subscription.js"
 
 export const internalRouter = Router()
@@ -85,6 +85,72 @@ export async function runRenewalReminderSweep() {
   return { sent }
 }
 
+// Nothing else ever revisits a subscription's status once it's ACTIVE — without this, EXPIRED
+// is dead code everywhere it's read (dashboard, firstSubscriptionOnly promo check, admin views).
+export async function runExpirySweep() {
+  const active = await prisma.subscription.findMany({ where: { status: "ACTIVE" } })
+
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+
+  let expired = 0
+  for (const sub of active) {
+    const endDate = computeEndDate(sub.startDate, sub.planDuration, sub.pausedDates)
+    if (endDate.getTime() >= today.getTime()) continue
+    await prisma.subscription.update({ where: { id: sub.id }, data: { status: "EXPIRED" } })
+    expired++
+  }
+
+  return { expired }
+}
+
+// GDPR storage-limitation check: a customer whose most recent plan lapsed 12+ months ago with
+// no renewal has no other reason for us to keep holding their (special-category) health data.
+// This only nudges them toward the self-service export/delete flow on the Privacy page — it
+// never deletes anything automatically.
+const RETENTION_MONTHS = 12
+
+export async function runLapsedRetentionSweep() {
+  const customers = await prisma.customer.findMany({
+    where: { accountStatus: "ACTIVE" },
+    include: { subscriptions: { orderBy: { startDate: "desc" }, take: 1 } },
+  })
+
+  const cutoff = new Date()
+  cutoff.setUTCHours(0, 0, 0, 0)
+  cutoff.setUTCMonth(cutoff.getUTCMonth() - RETENTION_MONTHS)
+
+  let sent = 0
+  for (const customer of customers) {
+    const latest = customer.subscriptions[0]
+    if (!latest || latest.status !== "EXPIRED") continue
+    if (!customer.email) continue
+
+    const endDate = computeEndDate(latest.startDate, latest.planDuration, latest.pausedDates)
+    if (endDate.getTime() > cutoff.getTime()) continue
+
+    const message = `lapsed-retention:${customer.id}`
+    const already = await prisma.notification.findFirst({ where: { customerId: customer.id, message } })
+    if (already) continue
+
+    try {
+      const { subject, text, html } = lapsedRetentionEmail({
+        name: customer.fullName,
+        privacyUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/privacy`,
+      })
+      await sendEmail(customer.email, subject, text, html)
+      await prisma.notification.create({
+        data: { customerId: customer.id, channel: "email", message, status: "sent", sentAt: new Date() },
+      })
+      sent++
+    } catch (err) {
+      console.error("lapsed retention email failed", customer.id, err)
+    }
+  }
+
+  return { sent }
+}
+
 // Returns a [status, message] pair when unauthorized, null when the request may proceed.
 // Fails closed: without CRON_SECRET configured, cron endpoints refuse to run rather than
 // being open to anyone on the internet.
@@ -108,6 +174,11 @@ internalRouter.post("/recovery-sweep", async (req, res) => {
 internalRouter.post("/daily-sweep", async (req, res) => {
   const unauthorized = checkCronSecret(req)
   if (unauthorized) return res.status(unauthorized[0]).json({ error: unauthorized[1] })
-  const [recovery, renewalReminders] = await Promise.all([runRecoverySweep(), runRenewalReminderSweep()])
-  res.json({ recovery, renewalReminders })
+  const [recovery, renewalReminders, expiry, lapsedRetention] = await Promise.all([
+    runRecoverySweep(),
+    runRenewalReminderSweep(),
+    runExpirySweep(),
+    runLapsedRetentionSweep(),
+  ])
+  res.json({ recovery, renewalReminders, expiry, lapsedRetention })
 })
