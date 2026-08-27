@@ -130,8 +130,8 @@ function Delivery() {
               : "Your plan has expired — renew to resume deliveries."}
           </p>
         </div>
-        <Badge variant={remaining === 0 ? "coral" : "olive"} className="text-sm px-3.5 py-1.5">
-          {pausesUsed}/{limit} pauses used
+        <Badge variant={limit > 0 && remaining === 0 ? "coral" : "olive"} className="text-sm px-3.5 py-1.5">
+          {limit > 0 ? `${pausesUsed}/${limit} pauses used` : "No pauses on this plan"}
         </Badge>
       </div>
 
@@ -141,7 +141,7 @@ function Delivery() {
         </div>
       )}
 
-      {remaining === 0 && (
+      {limit > 0 && remaining === 0 && (
         <div className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600">
           You've used all {limit} pauses for this plan. Resuming an already-paused day frees up a slot.
         </div>
