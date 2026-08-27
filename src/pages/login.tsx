@@ -12,7 +12,7 @@ import { Logo } from "@/components/ui/logo"
 import { FoodPhoto } from "@/components/ui/food-photo"
 
 function Login() {
-  const { isAuthenticated, authError, accountNotFound, sendOtp, verifyOtp, clearAuthError } = useAuth()
+  const { isAuthenticated, authError, accountNotFound, checkPhoneHasAccount, sendOtp, verifyOtp, clearAuthError } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -58,6 +58,10 @@ function Login() {
     setError("")
     setSending(true)
     try {
+      if (!(await checkPhoneHasAccount(phone))) {
+        navigate("/subscribe")
+        return
+      }
       await sendOtp(phone)
       setStage("otp")
       setResendCooldown(30)

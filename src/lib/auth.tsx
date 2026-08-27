@@ -20,6 +20,9 @@ interface AuthContextValue {
   /** True specifically when the phone verified but no OlivePinch account exists for it yet —
    * lets the login page offer "go subscribe" instead of a generic retry-the-code error. */
   accountNotFound: boolean
+  /** Checks payment history for a phone before sending an OTP, so a number that never paid
+   * (never subscribed, or paid but abandoned signup) skips OTP entirely. */
+  checkPhoneHasAccount: (phone: string) => Promise<boolean>
   sendOtp: (phone: string) => Promise<void>
   verifyOtp: (code: string) => Promise<void>
   logout: () => Promise<void>
@@ -63,6 +66,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsubscribe
   }, [])
 
+  const checkPhoneHasAccount = useCallback(async (phone: string) => {
+    const { hasAccount } = await api.post<{ hasAccount: boolean }>("/customers/check-phone", { phone })
+    return hasAccount
+  }, [])
+
   const sendOtp = useCallback(async (phone: string) => {
     if (!recaptchaVerifier.current) {
       recaptchaVerifier.current = new RecaptchaVerifier(auth, "recaptcha-container", { size: "invisible", badge: "bottomright" })
@@ -101,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, authError, accountNotFound, sendOtp, verifyOtp, logout, clearAuthError }}>
+    <AuthContext.Provider value={{ isLoading, isAuthenticated: !!customer, customer, authError, accountNotFound, checkPhoneHasAccount, sendOtp, verifyOtp, logout, clearAuthError }}>
       {children}
     </AuthContext.Provider>
   )
