@@ -2,7 +2,7 @@ import { Fragment, useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
-import { api, ApiError, BASE_URL, getToken } from "@/lib/api"
+import { api, ApiError } from "@/lib/api"
 import { formatPhone } from "@/lib/status-styles"
 
 interface MenuItem {
@@ -212,18 +212,15 @@ function SlotPicker({
               <button
                 key={item.id}
                 type="button"
-                disabled={usedElsewhere}
                 onClick={() => {
                   onToggle(item.id)
                   setQuery("")
                 }}
                 title={usedElsewhere ? `Already used on ${formatDayLabel(usedOn!)}` : undefined}
-                className={`w-full text-left px-3 py-1.5 text-xs ${
-                  usedElsewhere ? "text-gray-300 cursor-not-allowed" : "text-gray-700 hover:bg-gray-50 cursor-pointer"
-                }`}
+                className="w-full text-left px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-50 cursor-pointer"
               >
                 {item.name}
-                {usedElsewhere && <span className="text-gray-300"> · used on {formatDayLabel(usedOn!)}</span>}
+                {usedElsewhere && <span className="text-gray-400"> · used on {formatDayLabel(usedOn!)}</span>}
               </button>
             )
           })}
@@ -253,7 +250,6 @@ function MenuWeeks() {
   const [pendingExpanded, setPendingExpanded] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
   const [showUnlockModal, setShowUnlockModal] = useState(false)
-  const [exporting, setExporting] = useState(false)
   const locked = composerPublished && !unlocked
 
   const itemCountsQuery = useQuery({
@@ -377,30 +373,6 @@ function MenuWeeks() {
       setComposerError(err instanceof ApiError ? err.message : "Couldn't publish this week's menu.")
     } finally {
       setPublishing(false)
-    }
-  }
-
-  async function exportForKitchen() {
-    setExporting(true)
-    setComposerError("")
-    try {
-      const from = composerWeek
-      const to = addDays(composerWeek, 6)
-      const res = await fetch(`${BASE_URL}/orders/kitchen-export?from=${from}&to=${to}`, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
-      if (!res.ok) throw new Error("Couldn't export this week's kitchen counts.")
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = url
-      link.download = `kitchen-export-${from}-to-${to}.xlsx`
-      link.click()
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      setComposerError(err instanceof Error ? err.message : "Couldn't export this week's kitchen counts.")
-    } finally {
-      setExporting(false)
     }
   }
 
@@ -636,14 +608,6 @@ function MenuWeeks() {
             )}
 
             <div className="flex gap-3 pt-5">
-              <button
-                type="button"
-                onClick={exportForKitchen}
-                disabled={exporting || !isMonday(composerWeek)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-              >
-                {exporting ? "Exporting…" : "Export for kitchen"}
-              </button>
               {locked ? (
                 isPastEditLock(composerWeek) ? (
                   <span

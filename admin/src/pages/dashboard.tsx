@@ -51,12 +51,6 @@ function nextMondayIso(): string {
   return d.toISOString().slice(0, 10)
 }
 
-function addDays(iso: string, days: number): string {
-  const d = new Date(`${iso}T00:00:00.000Z`)
-  d.setUTCDate(d.getUTCDate() + days)
-  return d.toISOString().slice(0, 10)
-}
-
 // Admin's soft target is to publish next week's menu by Tuesday night — don't nag about an
 // unpublished week before then, since nextMondayIso() on a Monday points a week further out.
 function isPastPublishSoftDeadline(): boolean {
@@ -129,9 +123,8 @@ function Dashboard() {
   async function exportForKitchen() {
     setExporting(true)
     try {
-      const from = nextMonday
-      const to = addDays(nextMonday, 6)
-      const res = await fetch(`${BASE_URL}/orders/kitchen-export?from=${from}&to=${to}`, {
+      const today = new Date().toISOString().slice(0, 10)
+      const res = await fetch(`${BASE_URL}/orders/kitchen-export?from=${today}&to=${today}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       })
       if (!res.ok) throw new Error("Couldn't export the kitchen sheet.")
@@ -139,7 +132,7 @@ function Dashboard() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `kitchen-export-${from}-to-${to}.xlsx`
+      link.download = `kitchen-export-${today}.xlsx`
       link.click()
       URL.revokeObjectURL(url)
     } catch (err) {
