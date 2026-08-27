@@ -42,6 +42,23 @@ customersRouter.post("/link-account", async (req, res) => {
 
 export const PHONE_REGEX = /^\+[1-9]\d{6,14}$/
 
+// Lets the login page skip sending an OTP for a phone that was never going to have an
+// account to log into. "Has an account" means "has a succeeded payment" (same signal
+// runRecoverySweep uses), not accountStatus — a customer can be PROVISIONAL/EXPIRED and
+// still deserve OTP login if they paid at some point.
+customersRouter.post(
+  "/check-phone",
+  validateBody(z.object({ phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number") })),
+  async (req, res) => {
+    const { phone } = req.body as { phone: string }
+    const paidBefore = await prisma.customer.findFirst({
+      where: { phone, payments: { some: { status: "succeeded" } } },
+      select: { id: true },
+    })
+    res.json({ hasAccount: !!paidBefore })
+  }
+)
+
 const provisionalSchema = z.object({
   fullName: z.string().min(1),
   email: z.string().email().optional(),
