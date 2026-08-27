@@ -201,8 +201,8 @@ function Subscription() {
                   <dd className="mt-0.5 text-ink font-medium">{allergens.length ? allergens.join(", ") : "Nothing"}</dd>
                 </div>
               </dl>
-              <Button type="button" variant="outline" size="sm" onClick={() => setEditingPreferences(true)}>
-                Edit preferences
+              <Button type="button" variant="accent" size="sm" onClick={() => setEditingPreferences(true)}>
+                Renew plan
               </Button>
             </div>
           ) : (
@@ -308,47 +308,51 @@ function Subscription() {
             </>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="renew-promo">Promo code</Label>
-            <div className="flex items-center gap-2">
-              <Input
-                id="renew-promo"
-                placeholder="Promo code"
-                value={promoInput}
-                onChange={(e) => {
-                  setPromoInput(e.target.value)
-                  setPromoError("")
-                }}
-                className="flex-1 sm:max-w-xs"
-              />
-              <Button type="button" variant="outline" size="sm" disabled={!promoInput.trim() || applyingPromo} onClick={applyPromo}>
-                {applyingPromo ? "Applying…" : "Apply"}
+          {editingPreferences && (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="renew-promo">Promo code</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="renew-promo"
+                    placeholder="Promo code"
+                    value={promoInput}
+                    onChange={(e) => {
+                      setPromoInput(e.target.value)
+                      setPromoError("")
+                    }}
+                    className="flex-1 sm:max-w-xs"
+                  />
+                  <Button type="button" variant="outline" size="sm" disabled={!promoInput.trim() || applyingPromo} onClick={applyPromo}>
+                    {applyingPromo ? "Applying…" : "Apply"}
+                  </Button>
+                </div>
+                {promoError && <p className="text-xs text-coral-600">{promoError}</p>}
+                {promoDiscount ? <p className="text-xs text-olive-600">Promo code applied — {formatGBP(promoDiscount)} off</p> : null}
+              </div>
+
+              <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
+                <ShieldCheck className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+                <p className="text-sm text-ink-muted">
+                  You'll be redirected to Worldpay's secure payment page to complete this charge — we never see or store your card number.
+                </p>
+              </div>
+
+              {error && (
+                <div role="alert" className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600 font-medium">{error}</div>
+              )}
+
+              <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing || total === null}>
+                {renewing
+                  ? "Renewing…"
+                  : total !== null
+                    ? promoDiscount
+                      ? `Confirm & renew · ${formatGBP(total)} (was ${formatGBP(rawTotal!)})`
+                      : `Confirm & renew · ${formatGBP(total)}`
+                    : "Confirm & renew"}
               </Button>
-            </div>
-            {promoError && <p className="text-xs text-coral-600">{promoError}</p>}
-            {promoDiscount ? <p className="text-xs text-olive-600">Promo code applied — {formatGBP(promoDiscount)} off</p> : null}
-          </div>
-
-          <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
-            <ShieldCheck className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
-            <p className="text-sm text-ink-muted">
-              You'll be redirected to Worldpay's secure payment page to complete this charge — we never see or store your card number.
-            </p>
-          </div>
-
-          {error && (
-            <div role="alert" className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600 font-medium">{error}</div>
+            </>
           )}
-
-          <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing || total === null}>
-            {renewing
-              ? "Renewing…"
-              : total !== null
-                ? promoDiscount
-                  ? `Confirm & renew · ${formatGBP(total)} (was ${formatGBP(rawTotal!)})`
-                  : `Confirm & renew · ${formatGBP(total)}`
-                : "Confirm & renew"}
-          </Button>
         </Card>
       </form>
       )}
