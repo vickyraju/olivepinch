@@ -31,6 +31,7 @@ function Subscription() {
   const [goal, setGoal] = useState<Goal>(sub.goal)
   const [dietTypes, setDietTypes] = useState<DietType[]>(sub.dietTypes)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
+  const [noAllergies, setNoAllergies] = useState(sub.allergens.length === 0)
   const [editingPreferences, setEditingPreferences] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
@@ -122,6 +123,7 @@ function Subscription() {
     setGoal(sub.goal)
     setDietTypes(sub.dietTypes)
     setAllergens(sub.allergens)
+    setNoAllergies(sub.allergens.length === 0)
     setEditingPreferences(false)
   }
 
@@ -205,7 +207,7 @@ function Subscription() {
                   <dd className="mt-0.5 text-ink font-medium">{dietTypes.join(", ")}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Excludes</dt>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Allergens</dt>
                   <dd className="mt-0.5 text-ink font-medium">{allergens.length ? allergens.join(", ") : "Nothing"}</dd>
                 </div>
               </dl>
@@ -315,25 +317,37 @@ function Subscription() {
 
               <div>
                 <Label>Any allergens to avoid?</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                   {ALLERGENS.map((allergen) => (
                     <div key={allergen} className="flex items-center gap-2.5">
                       <Checkbox
                         id={`renew-allergen-${allergen}`}
                         checked={allergens.includes(allergen)}
-                        onCheckedChange={(v) =>
+                        disabled={noAllergies}
+                        onCheckedChange={(v) => {
                           setAllergens((prev) => (v === true ? [...prev, allergen] : prev.filter((a) => a !== allergen)))
-                        }
+                          setNoAllergies(false)
+                        }}
                       />
                       <Label htmlFor={`renew-allergen-${allergen}`} className="mb-0 font-normal cursor-pointer">{allergen}</Label>
                     </div>
                   ))}
                 </div>
+                <div className="flex items-center gap-2.5 border-t border-border pt-4">
+                  <Checkbox
+                    id="renew-no-allergies"
+                    checked={noAllergies}
+                    onCheckedChange={(v) => {
+                      const checked = v === true
+                      setNoAllergies(checked)
+                      if (checked) setAllergens([])
+                    }}
+                  />
+                  <Label htmlFor="renew-no-allergies" className="mb-0 font-normal cursor-pointer">
+                    I confirm I have no food allergies
+                  </Label>
+                </div>
               </div>
-
-              <Button type="button" variant="ghost" size="sm" onClick={cancelEditing}>
-                Cancel
-              </Button>
             </>
           )}
 
@@ -371,15 +385,26 @@ function Subscription() {
                 <div role="alert" className="rounded-lg bg-coral-50 p-4 text-sm text-coral-600 font-medium">{error}</div>
               )}
 
-              <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing || total === null}>
-                {renewing
-                  ? "Renewing…"
-                  : total !== null
-                    ? promoDiscount
-                      ? `Confirm & renew · ${formatGBP(total)} (was ${formatGBP(rawTotal!)})`
-                      : `Confirm & renew · ${formatGBP(total)}`
-                    : "Confirm & renew"}
-              </Button>
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3">
+                <Button type="button" variant="outline" size="lg" onClick={cancelEditing}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="accent"
+                  size="lg"
+                  className="flex-1 sm:flex-none"
+                  disabled={renewing || total === null || (!noAllergies && allergens.length === 0)}
+                >
+                  {renewing
+                    ? "Renewing…"
+                    : total !== null
+                      ? promoDiscount
+                        ? `Confirm & renew · ${formatGBP(total)} (was ${formatGBP(rawTotal!)})`
+                        : `Confirm & renew · ${formatGBP(total)}`
+                      : "Confirm & renew"}
+                </Button>
+              </div>
             </>
           )}
         </Card>
