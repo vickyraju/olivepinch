@@ -29,7 +29,7 @@ function OrderSummary({
 } = {}) {
   const { state, update } = useSubscribe()
   const plans = usePlans()
-  const rawTotal = state.planDuration ? priceFor(plans, state.goal, state.planDuration, state.tier) : null
+  const rawTotal = state.planDuration ? priceFor(plans, state.goal, state.planDuration, state.tier, state.mealsPerDay) : null
   const total = rawTotal !== null && state.promoDiscount ? Math.max(0, rawTotal - state.promoDiscount) : rawTotal
   const endDate = state.startDate && state.planDuration ? computeEndDate(state.startDate, state.planDuration, []) : null
   const age = state.profile.dateOfBirth ? calculateAge(state.profile.dateOfBirth) : null
@@ -50,6 +50,7 @@ function OrderSummary({
         goal: GOAL_TO_ENUM[state.goal],
         tier: TIER_TO_ENUM[state.tier ?? "Basic"],
         planDuration: state.planDuration,
+        mealsPerDay: state.mealsPerDay ?? 2,
       })
       update({ promoCode: promoInput.trim(), promoDiscount: result.discountAmount })
     } catch (err) {

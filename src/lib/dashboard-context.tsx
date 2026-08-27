@@ -106,7 +106,7 @@ interface DashboardContextValue {
   deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   pauseMultiple: (dates: string[]) => Promise<{ ok: boolean; reason?: string }>
-  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, promoCode?: string) => Promise<void>
+  renew: (planDuration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, promoCode?: string) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
   updateAddress: (address: DeliveryAddress, phone: string) => Promise<{ ok: boolean; reason?: string }>
@@ -191,9 +191,10 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   }, [customer.subscription.id, refetch])
 
   const renew = useCallback(
-    async (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, promoCode?: string) => {
+    async (planDuration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, promoCode?: string) => {
       const { subscriptionId } = await api.post<{ subscriptionId: string }>(`/subscriptions/${customer.subscription.id}/renew`, {
         planDuration,
+        mealsPerDay,
         goal: GOAL_TO_ENUM[goal],
         dietTypes: dietTypes.map((d) => DIET_TO_ENUM[d]),
         allergens,

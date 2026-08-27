@@ -9,12 +9,14 @@ export interface Plan {
   planDuration: 7 | 14 | 28
   goal: string // backend enum value, e.g. "WEIGHT_LOSS"
   tier: string // backend enum value, "BASIC" | "ADVANCED"
+  mealsPerDay: 1 | 2 | 3
   price: string
   active: boolean
 }
 
-// Price is plan-based, goal-based and tier-based — a flat rate admin sets per (days, goal,
-// tier) combination (see the admin "Plans" page), not a sum of the day's actual menu items.
+// Price is plan-based, goal-based, tier-based and meals-based — a flat rate admin sets per
+// (days, goal, tier, mealsPerDay) combination (see the admin "Plans" page), not a sum of
+// the day's actual menu items.
 export function usePlans(): Plan[] {
   const [plans, setPlans] = useState<Plan[]>([])
   useEffect(() => {
@@ -23,11 +25,19 @@ export function usePlans(): Plan[] {
   return plans
 }
 
-export function priceFor(plans: Plan[], goal: Goal | null, planDuration: number, tier: PlanTier | null = "Basic"): number | null {
-  if (!goal) return null
+export function priceFor(
+  plans: Plan[],
+  goal: Goal | null,
+  planDuration: number,
+  tier: PlanTier | null = "Basic",
+  mealsPerDay: 1 | 2 | 3 | null = 2
+): number | null {
+  if (!goal || !mealsPerDay) return null
   const enumGoal = GOAL_TO_ENUM[goal]
   const enumTier = TIER_TO_ENUM[tier ?? "Basic"]
-  const plan = plans.find((p) => p.goal === enumGoal && p.planDuration === planDuration && p.tier === enumTier)
+  const plan = plans.find(
+    (p) => p.goal === enumGoal && p.planDuration === planDuration && p.tier === enumTier && p.mealsPerDay === mealsPerDay
+  )
   return plan ? Number(plan.price) : null
 }
 

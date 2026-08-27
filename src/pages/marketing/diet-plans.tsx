@@ -22,6 +22,7 @@ const TEASER_META: Record<Goal, { kcal: string; protein: string; from: string }>
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
 const TIERS: PlanTier[] = ["Basic", "Advanced"]
+const MEALS_OPTIONS: (1 | 2 | 3)[] = [1, 2, 3]
 
 function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }) {
   const [expanded, setExpanded] = useState(false)
@@ -73,8 +74,9 @@ function PriceEstimator() {
   const [goal, setGoal] = useState<Goal>("Muscle Building")
   const [tier, setTier] = useState<PlanTier>("Basic")
   const [planDuration, setPlanDuration] = useState<7 | 14 | 28>(14)
+  const [mealsPerDay, setMealsPerDay] = useState<1 | 2 | 3>(2)
   const plans = usePlans()
-  const total = priceFor(plans, goal, planDuration, tier)
+  const total = priceFor(plans, goal, planDuration, tier, mealsPerDay)
 
   return (
     <Card className="p-6 sm:p-8">
@@ -106,6 +108,26 @@ function PriceEstimator() {
               )}
             >
               {d} days
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <label className="text-sm font-medium text-ink block mb-1.5">Meals per day</label>
+        <div className="grid grid-cols-3 gap-2.5">
+          {MEALS_OPTIONS.map((m) => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={mealsPerDay === m}
+              onClick={() => setMealsPerDay(m)}
+              className={cn(
+                "rounded-lg border-2 py-2.5 text-sm font-semibold transition-colors cursor-pointer",
+                mealsPerDay === m ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+              )}
+            >
+              {m} meal{m > 1 ? "s" : ""}
             </button>
           ))}
         </div>

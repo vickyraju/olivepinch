@@ -40,51 +40,12 @@ function Plan() {
 
   return (
     <div>
-      <h1 className="text-3xl sm:text-4xl text-ink mb-2">Choose your plan length</h1>
+      <h1 className="text-3xl sm:text-4xl text-ink mb-2">Choose your plan</h1>
       <p className="text-ink-muted mb-8">You can renew, pause, or change your plan at any time from your dashboard.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
-        {DURATIONS.map((d) => {
-          const active = state.planDuration === d.value
-          const total = priceFor(plans, state.goal, d.value, state.tier)
-          return (
-            <button
-              key={d.value}
-              type="button"
-              onClick={() => update({ planDuration: d.value })}
-              aria-pressed={active}
-              className={cn(
-                "rounded-xl border-2 p-5 text-left transition-colors cursor-pointer",
-                active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
-              )}
-            >
-              <div className="font-display text-2xl font-bold text-ink">{d.label}</div>
-              <div className="text-sm text-ink-muted mt-1">{d.hint}</div>
-              {total !== null && (
-                <div className="mt-3 pt-3 border-t border-border/60 flex items-baseline justify-between">
-                  <span className="text-lg font-semibold text-ink">{formatGBP(total)}</span>
-                  <span className="text-xs text-ink-muted">{formatGBP(total / d.value)}/day</span>
-                </div>
-              )}
-            </button>
-          )
-        })}
-      </div>
-
-      <h2 className="text-xl text-ink mb-1">Pick your start date</h2>
-      <p className="text-sm text-ink-muted mb-4">
-        Earliest available start is {min.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} — we need 2 days to prepare your first delivery.
-      </p>
-      <Calendar
-        minDate={min}
-        maxDate={max}
-        selected={state.startDate ? fromDateKey(state.startDate) : null}
-        onSelect={(date) => update({ startDate: toDateKey(date) })}
-      />
-
-      <h2 className="text-xl text-ink mb-1 mt-10">How many meals a day?</h2>
+      <h2 className="text-xl text-ink mb-1">How many meals a day?</h2>
       <p className="text-sm text-ink-muted mb-4">This sets how many meal slots we fill for every day of your plan.</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
         {MEALS_OPTIONS.map((opt) => {
           const active = state.mealsPerDay === opt.value
           return (
@@ -105,6 +66,49 @@ function Plan() {
           )
         })}
       </div>
+
+      <h2 className="text-xl text-ink mb-1">Choose your plan length</h2>
+      <p className="text-sm text-ink-muted mb-4">Prices reflect the meal count you picked above.</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
+        {DURATIONS.map((d) => {
+          const active = state.planDuration === d.value
+          const total = priceFor(plans, state.goal, d.value, state.tier, state.mealsPerDay)
+          return (
+            <button
+              key={d.value}
+              type="button"
+              onClick={() => update({ planDuration: d.value })}
+              aria-pressed={active}
+              className={cn(
+                "rounded-xl border-2 p-5 text-left transition-colors cursor-pointer",
+                active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
+              )}
+            >
+              <div className="font-display text-2xl font-bold text-ink">{d.label}</div>
+              <div className="text-sm text-ink-muted mt-1">{d.hint}</div>
+              {total !== null ? (
+                <div className="mt-3 pt-3 border-t border-border/60 flex items-baseline justify-between">
+                  <span className="text-lg font-semibold text-ink">{formatGBP(total)}</span>
+                  <span className="text-xs text-ink-muted">{formatGBP(total / d.value)}/day</span>
+                </div>
+              ) : (
+                <div className="mt-3 pt-3 border-t border-border/60 text-xs text-ink-muted">Pick meals per day above to see price</div>
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      <h2 className="text-xl text-ink mb-1">Pick your start date</h2>
+      <p className="text-sm text-ink-muted mb-4">
+        Earliest available start is {min.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} — we need 2 days to prepare your first delivery.
+      </p>
+      <Calendar
+        minDate={min}
+        maxDate={max}
+        selected={state.startDate ? fromDateKey(state.startDate) : null}
+        onSelect={(date) => update({ startDate: toDateKey(date) })}
+      />
 
       <StepNav
         backTo="/subscribe/tier"

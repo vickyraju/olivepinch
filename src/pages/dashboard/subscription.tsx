@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
+const MEALS_OPTIONS: (1 | 2 | 3)[] = [1, 2, 3]
 
 // Mirrors REMINDER_OFFSET_DAYS in server/src/routes/internal.ts — the Renew section only
 // becomes actionable once the renewal-reminder email would've gone out, not right after signup.
@@ -26,6 +27,7 @@ function Subscription() {
   const { customer: authCustomer } = useAuth()
   const sub = customer.subscription
   const [duration, setDuration] = useState<7 | 14 | 28>(sub.planDuration)
+  const [mealsPerDay, setMealsPerDay] = useState<1 | 2 | 3>(sub.mealsPerDay)
   const [goal, setGoal] = useState<Goal>(sub.goal)
   const [dietTypes, setDietTypes] = useState<DietType[]>(sub.dietTypes)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
@@ -45,7 +47,7 @@ function Subscription() {
   const isExpired = sub.status === "expired"
   const daysUntilEnd = Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
   const showRenewal = isExpired || daysUntilEnd <= (REMINDER_OFFSET_DAYS[sub.planDuration] ?? 7)
-  const rawTotal = priceFor(plans, goal, duration)
+  const rawTotal = priceFor(plans, goal, duration, "Basic", mealsPerDay)
   const total = rawTotal !== null && promoDiscount ? Math.max(0, rawTotal - promoDiscount) : rawTotal
 
   function toggleDietType(diet: DietType, checked: boolean) {
@@ -67,6 +69,7 @@ function Subscription() {
         goal: GOAL_TO_ENUM[goal],
         tier: TIER_TO_ENUM["Basic"],
         planDuration: duration,
+        mealsPerDay,
         customerId: authCustomer?.id,
       })
       setPromoCode(promoInput.trim())
@@ -103,7 +106,7 @@ function Subscription() {
     setError("")
     setRenewing(true)
     try {
-      await renew(duration, goal, dietTypes, allergens, "Daily", promoCode ?? undefined)
+      await renew(duration, mealsPerDay, goal, dietTypes, allergens, "Daily", promoCode ?? undefined)
       setConfirmed(true)
       setTimeout(() => setConfirmed(false), 8000)
       setRenewing(false)
@@ -115,6 +118,7 @@ function Subscription() {
 
   function cancelEditing() {
     setDuration(sub.planDuration)
+    setMealsPerDay(sub.mealsPerDay)
     setGoal(sub.goal)
     setDietTypes(sub.dietTypes)
     setAllergens(sub.allergens)
@@ -189,6 +193,10 @@ function Subscription() {
                   <dd className="mt-0.5 text-ink font-medium">{duration} days</dd>
                 </div>
                 <div>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Meals/day</dt>
+                  <dd className="mt-0.5 text-ink font-medium">{mealsPerDay}</dd>
+                </div>
+                <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Goal</dt>
                   <dd className="mt-0.5 text-ink font-medium">{goal}</dd>
                 </div>
@@ -223,6 +231,27 @@ function Subscription() {
                       )}
                     >
                       {d} days
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label id="meals-label">Meals per day</Label>
+                <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-labelledby="meals-label">
+                  {MEALS_OPTIONS.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      role="radio"
+                      aria-checked={mealsPerDay === m}
+                      onClick={() => setMealsPerDay(m)}
+                      className={cn(
+                        "rounded-xl border-2 py-4 font-semibold transition-colors cursor-pointer",
+                        mealsPerDay === m ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                      )}
+                    >
+                      {m} meal{m > 1 ? "s" : ""}/day
                     </button>
                   ))}
                 </div>
