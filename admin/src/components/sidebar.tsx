@@ -10,6 +10,7 @@ const navItems = [
   { path: "/plans", label: "Plans", icon: "sell" },
   { path: "/customers", label: "Customers", icon: "group" },
   { path: "/zones", label: "Zones", icon: "location_on" },
+  { path: "/promo-codes", label: "Promo Codes", icon: "confirmation_number" },
 ]
 
 export function Sidebar() {

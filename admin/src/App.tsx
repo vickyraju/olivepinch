@@ -8,6 +8,7 @@ import MenuControl from '@/pages/menu-control'
 import MenuWeeks from '@/pages/menu-weeks'
 import Plans from '@/pages/plans'
 import Zones from '@/pages/zones'
+import PromoCodes from '@/pages/promo-codes'
 import Customers from '@/pages/customers'
 import CustomerDetail from '@/pages/customer-detail'
 import Orders from '@/pages/orders'
@@ -37,6 +38,7 @@ function App() {
             <Route path="/customers" element={<Customers />} />
             <Route path="/customers/:id" element={<CustomerDetail />} />
             <Route path="/zones" element={<Zones />} />
+            <Route path="/promo-codes" element={<PromoCodes />} />
             <Route path="/admins" element={<Admins />} />
           </Route>
         </Route>
