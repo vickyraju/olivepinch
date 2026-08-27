@@ -9,6 +9,7 @@ const navItems = [
   { path: "/plans", label: "Plans", icon: "sell" },
   { path: "/customers", label: "Customers", icon: "group" },
   { path: "/zones", label: "Postcode Coverage", icon: "location_on" },
+  { path: "/delivery-slots", label: "Delivery Time Slots", icon: "schedule" },
   { path: "/promo-codes", label: "Promo Codes", icon: "confirmation_number" },
 ]
 
