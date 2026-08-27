@@ -173,16 +173,6 @@ function Subscription() {
         </dl>
       </Card>
 
-      {!showRenewal && (
-        <Card className="p-6 sm:p-8">
-          <h2 className="text-lg text-ink mb-1">Renew your subscription</h2>
-          <p className="text-sm text-ink-muted">
-            Renews by renewing before {new Date(endDate).toLocaleDateString("en-GB")} — we'll email you a
-            reminder closer to the date.
-          </p>
-        </Card>
-      )}
-
       {showRenewal && (
       <form onSubmit={handleRenew}>
         <Card className="p-6 sm:p-8 space-y-6">
