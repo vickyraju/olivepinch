@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { Lock, Phone } from "lucide-react"
+import { Lock, Phone, Sparkles } from "lucide-react"
 import { formatPhoneNumberIntl } from "react-phone-number-input"
 import { useAuth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
@@ -24,6 +24,7 @@ function Login() {
   const [verifying, setVerifying] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [codeFocused, setCodeFocused] = useState(false)
+  const [noAccount, setNoAccount] = useState(false)
 
   useEffect(() => {
     if (resendCooldown <= 0) return
@@ -56,10 +57,12 @@ function Login() {
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault()
     setError("")
+    setNoAccount(false)
     setSending(true)
     try {
       if (!(await checkPhoneHasAccount(phone))) {
-        navigate("/subscribe")
+        setNoAccount(true)
+        setTimeout(() => navigate("/subscribe"), 2500)
         return
       }
       await sendOtp(phone)
@@ -129,9 +132,22 @@ function Login() {
                 <PhoneInput id="phone" value={phone} onChange={setPhone} international />
               </div>
               <FieldError>{error}</FieldError>
-              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending || !phone.trim()}>
+
+              {noAccount && (
+                <div role="status" className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
+                  <Sparkles className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-olive-700">Looks like you're new here</p>
+                    <p className="text-sm text-olive-700/80 mt-0.5">
+                      We don't have a plan set up for this number yet — taking you to get started…
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending || noAccount || !phone.trim()}>
                 <Phone className="h-4 w-4" />
-                {sending ? "Sending code…" : "Send code"}
+                {noAccount ? "Taking you to get started…" : sending ? "Sending code…" : "Send code"}
               </Button>
             </form>
           )}
