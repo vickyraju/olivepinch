@@ -10,7 +10,7 @@ export interface CustomerProfile {
   fullName: string
   email: string
   gender: Gender | ""
-  age: string
+  birthMonth: string
   heightCm: string
   weightKg: string
 }
@@ -40,7 +40,7 @@ const EMPTY_PROFILE: CustomerProfile = {
   fullName: "",
   email: "",
   gender: "",
-  age: "",
+  birthMonth: "",
   heightCm: "",
   weightKg: "",
 }

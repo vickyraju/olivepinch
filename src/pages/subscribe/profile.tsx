@@ -25,11 +25,15 @@ function Profile() {
   const bmi = hasHealthData ? calculateBmi(height, weight) : null
   const category = bmi ? bmiCategory(bmi) : null
 
+  const now = new Date()
+  const maxBirthMonth = `${now.getFullYear() - 16}-${String(now.getMonth() + 1).padStart(2, "0")}`
+  const minBirthMonth = `${now.getFullYear() - 100}-01`
+
   const canContinue =
     p.fullName.trim().length > 1 &&
     /\S+@\S+\.\S+/.test(p.email) &&
     p.gender !== "" &&
-    p.age !== "" &&
+    p.birthMonth !== "" &&
     hasHealthData &&
     healthConsent
 
@@ -76,15 +80,14 @@ function Profile() {
             </Select>
           </div>
           <div>
-            <Label htmlFor="age">Age</Label>
+            <Label htmlFor="birthMonth">Birth month &amp; year</Label>
             <Input
-              id="age"
-              type="number"
-              min={16}
-              max={100}
-              inputMode="numeric"
-              value={p.age}
-              onChange={(e) => update({ profile: { ...p, age: e.target.value } })}
+              id="birthMonth"
+              type="month"
+              min={minBirthMonth}
+              max={maxBirthMonth}
+              value={p.birthMonth}
+              onChange={(e) => update({ profile: { ...p, birthMonth: e.target.value } })}
             />
           </div>
         </div>

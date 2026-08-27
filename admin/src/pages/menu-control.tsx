@@ -127,7 +127,7 @@ function MenuItemCard({
               {t}
             </span>
           ))}
-          {item.goalTags.map((t) => (
+          {item.goalTags.slice(0, 1).map((t) => (
             <span key={t} className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-purple-50 text-purple-700 border-purple-200">
               {GOAL_LABELS[t] ?? t}
             </span>
@@ -192,7 +192,7 @@ function MenuControl() {
       slot: item.slot,
       dietTags: item.dietTags,
       allergenTags: item.allergenTags,
-      goalTags: item.goalTags,
+      goalTags: item.goalTags.slice(0, 1),
       tier: item.tier,
       kcal: String(item.kcal),
       protein: String(item.protein),

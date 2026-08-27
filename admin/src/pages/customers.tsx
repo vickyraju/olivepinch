@@ -14,6 +14,9 @@ interface CustomerRow {
   address: string | null
   postcode: string | null
   subscribed: boolean
+  goal: string | null
+  planDuration: number | null
+  planEndDate: string | null
   createdAt: string
 }
 
@@ -24,16 +27,38 @@ interface CustomersResponse {
   total: number
 }
 
+const GOAL_LABELS: Record<string, string> = {
+  WEIGHT_LOSS: "Weight Loss",
+  WEIGHT_GAIN: "Weight Gain",
+  WEIGHT_MAINTENANCE: "Weight Maintenance",
+  MUSCLE_BUILDING: "Muscle Building",
+}
+
+type SubscribedFilter = "" | "true" | "false"
+type SortOption = "newest" | "oldest" | "planEndDate"
+
+const SORT_LABELS: Record<SortOption, string> = {
+  newest: "Joined (newest)",
+  oldest: "Joined (oldest)",
+  planEndDate: "Plan end date",
+}
+
 function Customers() {
   const [search, setSearch] = useState("")
+  const [subscribedFilter, setSubscribedFilter] = useState<SubscribedFilter>("")
+  const [sort, setSort] = useState<SortOption>("newest")
   const [page, setPage] = useState(1)
 
-  useEffect(() => setPage(1), [search])
+  useEffect(() => setPage(1), [search, subscribedFilter, sort])
 
   const customersQuery = useQuery({
-    queryKey: ["customers", search, page],
+    queryKey: ["customers", search, subscribedFilter, sort, page],
     queryFn: () =>
-      api.get<CustomersResponse>(`/customers?page=${page}${search ? `&search=${encodeURIComponent(search)}` : ""}`),
+      api.get<CustomersResponse>(
+        `/customers?page=${page}&sort=${sort}${search ? `&search=${encodeURIComponent(search)}` : ""}${
+          subscribedFilter ? `&subscribed=${subscribedFilter}` : ""
+        }`
+      ),
   })
   const data = customersQuery.data
 
@@ -42,7 +67,7 @@ function Customers() {
       <Header title="Customers" />
       <div className="flex-1 overflow-y-auto p-8">
         <div className="bg-white rounded-[12px] border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-200 bg-gray-50/50">
+          <div className="p-5 border-b border-gray-200 bg-gray-50/50 flex flex-wrap items-center gap-3">
             <div className="relative w-full max-w-[320px]">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
               <input
@@ -52,6 +77,26 @@ function Customers() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <select
+              className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none"
+              value={subscribedFilter}
+              onChange={(e) => setSubscribedFilter(e.target.value as SubscribedFilter)}
+            >
+              <option value="">All customers</option>
+              <option value="true">Subscribed</option>
+              <option value="false">Unsubscribed</option>
+            </select>
+            <select
+              className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortOption)}
+            >
+              {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
+                <option key={key} value={key}>
+                  {SORT_LABELS[key]}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -61,12 +106,15 @@ function Customers() {
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Address</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Goal</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan Ends</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {customersQuery.isLoading ? <TableSkeleton columns={6} /> : null}
+                {customersQuery.isLoading ? <TableSkeleton columns={9} /> : null}
                 {!customersQuery.isLoading &&
                   (data?.customers ?? []).map((c) => {
                     return (
@@ -96,6 +144,11 @@ function Customers() {
                             {c.subscribed ? "Subscribed" : "Unsubscribed"}
                           </span>
                         </td>
+                        <td className="py-4 px-6 text-gray-600">{c.goal ? GOAL_LABELS[c.goal] ?? c.goal : "—"}</td>
+                        <td className="py-4 px-6 text-gray-600">{c.planDuration ? `${c.planDuration} days` : "—"}</td>
+                        <td className="py-4 px-6 text-gray-600">
+                          {c.planEndDate ? new Date(c.planEndDate).toLocaleDateString("en-GB") : "—"}
+                        </td>
                         <td className="py-4 px-6 text-gray-600">{new Date(c.createdAt).toLocaleDateString("en-GB")}</td>
                         <td className="py-4 px-6">
                           <Link to={`/customers/${c.id}`} className="text-sm font-semibold text-primary hover:underline">
@@ -107,7 +160,7 @@ function Customers() {
                   })}
                 {!customersQuery.isLoading && (data?.customers ?? []).length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-sm text-gray-400">
+                    <td colSpan={9} className="py-10 text-center text-sm text-gray-400">
                       No customers found.
                     </td>
                   </tr>
