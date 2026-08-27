@@ -7,6 +7,7 @@ export type MealsPerDay = 1 | 2 | 3
 export type PlanTier = "Basic" | "Advanced"
 export type Gender = "Female" | "Male" | "Non-binary" | "Prefer not to say"
 export type DeliverySlot = "Daily" | "Weekly" | "Alternate days"
+export type DeliveryTimeSlot = "6:00 – 7:00" | "7:00 – 8:00" | "8:00 – 9:00"
 
 export interface CustomerProfile {
   fullName: string
@@ -49,6 +50,7 @@ export interface SubscribeState {
   menuItemPrices: Record<string, number>
   deliveryAddress: DeliveryAddress
   deliverySlot: DeliverySlot | null
+  deliveryTimeSlot: DeliveryTimeSlot | null
   promoCode: string | null
   promoDiscount: number | null
   paymentAttempted: boolean
@@ -90,6 +92,7 @@ const INITIAL_STATE: SubscribeState = {
   menuItemPrices: {},
   deliveryAddress: EMPTY_ADDRESS,
   deliverySlot: null,
+  deliveryTimeSlot: null,
   promoCode: null,
   promoDiscount: null,
   paymentAttempted: false,

@@ -4,6 +4,7 @@ import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { useAuth } from "@/lib/auth"
 import { GOALS, DIET_TYPES, ALLERGENS, type Goal, type DietType } from "@/data/menu"
+import type { DeliveryTimeSlot } from "@/lib/subscribe-context"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { GOAL_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
 import { api, ApiError } from "@/lib/api"
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
 const MEALS_OPTIONS: (1 | 2 | 3)[] = [1, 2, 3]
+const DELIVERY_TIME_SLOTS: DeliveryTimeSlot[] = ["6:00 – 7:00", "7:00 – 8:00", "8:00 – 9:00"]
 
 // Mirrors REMINDER_OFFSET_DAYS in server/src/routes/internal.ts — the Renew section only
 // becomes actionable once the renewal-reminder email would've gone out, not right after signup.
@@ -32,6 +34,7 @@ function Subscription() {
   const [dietTypes, setDietTypes] = useState<DietType[]>(sub.dietTypes)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
   const [noAllergies, setNoAllergies] = useState(sub.allergens.length === 0)
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState<DeliveryTimeSlot>(sub.deliveryTimeSlot)
   const [editingPreferences, setEditingPreferences] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
@@ -107,7 +110,7 @@ function Subscription() {
     setError("")
     setRenewing(true)
     try {
-      await renew(duration, mealsPerDay, goal, dietTypes, allergens, "Daily", promoCode ?? undefined)
+      await renew(duration, mealsPerDay, goal, dietTypes, allergens, "Daily", deliveryTimeSlot, promoCode ?? undefined)
       setConfirmed(true)
       setTimeout(() => setConfirmed(false), 8000)
       setRenewing(false)
@@ -124,6 +127,7 @@ function Subscription() {
     setDietTypes(sub.dietTypes)
     setAllergens(sub.allergens)
     setNoAllergies(sub.allergens.length === 0)
+    setDeliveryTimeSlot(sub.deliveryTimeSlot)
     setEditingPreferences(false)
   }
 
@@ -209,6 +213,10 @@ function Subscription() {
                 <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Allergens</dt>
                   <dd className="mt-0.5 text-ink font-medium">{allergens.length ? allergens.join(", ") : "Nothing"}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Delivery time</dt>
+                  <dd className="mt-0.5 text-ink font-medium">{deliveryTimeSlot}</dd>
                 </div>
               </dl>
               <Button type="button" variant="accent" size="sm" onClick={() => setEditingPreferences(true)}>
@@ -346,6 +354,27 @@ function Subscription() {
                   <Label htmlFor="renew-no-allergies" className="mb-0 font-normal cursor-pointer">
                     I confirm I have no food allergies
                   </Label>
+                </div>
+              </div>
+
+              <div>
+                <Label id="delivery-time-label">Delivery time slot</Label>
+                <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-labelledby="delivery-time-label">
+                  {DELIVERY_TIME_SLOTS.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      role="radio"
+                      aria-checked={deliveryTimeSlot === slot}
+                      onClick={() => setDeliveryTimeSlot(slot)}
+                      className={cn(
+                        "rounded-lg border-2 py-3 text-sm font-semibold transition-colors cursor-pointer",
+                        deliveryTimeSlot === slot ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                      )}
+                    >
+                      {slot}
+                    </button>
+                  ))}
                 </div>
               </div>
             </>

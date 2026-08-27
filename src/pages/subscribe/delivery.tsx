@@ -6,11 +6,14 @@ import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe } from "@/lib/subscribe-context"
+import type { DeliveryTimeSlot } from "@/lib/subscribe-context"
 import { api, ApiError } from "@/lib/api"
-import { DELIVERY_SLOT_TO_ENUM, TIER_TO_ENUM, GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
+import { DELIVERY_SLOT_TO_ENUM, DELIVERY_TIME_SLOT_TO_ENUM, TIER_TO_ENUM, GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
-import { splitFullName, joinFullName } from "@/lib/utils"
+import { splitFullName, joinFullName, cn } from "@/lib/utils"
+
+const DELIVERY_TIME_SLOTS: DeliveryTimeSlot[] = ["6:00 – 7:00", "7:00 – 8:00", "8:00 – 9:00"]
 
 function Delivery() {
   const { state, update } = useSubscribe()
@@ -44,7 +47,8 @@ function Delivery() {
     doorNumber.trim() &&
     street.trim() &&
     area.trim() &&
-    postcode.trim()
+    postcode.trim() &&
+    state.deliveryTimeSlot
   )
 
   async function handlePay() {
@@ -106,6 +110,7 @@ function Delivery() {
         addressArea: deliveryAddress.area,
         addressPostcode: deliveryAddress.postcode,
         deliverySlot: DELIVERY_SLOT_TO_ENUM["Daily"],
+        deliveryTimeSlot: DELIVERY_TIME_SLOT_TO_ENUM[state.deliveryTimeSlot!],
         dayMenus: state.dayMenus,
         promoCode: state.promoCode ?? undefined,
       })
@@ -221,6 +226,29 @@ function Delivery() {
               </div>
             </div>
             <FieldError>{error}</FieldError>
+          </section>
+
+          <section className="space-y-3 mt-8 pt-8 border-t border-border">
+            <div>
+              <h2 className="text-lg text-ink">Delivery time slot</h2>
+              <p className="text-sm text-ink-muted">When should we drop your meals off each day?</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {DELIVERY_TIME_SLOTS.map((slot) => (
+                <button
+                  key={slot}
+                  type="button"
+                  aria-pressed={state.deliveryTimeSlot === slot}
+                  onClick={() => update({ deliveryTimeSlot: slot })}
+                  className={cn(
+                    "rounded-lg border-2 py-2.5 text-sm font-semibold transition-colors cursor-pointer",
+                    state.deliveryTimeSlot === slot ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                  )}
+                >
+                  {slot}
+                </button>
+              ))}
+            </div>
           </section>
 
           {status === "failed" && (

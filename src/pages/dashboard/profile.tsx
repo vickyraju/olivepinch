@@ -124,6 +124,10 @@ function Profile() {
             <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Delivery</dt>
             <dd className="mt-1 text-ink">{sub.deliverySlot}</dd>
           </div>
+          <div>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Delivery time</dt>
+            <dd className="mt-1 text-ink">{sub.deliveryTimeSlot}</dd>
+          </div>
         </dl>
       </Card>
 
