@@ -1,7 +1,7 @@
 import { createContext, useContext, useCallback, useMemo, useState, useEffect, type ReactNode } from "react"
 import type { DietType, Goal } from "@/data/menu"
 import type { DeliverySlot, DeliveryAddress } from "@/lib/subscribe-context"
-import { computeEndDate, pausesUsedThisMonth, toDateKey, MAX_PAUSES_PER_MONTH, type OrderStatus } from "@/lib/subscription"
+import { computeEndDate, pausesUsedTotal, canPauseDate, toDateKey, PAUSE_LIMITS_BY_DURATION, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
 import { goalFromEnum, dietTypesFromEnum, mealSlotFromEnum, deliverySlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, DELIVERY_SLOT_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
@@ -106,7 +106,7 @@ interface DashboardContextValue {
   deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   pauseMultiple: (dates: string[]) => Promise<{ ok: boolean; reason?: string }>
-  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot) => Promise<void>
+  renew: (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, promoCode?: string) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
   updateAddress: (address: DeliveryAddress, phone: string) => Promise<{ ok: boolean; reason?: string }>
@@ -139,8 +139,12 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
     async (date: string) => {
       const sub = customer.subscription
       const alreadyPaused = sub.pausedDates.includes(date)
-      if (!alreadyPaused && pausesUsedThisMonth(sub.pausedDates) >= MAX_PAUSES_PER_MONTH) {
-        return { ok: false, reason: `You've used all ${MAX_PAUSES_PER_MONTH} pauses for this month.` }
+      if (!canPauseDate(date)) {
+        return { ok: false, reason: "Changes to this day must be made by noon the day before." }
+      }
+      const limit = PAUSE_LIMITS_BY_DURATION[sub.planDuration]
+      if (!alreadyPaused && pausesUsedTotal(sub.pausedDates) >= limit) {
+        return { ok: false, reason: `You've used all ${limit} pauses for this plan.` }
       }
       try {
         await api.post(`/subscriptions/${sub.id}/${alreadyPaused ? "resume" : "pause"}`, { date })
@@ -160,9 +164,12 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   const pauseMultiple = useCallback(
     async (dates: string[]) => {
       const sub = customer.subscription
-      const remaining = MAX_PAUSES_PER_MONTH - pausesUsedThisMonth(sub.pausedDates)
+      if (dates.some((d) => !canPauseDate(d))) {
+        return { ok: false, reason: "Changes to those days must be made by noon the day before." }
+      }
+      const remaining = PAUSE_LIMITS_BY_DURATION[sub.planDuration] - pausesUsedTotal(sub.pausedDates)
       if (dates.length > remaining) {
-        return { ok: false, reason: `You can only pause ${remaining} more day${remaining === 1 ? "" : "s"} this month.` }
+        return { ok: false, reason: `You can only pause ${remaining} more day${remaining === 1 ? "" : "s"} on this plan.` }
       }
       try {
         for (const date of dates) {
@@ -184,13 +191,14 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   }, [customer.subscription.id, refetch])
 
   const renew = useCallback(
-    async (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot) => {
+    async (planDuration: 7 | 14 | 28, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, promoCode?: string) => {
       const { subscriptionId } = await api.post<{ subscriptionId: string }>(`/subscriptions/${customer.subscription.id}/renew`, {
         planDuration,
         goal: GOAL_TO_ENUM[goal],
         dietTypes: dietTypes.map((d) => DIET_TO_ENUM[d]),
         allergens,
         deliverySlot: DELIVERY_SLOT_TO_ENUM[deliverySlot],
+        promoCode: promoCode || undefined,
       })
       // Same intent endpoint initial checkout uses — the only place that decides real
       // Worldpay vs. dev-mode auto-succeed, so renewal reuses it rather than faking success.
@@ -253,7 +261,7 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   }, [logout])
 
   const endDate = computeEndDate(customer.subscription.startDate, customer.subscription.planDuration, customer.subscription.pausedDates)
-  const pausesUsed = pausesUsedThisMonth(customer.subscription.pausedDates)
+  const pausesUsed = pausesUsedTotal(customer.subscription.pausedDates)
 
   const value = useMemo(
     () => ({ customer, addHealthLog, deleteHealthLog, togglePause, pauseMultiple, renew, confirmRenewal, updateMarketingOptIn, updateAddress, chooseMenuWeek, deleteAccount, endDate, pausesUsed }),

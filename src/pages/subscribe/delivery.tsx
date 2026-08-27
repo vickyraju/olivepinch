@@ -1,22 +1,16 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Package, CalendarDays, Repeat, AlertCircle } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { FieldError } from "@/components/ui/field-error"
-import { useSubscribe, type DeliverySlot } from "@/lib/subscribe-context"
+import { useSubscribe } from "@/lib/subscribe-context"
 import { api, ApiError } from "@/lib/api"
 import { DELIVERY_SLOT_TO_ENUM, TIER_TO_ENUM, GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
-import { cn, splitFullName, joinFullName } from "@/lib/utils"
-
-const DELIVERY_SLOTS: { value: DeliverySlot; label: string; hint: string; icon: typeof Package }[] = [
-  { value: "Daily", label: "Daily", hint: "A box every day", icon: Package },
-  { value: "Weekly", label: "Weekly", hint: "One box, once a week", icon: CalendarDays },
-  { value: "Alternate days", label: "Alternate days", hint: "A box every other day", icon: Repeat },
-]
+import { splitFullName, joinFullName } from "@/lib/utils"
 
 function Delivery() {
   const { state, update } = useSubscribe()
@@ -50,8 +44,7 @@ function Delivery() {
     doorNumber.trim() &&
     street.trim() &&
     area.trim() &&
-    postcode.trim() &&
-    state.deliverySlot
+    postcode.trim()
   )
 
   async function handlePay() {
@@ -112,8 +105,9 @@ function Delivery() {
         addressStreet: deliveryAddress.street,
         addressArea: deliveryAddress.area,
         addressPostcode: deliveryAddress.postcode,
-        deliverySlot: DELIVERY_SLOT_TO_ENUM[state.deliverySlot ?? "Daily"],
+        deliverySlot: DELIVERY_SLOT_TO_ENUM["Daily"],
         dayMenus: state.dayMenus,
+        promoCode: state.promoCode ?? undefined,
       })
       update({ subscriptionId: subscription.subscriptionId })
 
@@ -227,36 +221,6 @@ function Delivery() {
               </div>
             </div>
             <FieldError>{error}</FieldError>
-          </section>
-
-          <section className="space-y-5 mt-8 pt-8 border-t border-border">
-            <h2 className="text-lg text-ink">Delivery frequency</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {DELIVERY_SLOTS.map((d) => {
-                const active = state.deliverySlot === d.value
-                const Icon = d.icon
-                return (
-                  <button
-                    key={d.value}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => update({ deliverySlot: d.value })}
-                    className={cn(
-                      "flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-colors cursor-pointer min-h-23",
-                      active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
-                    )}
-                  >
-                    <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", active ? "bg-olive-600" : "bg-cream-100")}>
-                      <Icon className={cn("h-4.5 w-4.5", active ? "text-white" : "text-olive-600")} strokeWidth={1.75} />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-ink text-sm">{d.label}</div>
-                      <div className="text-xs text-ink-muted mt-0.5">{d.hint}</div>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
           </section>
 
           {status === "failed" && (

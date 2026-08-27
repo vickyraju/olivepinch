@@ -79,12 +79,18 @@ export function calculateAge(dateOfBirth: string): number {
   return age
 }
 
-export function pausesUsedThisMonth(pausedDates: string[]): number {
-  const now = new Date()
-  return pausedDates.filter((d) => {
-    const date = fromDateKey(d)
-    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth()
-  }).length
+export function pausesUsedTotal(pausedDates: string[]): number {
+  return pausedDates.length
 }
 
-export const MAX_PAUSES_PER_MONTH = 4
+// Lifetime pause budget per subscription, scaled by plan length (not a monthly allowance).
+export const PAUSE_LIMITS_BY_DURATION: Record<7 | 14 | 28, number> = { 7: 0, 14: 2, 28: 4 }
+
+// Mirrors the server's noon-the-day-before cutoff — client-side pre-check only, the server
+// is the real enforcement point.
+export function canPauseDate(dateKey: string, now = new Date()): boolean {
+  const cutoff = fromDateKey(dateKey)
+  cutoff.setHours(12, 0, 0, 0)
+  cutoff.setDate(cutoff.getDate() - 1)
+  return now.getTime() < cutoff.getTime()
+}

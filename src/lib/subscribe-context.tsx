@@ -49,6 +49,8 @@ export interface SubscribeState {
   menuItemPrices: Record<string, number>
   deliveryAddress: DeliveryAddress
   deliverySlot: DeliverySlot | null
+  promoCode: string | null
+  promoDiscount: number | null
   paymentAttempted: boolean
   customerId: string | null
   subscriptionId: string | null
@@ -88,6 +90,8 @@ const INITIAL_STATE: SubscribeState = {
   menuItemPrices: {},
   deliveryAddress: EMPTY_ADDRESS,
   deliverySlot: null,
+  promoCode: null,
+  promoDiscount: null,
   paymentAttempted: false,
   customerId: null,
   subscriptionId: null,

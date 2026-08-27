@@ -2,43 +2,76 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
+import { useAuth } from "@/lib/auth"
 import { GOALS, DIET_TYPES, ALLERGENS, type Goal, type DietType } from "@/data/menu"
-import type { DeliverySlot } from "@/lib/subscribe-context"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
+import { GOAL_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
+import { api, ApiError } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
-const DELIVERY_SLOTS: { value: DeliverySlot; hint: string }[] = [
-  { value: "Daily", hint: "A box every day" },
-  { value: "Weekly", hint: "One box for the whole week" },
-  { value: "Alternate days", hint: "A box every other day" },
-]
 
 function Subscription() {
   const { customer, endDate, renew, confirmRenewal } = useDashboard()
+  const { customer: authCustomer } = useAuth()
   const sub = customer.subscription
   const [duration, setDuration] = useState<7 | 14 | 28>(sub.planDuration)
   const [goal, setGoal] = useState<Goal>(sub.goal)
   const [dietTypes, setDietTypes] = useState<DietType[]>(sub.dietTypes)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
-  const [deliverySlot, setDeliverySlot] = useState<DeliverySlot>(sub.deliverySlot)
   const [editingPreferences, setEditingPreferences] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
   const [error, setError] = useState("")
   const [searchParams, setSearchParams] = useSearchParams()
 
+  const [promoInput, setPromoInput] = useState("")
+  const [promoCode, setPromoCode] = useState<string | null>(null)
+  const [promoDiscount, setPromoDiscount] = useState<number | null>(null)
+  const [promoError, setPromoError] = useState("")
+  const [applyingPromo, setApplyingPromo] = useState(false)
+
   const plans = usePlans()
   const isExpired = sub.status === "expired"
-  const total = priceFor(plans, goal, duration)
+  const rawTotal = priceFor(plans, goal, duration)
+  const total = rawTotal !== null && promoDiscount ? Math.max(0, rawTotal - promoDiscount) : rawTotal
 
   function toggleDietType(diet: DietType, checked: boolean) {
     setDietTypes((prev) => (checked ? [...prev, diet] : prev.filter((d) => d !== diet)))
+  }
+
+  const allDietsSelected = dietTypes.length === DIET_TYPES.length
+  function toggleEverything() {
+    setDietTypes(allDietsSelected ? [] : [...DIET_TYPES])
+  }
+
+  async function applyPromo() {
+    if (!promoInput.trim()) return
+    setApplyingPromo(true)
+    setPromoError("")
+    try {
+      const result = await api.post<{ valid: boolean; discountAmount: number }>("/promo-codes/validate", {
+        code: promoInput.trim(),
+        goal: GOAL_TO_ENUM[goal],
+        tier: TIER_TO_ENUM["Basic"],
+        planDuration: duration,
+        customerId: authCustomer?.id,
+      })
+      setPromoCode(promoInput.trim())
+      setPromoDiscount(result.discountAmount)
+    } catch (err) {
+      setPromoCode(null)
+      setPromoDiscount(null)
+      setPromoError(err instanceof ApiError ? err.message : "Couldn't apply that code — try again.")
+    } finally {
+      setApplyingPromo(false)
+    }
   }
 
   // Worldpay redirects back here (not a separate return page — this form already lives
@@ -64,7 +97,7 @@ function Subscription() {
     setError("")
     setRenewing(true)
     try {
-      await renew(duration, goal, dietTypes, allergens, deliverySlot)
+      await renew(duration, goal, dietTypes, allergens, "Daily", promoCode ?? undefined)
       setConfirmed(true)
       setTimeout(() => setConfirmed(false), 8000)
       setRenewing(false)
@@ -79,7 +112,6 @@ function Subscription() {
     setGoal(sub.goal)
     setDietTypes(sub.dietTypes)
     setAllergens(sub.allergens)
-    setDeliverySlot(sub.deliverySlot)
     setEditingPreferences(false)
   }
 
@@ -143,7 +175,7 @@ function Subscription() {
 
           {!editingPreferences ? (
             <div className="rounded-xl border border-border bg-cream-100 p-5">
-              <dl className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm mb-4">
+              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-4">
                 <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Length</dt>
                   <dd className="mt-0.5 text-ink font-medium">{duration} days</dd>
@@ -159,10 +191,6 @@ function Subscription() {
                 <div>
                   <dt className="text-xs text-ink-muted uppercase tracking-wide">Excludes</dt>
                   <dd className="mt-0.5 text-ink font-medium">{allergens.length ? allergens.join(", ") : "Nothing"}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Delivery</dt>
-                  <dd className="mt-0.5 text-ink font-medium">{deliverySlot}</dd>
                 </div>
               </dl>
               <Button type="button" variant="outline" size="sm" onClick={() => setEditingPreferences(true)}>
@@ -234,11 +262,22 @@ function Subscription() {
                       </button>
                     )
                   })}
+                  <button
+                    type="button"
+                    aria-pressed={allDietsSelected}
+                    onClick={toggleEverything}
+                    className={cn(
+                      "rounded-lg border-2 py-3 text-sm font-medium transition-colors cursor-pointer",
+                      allDietsSelected ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                    )}
+                  >
+                    Everything
+                  </button>
                 </div>
               </div>
 
               <div>
-                <Label>Excluded allergens</Label>
+                <Label>Any allergens to avoid?</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {ALLERGENS.map((allergen) => (
                     <div key={allergen} className="flex items-center gap-2.5">
@@ -255,33 +294,32 @@ function Subscription() {
                 </div>
               </div>
 
-              <div>
-                <Label id="delivery-slot-label">Delivery frequency</Label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3" role="radiogroup" aria-labelledby="delivery-slot-label">
-                  {DELIVERY_SLOTS.map((d) => (
-                    <button
-                      key={d.value}
-                      type="button"
-                      role="radio"
-                      aria-checked={deliverySlot === d.value}
-                      onClick={() => setDeliverySlot(d.value)}
-                      className={cn(
-                        "rounded-lg border-2 py-3 px-2 text-left text-sm font-medium transition-colors cursor-pointer",
-                        deliverySlot === d.value ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
-                      )}
-                    >
-                      <div>{d.value}</div>
-                      <div className="text-xs font-normal text-ink-muted mt-0.5">{d.hint}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <Button type="button" variant="ghost" size="sm" onClick={cancelEditing}>
                 Cancel
               </Button>
             </>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="renew-promo">Promo code</Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="renew-promo"
+                placeholder="Promo code"
+                value={promoInput}
+                onChange={(e) => {
+                  setPromoInput(e.target.value)
+                  setPromoError("")
+                }}
+                className="flex-1 sm:max-w-xs"
+              />
+              <Button type="button" variant="outline" size="sm" disabled={!promoInput.trim() || applyingPromo} onClick={applyPromo}>
+                {applyingPromo ? "Applying…" : "Apply"}
+              </Button>
+            </div>
+            {promoError && <p className="text-xs text-coral-600">{promoError}</p>}
+            {promoDiscount ? <p className="text-xs text-olive-600">Promo code applied — {formatGBP(promoDiscount)} off</p> : null}
+          </div>
 
           <div className="flex items-start gap-3 rounded-lg bg-olive-50 p-4">
             <ShieldCheck className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
@@ -295,7 +333,13 @@ function Subscription() {
           )}
 
           <Button type="submit" variant="accent" size="lg" className="w-full sm:w-auto" disabled={renewing || total === null}>
-            {renewing ? "Renewing…" : total !== null ? `Confirm & renew · ${formatGBP(total)}` : "Confirm & renew"}
+            {renewing
+              ? "Renewing…"
+              : total !== null
+                ? promoDiscount
+                  ? `Confirm & renew · ${formatGBP(total)} (was ${formatGBP(rawTotal!)})`
+                  : `Confirm & renew · ${formatGBP(total)}`
+                : "Confirm & renew"}
           </Button>
         </Card>
       </form>

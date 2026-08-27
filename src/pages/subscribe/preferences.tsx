@@ -15,6 +15,11 @@ function Preferences() {
     update({ dietTypes: next })
   }
 
+  const allDietsSelected = state.dietTypes.length === DIET_TYPES.length
+  function toggleEverything() {
+    update({ dietTypes: allDietsSelected ? [] : [...DIET_TYPES] })
+  }
+
   function toggleAllergen(allergen: string, checked: boolean) {
     const next = checked
       ? [...state.allergens, allergen]
@@ -52,11 +57,22 @@ function Preferences() {
               </button>
             )
           })}
+          <button
+            type="button"
+            aria-pressed={allDietsSelected}
+            onClick={toggleEverything}
+            className={cn(
+              "rounded-xl border-2 py-4 text-base font-semibold transition-colors cursor-pointer",
+              allDietsSelected ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+            )}
+          >
+            Everything
+          </button>
         </div>
       </div>
 
       <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
-        <h2 className="text-lg text-ink mb-1">Exclude allergens</h2>
+        <h2 className="text-lg text-ink mb-1">Any allergens to avoid?</h2>
         <p className="text-sm text-ink-muted mb-4">Select anything you need us to keep out of your meals.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
           {ALLERGENS.map((allergen) => (
