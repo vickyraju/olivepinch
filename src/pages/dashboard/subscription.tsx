@@ -5,6 +5,7 @@ import { useDashboard } from "@/lib/dashboard-context"
 import { useAuth } from "@/lib/auth"
 import { GOALS, DIET_TYPES, ALLERGENS, type Goal, type DietType } from "@/data/menu"
 import type { DeliveryTimeSlot } from "@/lib/subscribe-context"
+import { useDeliveryTimeSlots } from "@/lib/delivery-time-slots"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { GOAL_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
 import { api, ApiError } from "@/lib/api"
@@ -18,7 +19,6 @@ import { cn } from "@/lib/utils"
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
 const MEALS_OPTIONS: (1 | 2 | 3)[] = [1, 2, 3]
-const DELIVERY_TIME_SLOTS: DeliveryTimeSlot[] = ["6:00 – 7:00", "7:00 – 8:00", "8:00 – 9:00"]
 
 // Mirrors REMINDER_OFFSET_DAYS in server/src/routes/internal.ts — the Renew section only
 // becomes actionable once the renewal-reminder email would've gone out, not right after signup.
@@ -27,6 +27,7 @@ const REMINDER_OFFSET_DAYS: Record<number, number> = { 7: 2, 14: 4, 28: 7 }
 function Subscription() {
   const { customer, endDate, renew, confirmRenewal } = useDashboard()
   const { customer: authCustomer } = useAuth()
+  const deliveryTimeSlots = useDeliveryTimeSlots()
   const sub = customer.subscription
   const [duration, setDuration] = useState<7 | 14 | 28>(sub.planDuration)
   const [mealsPerDay, setMealsPerDay] = useState<1 | 2 | 3>(sub.mealsPerDay)
@@ -360,19 +361,19 @@ function Subscription() {
               <div>
                 <Label id="delivery-time-label">Delivery time slot</Label>
                 <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-labelledby="delivery-time-label">
-                  {DELIVERY_TIME_SLOTS.map((slot) => (
+                  {deliveryTimeSlots.map((slot) => (
                     <button
-                      key={slot}
+                      key={slot.id}
                       type="button"
                       role="radio"
-                      aria-checked={deliveryTimeSlot === slot}
-                      onClick={() => setDeliveryTimeSlot(slot)}
+                      aria-checked={deliveryTimeSlot === slot.label}
+                      onClick={() => setDeliveryTimeSlot(slot.label)}
                       className={cn(
                         "rounded-lg border-2 py-3 text-sm font-semibold transition-colors cursor-pointer",
-                        deliveryTimeSlot === slot ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
+                        deliveryTimeSlot === slot.label ? "border-olive-600 bg-olive-50 text-olive-700" : "border-border text-ink hover:border-olive-300"
                       )}
                     >
-                      {slot}
+                      {slot.label}
                     </button>
                   ))}
                 </div>

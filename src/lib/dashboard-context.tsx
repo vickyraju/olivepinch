@@ -4,7 +4,7 @@ import type { DeliverySlot, DeliveryTimeSlot, DeliveryAddress } from "@/lib/subs
 import { computeEndDate, pausesUsedTotal, canPauseDate, toDateKey, PAUSE_LIMITS_BY_DURATION, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
-import { goalFromEnum, dietTypesFromEnum, mealSlotFromEnum, deliverySlotFromEnum, deliveryTimeSlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, DELIVERY_SLOT_TO_ENUM, DELIVERY_TIME_SLOT_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
+import { goalFromEnum, dietTypesFromEnum, mealSlotFromEnum, deliverySlotFromEnum, GOAL_TO_ENUM, DIET_TO_ENUM, DELIVERY_SLOT_TO_ENUM, orderStatusFromEnum, subscriptionStatusFromEnum } from "@/lib/enum-map"
 
 export interface HealthLog {
   id: string
@@ -92,7 +92,7 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[]
     allergens,
     pausedDates: raw.pausedDates.map((d) => d.slice(0, 10)),
     deliverySlot: deliverySlotFromEnum(raw.deliverySlot),
-    deliveryTimeSlot: deliveryTimeSlotFromEnum(raw.deliveryTimeSlot),
+    deliveryTimeSlot: raw.deliveryTimeSlot,
     orders: raw.orders.map((o) => ({
       id: o.id,
       date: o.deliveryDate.slice(0, 10),
@@ -202,7 +202,7 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
         dietTypes: dietTypes.map((d) => DIET_TO_ENUM[d]),
         allergens,
         deliverySlot: DELIVERY_SLOT_TO_ENUM[deliverySlot],
-        deliveryTimeSlot: DELIVERY_TIME_SLOT_TO_ENUM[deliveryTimeSlot],
+        deliveryTimeSlot,
         promoCode: promoCode || undefined,
       })
       // Same intent endpoint initial checkout uses — the only place that decides real

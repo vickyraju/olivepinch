@@ -1,6 +1,6 @@
 import type { DietType, Goal, MealSlot } from "@/data/menu"
 import type { OrderStatus } from "@/lib/subscription"
-import type { DeliverySlot, DeliveryTimeSlot, PlanTier } from "@/lib/subscribe-context"
+import type { DeliverySlot, PlanTier } from "@/lib/subscribe-context"
 
 // Mirrors server/src/lib/enums.ts (labels) and the Prisma schema enums (values) — the
 // backend speaks WEIGHT_LOSS/MEAT/BREAKFAST, the frontend speaks "Weight Loss"/"Meat"/"Box1".
@@ -31,12 +31,6 @@ export const DELIVERY_SLOT_TO_ENUM: Record<DeliverySlot, string> = {
   "Alternate days": "ALTERNATE",
 }
 
-export const DELIVERY_TIME_SLOT_TO_ENUM: Record<DeliveryTimeSlot, string> = {
-  "6:00 – 7:00": "SLOT_6_7",
-  "7:00 – 8:00": "SLOT_7_8",
-  "8:00 – 9:00": "SLOT_8_9",
-}
-
 export const TIER_TO_ENUM: Record<PlanTier, string> = {
   Basic: "BASIC",
   Advanced: "ADVANCED",
@@ -46,7 +40,6 @@ const ENUM_TO_GOAL = Object.fromEntries(Object.entries(GOAL_TO_ENUM).map(([k, v]
 const ENUM_TO_DIET = Object.fromEntries(Object.entries(DIET_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, DietType>
 const ENUM_TO_MEAL_SLOT = Object.fromEntries(Object.entries(MEAL_SLOT_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, MealSlot>
 const ENUM_TO_DELIVERY_SLOT = Object.fromEntries(Object.entries(DELIVERY_SLOT_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, DeliverySlot>
-const ENUM_TO_DELIVERY_TIME_SLOT = Object.fromEntries(Object.entries(DELIVERY_TIME_SLOT_TO_ENUM).map(([k, v]) => [v, k])) as Record<string, DeliveryTimeSlot>
 
 export function goalFromEnum(value: string): Goal {
   return ENUM_TO_GOAL[value]
@@ -66,10 +59,6 @@ export function mealSlotFromEnum(value: string): MealSlot {
 
 export function deliverySlotFromEnum(value: string): DeliverySlot {
   return ENUM_TO_DELIVERY_SLOT[value] ?? "Daily"
-}
-
-export function deliveryTimeSlotFromEnum(value: string): DeliveryTimeSlot {
-  return ENUM_TO_DELIVERY_TIME_SLOT[value] ?? "6:00 – 7:00"
 }
 
 const ORDER_STATUS_FROM_ENUM: Record<string, OrderStatus> = {

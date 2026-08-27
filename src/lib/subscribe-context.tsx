@@ -7,7 +7,8 @@ export type MealsPerDay = 1 | 2 | 3
 export type PlanTier = "Basic" | "Advanced"
 export type Gender = "Female" | "Male" | "Non-binary" | "Prefer not to say"
 export type DeliverySlot = "Daily" | "Weekly" | "Alternate days"
-export type DeliveryTimeSlot = "6:00 – 7:00" | "7:00 – 8:00" | "8:00 – 9:00"
+// Admin-configurable label (e.g. "6:00 – 7:00") — see /delivery-time-slots.
+export type DeliveryTimeSlot = string
 
 export interface CustomerProfile {
   fullName: string
