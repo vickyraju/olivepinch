@@ -1,20 +1,26 @@
 import { useState } from "react"
 import { Link, NavLink } from "react-router-dom"
-import { Menu, X } from "lucide-react"
+import { Menu, X, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/ui/logo"
-import { cn } from "@/lib/utils"
+import { useAuth } from "@/lib/auth"
+import { cn, splitFullName } from "@/lib/utils"
 
-const NAV_LINKS = [
+const BASE_LINKS = [
   { label: "Home", to: "/" },
   { label: "About Us", to: "/about" },
   { label: "Diet Plans", to: "/diet-plans" },
   { label: "Contact Us", to: "/contact" },
-  { label: "Login", to: "/login" },
 ]
 
 function SiteHeader() {
   const [open, setOpen] = useState(false)
+  const { isAuthenticated, customer } = useAuth()
+  const firstName = customer ? splitFullName(customer.fullName).firstName : ""
+  const navLinks = [
+    ...BASE_LINKS,
+    isAuthenticated ? { label: "Dashboard", to: "/dashboard" } : { label: "Login", to: "/login" },
+  ]
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur">
@@ -24,7 +30,7 @@ function SiteHeader() {
         </Link>
 
         <nav aria-label="Primary" className="hidden md:flex items-center gap-8">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
@@ -42,9 +48,17 @@ function SiteHeader() {
         </nav>
 
         <div className="hidden md:block">
-          <Button asChild variant="primary" size="sm">
-            <Link to="/subscribe">Subscribe Now</Link>
-          </Button>
+          {isAuthenticated ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to="/dashboard">
+                <User className="h-3.5 w-3.5" /> Hi, {firstName}
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild variant="primary" size="sm">
+              <Link to="/subscribe">Subscribe Now</Link>
+            </Button>
+          )}
         </div>
 
         <button
@@ -60,7 +74,7 @@ function SiteHeader() {
 
       {open && (
         <nav aria-label="Primary mobile" className="md:hidden border-t border-border bg-cream px-5 py-4 flex flex-col gap-4">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
@@ -71,9 +85,17 @@ function SiteHeader() {
               {link.label}
             </NavLink>
           ))}
-          <Button asChild variant="primary" size="md" className="w-full">
-            <Link to="/subscribe">Subscribe Now</Link>
-          </Button>
+          {isAuthenticated ? (
+            <Button asChild variant="outline" size="md" className="w-full" onClick={() => setOpen(false)}>
+              <Link to="/dashboard">
+                <User className="h-4 w-4" /> Hi, {firstName}
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild variant="primary" size="md" className="w-full" onClick={() => setOpen(false)}>
+              <Link to="/subscribe">Subscribe Now</Link>
+            </Button>
+          )}
         </nav>
       )}
     </header>
