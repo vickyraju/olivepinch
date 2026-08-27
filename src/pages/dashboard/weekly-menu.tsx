@@ -9,12 +9,9 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-
-interface PublishedMenuItem {
-  id: string
-  name: string
-  slot: string // raw backend enum, e.g. "BREAKFAST"
-}
+import { FoodPhoto } from "@/components/ui/food-photo"
+import { Badge } from "@/components/ui/badge"
+import type { PublishedMenuItem } from "@/types/menu"
 
 function WeeklyMenu() {
   const { customer, chooseMenuWeek } = useDashboard()
@@ -169,6 +166,7 @@ function WeeklyMenu() {
                       {slots.map((slot, slotIndex) => {
                         const options = optionsBySlot.get(slot) ?? []
                         const value = selections[day.date]?.[slotIndex]
+                        const chosen = options.find((opt) => opt.id === value)
                         return (
                           <div key={slot}>
                             <span className="text-xs font-semibold text-coral-600">{slot}</span>
@@ -179,11 +177,25 @@ function WeeklyMenu() {
                               <SelectContent>
                                 {options.map((opt) => (
                                   <SelectItem key={opt.id} value={opt.id}>
-                                    {opt.name}
+                                    <span className="flex items-center gap-2">
+                                      <FoodPhoto src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
+                                      {opt.name}
+                                    </span>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
+                            {chosen && (
+                              <div className="mt-2 rounded-lg border border-border overflow-hidden">
+                                <FoodPhoto src={chosen.photoUrl ?? undefined} alt={chosen.name} className="aspect-[16/9] rounded-none" />
+                                <div className="p-2 flex gap-1 flex-wrap">
+                                  <Badge variant="olive">{chosen.kcal} kcal</Badge>
+                                  <Badge variant="coral">{chosen.protein}g protein</Badge>
+                                  <Badge variant="neutral">{chosen.carbs}g carbs</Badge>
+                                  <Badge variant="neutral">{chosen.fat}g fat</Badge>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )
                       })}
