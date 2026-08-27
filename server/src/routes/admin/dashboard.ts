@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
+import { computeEndDate } from "../../lib/subscription.js"
 
 export const adminDashboardRouter = Router()
 adminDashboardRouter.use(requireAdminAuth)
@@ -26,8 +27,7 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
     newCustomersThisWeek,
     accountStatusRows,
     subscriptionStatusRows,
-    ordersTodayRows,
-    orderItemsTodayRows,
+    activeSubscriptions,
     zoneCustomers,
     activeZones,
     paymentRows,
@@ -36,8 +36,10 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
     prisma.customer.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
     prisma.customer.findMany({ select: { accountStatus: true } }),
     prisma.subscription.findMany({ select: { status: true, planDuration: true } }),
-    prisma.order.findMany({ where: { deliveryDate: new Date(`${today}T00:00:00.000Z`) }, select: { status: true } }),
-    prisma.orderItem.findMany({ where: { order: { deliveryDate: new Date(`${today}T00:00:00.000Z`) } }, select: { slot: true } }),
+    prisma.subscription.findMany({
+      where: { status: "ACTIVE" },
+      include: { customer: { select: { id: true, fullName: true } } },
+    }),
     prisma.customer.findMany({ where: { accountStatus: { not: "DELETED" } }, select: { postcode: true } }),
     prisma.zone.findMany({ where: { isActive: true } }),
     prisma.payment.findMany({ select: { status: true } }),
@@ -48,15 +50,28 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
     }),
   ])
 
+  // Customers whose plan ends within the next 14 days — lets admins get ahead of renewals
+  // instead of finding out the day it lapses. Reuses the same endDate math as the renewal
+  // reminder sweep (lib/subscription.ts) rather than storing a separate endDate column.
+  const renewalWindowEnd = new Date(today)
+  renewalWindowEnd.setUTCDate(renewalWindowEnd.getUTCDate() + 14)
+  const upcomingRenewals = activeSubscriptions
+    .map((sub) => ({
+      customerId: sub.customer.id,
+      customerName: sub.customer.fullName,
+      endDate: computeEndDate(sub.startDate, sub.planDuration, sub.pausedDates),
+    }))
+    .filter((r) => r.endDate <= renewalWindowEnd)
+    .sort((a, b) => a.endDate.getTime() - b.endDate.getTime())
+    .map((r) => ({ ...r, endDate: r.endDate.toISOString().slice(0, 10) }))
+
   // Zone distribution — replicates postcode.ts's area-matching offline (no external API
   // calls per customer; isPostcodeInActiveZone hits postcodes.io and would mean dozens of
   // outbound requests on every dashboard load).
   const zoneBuckets = new Map<string, number>()
   for (const { postcode } of zoneCustomers) {
     const normalized = postcode?.trim().toUpperCase().replace(/\s+/g, "") ?? ""
-    const areaMatch = normalized.match(/^[A-Z]+/)
-    const area = areaMatch ? areaMatch[0] : ""
-    const zone = activeZones.find((z) => z.postcodePrefixes.includes(area))
+    const zone = activeZones.find((z) => z.postcodePrefixes.some((prefix) => normalized.startsWith(prefix)))
     const key = zone?.name ?? "Unzoned"
     zoneBuckets.set(key, (zoneBuckets.get(key) ?? 0) + 1)
   }
@@ -79,8 +94,7 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
     subscriptionStatusBreakdown: bucketBy(subscriptionStatusRows, (r) => r.status),
     subscriptionDurationBreakdown: bucketBy(subscriptionStatusRows, (r) => `${r.planDuration} Days`)
       .sort((a, b) => parseInt(a.status) - parseInt(b.status)),
-    ordersTodayByStatus: bucketBy(ordersTodayRows, (r) => r.status),
-    ordersTodayBySlot: bucketBy(orderItemsTodayRows, (r) => r.slot),
+    upcomingRenewals,
     zoneDistribution: [...zoneBuckets.entries()].map(([zone, count]) => ({ zone, count })),
     refunds: { succeeded, refunded, refundRate },
     recentActivity: auditLogs.map((l) => ({

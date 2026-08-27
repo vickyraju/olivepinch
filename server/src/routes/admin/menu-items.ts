@@ -30,6 +30,8 @@ const menuItemSchema = z.object({
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   kcal: z.number().int().positive(),
   protein: z.number().int().nonnegative(),
+  carbs: z.number().int().nonnegative(),
+  fat: z.number().int().nonnegative(),
 })
 
 function photoError(res: Response, photoUrl: string | undefined) {

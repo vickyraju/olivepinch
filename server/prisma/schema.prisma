@@ -156,6 +156,8 @@ model MenuItem {
   tier         PlanTier   @default(BASIC)
   kcal         Int
   protein      Int
+  carbs        Int      @default(0)
+  fat          Int      @default(0)
 
   orderItems OrderItem[]
   weekItems  MenuWeekItem[]
