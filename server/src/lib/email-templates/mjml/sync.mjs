@@ -18,6 +18,8 @@ const TOKENS = {
   startDate: "${formatDate(p.startDate)}",
   endDate: "${formatDate(p.endDate)}",
   effectiveDate: "${formatDate(p.effectiveDate)}",
+  weekStart: "${formatDate(p.weekStart)}",
+  cutoffDate: "${formatDate(p.cutoffDate)}",
   total: "${p.total.toFixed(2)}",
   dashboardUrl: "${p.dashboardUrl}",
   privacyUrl: "${p.privacyUrl}",
@@ -31,6 +33,7 @@ const FUNCTIONS = {
   cancellation: "cancellationEmail",
   "account-recovery": "accountRecoveryEmail",
   "lapsed-retention": "lapsedRetentionEmail",
+  "weekly-menu-selection": "weeklyMenuSelectionEmail",
 }
 
 // Sample values for the browsable previews in ./previews — realistic so spacing and
@@ -44,6 +47,8 @@ const SAMPLE = {
   startDate: "Tue 3 Mar 2026",
   endDate: "Sat 14 Mar 2026",
   effectiveDate: "Thu 5 Mar 2026",
+  weekStart: "Mon 7 Sep 2026",
+  cutoffDate: "Fri 4 Sep 2026",
   total: "249.00",
   dashboardUrl: "#",
   privacyUrl: "#",

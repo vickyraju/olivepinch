@@ -1,8 +1,9 @@
 import { Router, type Request } from "express"
 import { prisma } from "../lib/prisma.js"
 import { sendEmail } from "../lib/email.js"
-import { renewalReminderEmail, lapsedRetentionEmail, accountRecoveryEmail } from "../lib/email-templates.js"
-import { computeEndDate, addDays } from "../lib/subscription.js"
+import { renewalReminderEmail, lapsedRetentionEmail, accountRecoveryEmail, weeklyMenuSelectionEmail } from "../lib/email-templates.js"
+import { computeEndDate, addDays, londonToday } from "../lib/subscription.js"
+import { weekDates } from "../lib/menu-week.js"
 
 export const internalRouter = Router()
 
@@ -45,8 +46,7 @@ export async function runRenewalReminderSweep() {
     include: { customer: true },
   })
 
-  const today = new Date()
-  today.setUTCHours(0, 0, 0, 0)
+  const today = londonToday()
 
   let sent = 0
   for (const sub of active) {
@@ -87,8 +87,7 @@ export async function runRenewalReminderSweep() {
 export async function runExpirySweep() {
   const active = await prisma.subscription.findMany({ where: { status: "ACTIVE" } })
 
-  const today = new Date()
-  today.setUTCHours(0, 0, 0, 0)
+  const today = londonToday()
 
   let expired = 0
   for (const sub of active) {
@@ -113,8 +112,7 @@ export async function runLapsedRetentionSweep() {
     include: { subscriptions: { orderBy: { startDate: "desc" }, take: 1 } },
   })
 
-  const cutoff = new Date()
-  cutoff.setUTCHours(0, 0, 0, 0)
+  const cutoff = londonToday()
   cutoff.setUTCMonth(cutoff.getUTCMonth() - RETENTION_MONTHS)
 
   let sent = 0
@@ -149,6 +147,63 @@ export async function runLapsedRetentionSweep() {
   return { sent }
 }
 
+// The one email that isn't a confirmation of something already done — without it the menu
+// selection window (subscriptions.ts PATCH /:id/menu-weeks/:weekStart) has no trigger at all,
+// and customers silently fall through to the goal-matched defaults every week.
+export async function runMenuSelectionSweep() {
+  // Selection opens the Wednesday before, i.e. weekStart - 5 days. Deriving weekStart from
+  // today and bailing unless it's a Monday means this is a no-op on the other six days.
+  const weekStart = addDays(londonToday(), 5)
+  if (weekStart.getUTCDay() !== 1) return { sent: 0 }
+
+  const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart } })
+  if (!menuWeek || !menuWeek.published) return { sent: 0 }
+
+  const orders = await prisma.order.findMany({
+    where: {
+      deliveryDate: { in: weekDates(weekStart) },
+      menuChosenAt: null,
+      subscription: { status: "ACTIVE" },
+    },
+    include: { subscription: { include: { customer: true } } },
+  })
+
+  // A subscription has up to 7 unchosen orders in the week — one email covers all of them.
+  const bySubscription = new Map<string, (typeof orders)[number]>()
+  for (const order of orders) bySubscription.set(order.subscriptionId, order)
+
+  const weekStartIso = weekStart.toISOString().slice(0, 10)
+  let sent = 0
+  for (const order of bySubscription.values()) {
+    const { customer } = order.subscription
+    if (!customer.email) continue
+
+    const message = `menu-selection:${order.subscriptionId}:${weekStartIso}`
+    const already = await prisma.notification.findFirst({ where: { customerId: customer.id, message } })
+    if (already) continue
+
+    try {
+      const { subject, text, html } = weeklyMenuSelectionEmail({
+        name: customer.fullName,
+        weekStart: weekStartIso,
+        // The window shuts at Saturday 00:00 UK, so the last day they can actually choose
+        // on is the Friday — that's the date worth putting in front of them, not the instant.
+        cutoffDate: addDays(weekStart, -3).toISOString().slice(0, 10),
+        dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/weekly-menu`,
+      })
+      await sendEmail(customer.email, subject, text, html)
+      await prisma.notification.create({
+        data: { customerId: customer.id, channel: "email", message, status: "sent", sentAt: new Date() },
+      })
+      sent++
+    } catch (err) {
+      console.error("menu selection email failed", order.subscriptionId, err)
+    }
+  }
+
+  return { sent }
+}
+
 // Returns a [status, message] pair when unauthorized, null when the request may proceed.
 // Fails closed: without CRON_SECRET configured, cron endpoints refuse to run rather than
 // being open to anyone on the internet.
@@ -172,11 +227,12 @@ internalRouter.post("/recovery-sweep", async (req, res) => {
 internalRouter.post("/daily-sweep", async (req, res) => {
   const unauthorized = checkCronSecret(req)
   if (unauthorized) return res.status(unauthorized[0]).json({ error: unauthorized[1] })
-  const [recovery, renewalReminders, expiry, lapsedRetention] = await Promise.all([
+  const [recovery, renewalReminders, expiry, lapsedRetention, menuSelection] = await Promise.all([
     runRecoverySweep(),
     runRenewalReminderSweep(),
     runExpirySweep(),
     runLapsedRetentionSweep(),
+    runMenuSelectionSweep(),
   ])
-  res.json({ recovery, renewalReminders, expiry, lapsedRetention })
+  res.json({ recovery, renewalReminders, expiry, lapsedRetention, menuSelection })
 })

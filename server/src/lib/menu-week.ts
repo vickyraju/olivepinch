@@ -1,5 +1,6 @@
 import { prisma } from "./prisma.js"
 import { SLOTS_BY_MEALS_PER_DAY } from "./pricing.js"
+import { addDays, londonInstant } from "./subscription.js"
 import type { MealSlot } from "@prisma/client"
 
 function httpError(status: number, message: string) {
@@ -16,20 +17,15 @@ export function assertMonday(dateIso: string): Date {
 // Selection for the week starting `weekStart` opens the Wednesday before and closes Saturday
 // 00:00 UK of the week before (i.e. Friday end of day) — admin publishes by Tuesday night (a
 // soft target, not enforced here) so customers can choose Wed–Fri ahead of that week.
-// ponytail: UK time treated as UTC (no DST handling), matching the rest of this file.
 export function fridayCutoffFor(weekStart: Date): Date {
-  const cutoff = new Date(weekStart)
-  cutoff.setUTCDate(cutoff.getUTCDate() - 2)
-  return cutoff
+  return londonInstant(addDays(weekStart, -2), 0)
 }
 
 // Once customer choosing opens (Wednesday before weekStart, i.e. fridayCutoffFor - 3 days /
 // weekStart - 5 days), a published week's roster is frozen — no more admin edits, so nobody's
 // already-made choice can ever be swapped out from under them by a later roster change.
 export function publishEditLockFor(weekStart: Date): Date {
-  const lock = new Date(weekStart)
-  lock.setUTCDate(lock.getUTCDate() - 5)
-  return lock
+  return londonInstant(addDays(weekStart, -5), 0)
 }
 
 // Slots every subscription needs regardless of mealsPerDay (the union of SLOTS_BY_MEALS_PER_DAY)

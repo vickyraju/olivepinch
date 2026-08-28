@@ -34,16 +34,20 @@ export function londonToday(now = new Date()): Date {
   return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate()))
 }
 
+// The UTC instant at which a given London wall-clock time falls on `day` (a UTC-midnight
+// calendar date). Every customer-facing deadline goes through this so it means what a customer
+// in Birmingham reads on their own clock, rather than drifting an hour across the BST/GMT
+// changeover. The offset is sampled at the target time itself — DST transitions happen at ~1am
+// UK, so only a deadline set inside that hour could sample the wrong side, and none of ours are.
+export function londonInstant(day: Date, hours: number, minutes = 0): Date {
+  const guess = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), hours, minutes))
+  return new Date(guess.getTime() - londonOffsetMinutes(guess) * 60_000)
+}
+
 // Delivery dates are stored as UTC midnight representing a calendar day. The pause cutoff is
-// 12:30pm UK wall-clock time the day before — computed via Europe/London, not a fixed UTC
-// offset, so it doesn't silently shift by an hour across the BST/GMT changeover. The offset
-// lookup uses a same-day noon guess: safe because DST transitions happen near 1am UK time,
-// nowhere near noon, so the guess can't land on the wrong side of a changeover.
+// 12:30pm UK the day before that delivery.
 export function canPauseDate(date: Date, now = new Date()): boolean {
-  const dayBefore = addDays(date, -1)
-  const guess = new Date(Date.UTC(dayBefore.getUTCFullYear(), dayBefore.getUTCMonth(), dayBefore.getUTCDate(), 12, 30))
-  const cutoff = new Date(guess.getTime() - londonOffsetMinutes(guess) * 60_000)
-  return now.getTime() < cutoff.getTime()
+  return now.getTime() < londonInstant(addDays(date, -1), 12, 30).getTime()
 }
 
 export function buildDeliveryDates(startDate: Date, planDuration: number, pausedDates: Date[]): Date[] {
