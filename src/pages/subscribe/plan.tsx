@@ -12,10 +12,10 @@ const DURATIONS: { value: PlanDuration; label: string; hint: string }[] = [
   { value: 28, label: "28 days", hint: "Best value" },
 ]
 
-const MEALS_OPTIONS: { value: MealsPerDay; label: string; slots: string }[] = [
-  { value: 1, label: "1 meal", slots: "Box2" },
-  { value: 2, label: "2 meals", slots: "Box1 + Box3" },
-  { value: 3, label: "3 meals", slots: "Box1 + Box2 + Box3" },
+const MEALS_OPTIONS: { value: MealsPerDay; label: string }[] = [
+  { value: 1, label: "1 meal" },
+  { value: 2, label: "2 meals" },
+  { value: 3, label: "3 meals" },
 ]
 
 function minStartDate(): Date {
@@ -59,9 +59,7 @@ function Plan() {
                 active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
               )}
             >
-              <div className="font-display text-2xl font-bold text-ink">{opt.value}</div>
-              <div className="text-sm font-medium text-ink">{opt.label}/day</div>
-              <div className="text-xs text-ink-muted mt-2">{opt.slots}</div>
+              <div className="font-display text-2xl font-bold text-ink">{opt.label}/day</div>
             </button>
           )
         })}
