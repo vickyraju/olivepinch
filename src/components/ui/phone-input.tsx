@@ -1,6 +1,6 @@
 import { useState } from "react"
 import BareInput from "react-phone-number-input/input"
-import { getCountries, getCountryCallingCode, type Country } from "react-phone-number-input"
+import { getCountries, getCountryCallingCode, parsePhoneNumber, type Country } from "react-phone-number-input"
 import flags from "react-phone-number-input/flags"
 import countryLabels from "react-phone-number-input/locale/en"
 import { Search } from "lucide-react"
@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 
-const GbFlag = flags.GB!
 const ALL_COUNTRIES = getCountries()
 
 interface CountrySearchDialogProps {
@@ -88,79 +87,41 @@ interface PhoneInputProps {
   value: string
   onChange: (value: string) => void
   className?: string
-  /** Full country picker instead of the fixed UK-only +44 field — for login, where an
-   * existing customer's number isn't guaranteed to be a UK number. */
-  international?: boolean
 }
 
-// UK-only pilot — a fixed +44 prefix beats react-phone-number-input's
-// 200-country picker and lets us guarantee a real space before the caret.
-function PhoneInput({ id, value, onChange, className, international }: PhoneInputProps) {
-  const [country, setCountry] = useState<Country>("GB")
+// Deliveries are Birmingham-only, but the number is what the customer logs in with over OTP,
+// so it has to accept whatever number actually reaches them — not just +44.
+function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
+  // Seeded from the saved value so editing an existing non-UK number doesn't show a GB flag.
+  const [country, setCountry] = useState<Country>(() => parsePhoneNumber(value)?.country ?? "GB")
   const [focused, setFocused] = useState(false)
-
-  if (international) {
-    return (
-      <div
-        className={cn(
-          "flex h-12 w-full items-stretch rounded-md border border-border bg-surface",
-          "focus-within:ring-2 focus-within:ring-olive-500 focus-within:border-olive-500",
-          className
-        )}
-      >
-        <CountrySearchDialog
-          value={country}
-          onChange={(c) => {
-            setCountry(c)
-            onChange("")
-          }}
-        />
-        <BareInput
-          id={id}
-          country={country}
-          value={value}
-          onChange={(v) => onChange(v ?? "")}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          placeholder={focused ? "" : "7911 123456"}
-          inputMode="tel"
-          className="h-full flex-1 min-w-0 border-0 bg-transparent px-4 text-base text-ink placeholder:text-ink-muted focus:outline-none"
-        />
-      </div>
-    )
-  }
-
-  const national = value.startsWith("+44") ? value.slice(3) : value.replace(/^\+/, "")
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const digits = e.target.value.replace(/\D/g, "").replace(/^0/, "")
-    onChange(digits ? `+44${digits}` : "")
-  }
 
   return (
     <div
       className={cn(
-        "flex h-12 w-full items-center rounded-md border border-border bg-surface",
-        "focus-within:outline-none focus-within:ring-2 focus-within:ring-olive-500 focus-within:border-olive-500",
+        "flex h-12 w-full items-stretch rounded-md border border-border bg-surface",
+        "focus-within:ring-2 focus-within:ring-olive-500 focus-within:border-olive-500",
         "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-destructive",
         className
       )}
     >
-      <span className="flex items-center gap-1.5 border-r border-border pl-3 pr-2">
-        <span className="h-[1.125em] w-[1.5em] overflow-hidden rounded-[2px] shadow-[0_0_0_1px_rgba(33,29,22,0.15)] [&_svg]:h-full [&_svg]:w-full">
-          <GbFlag title="United Kingdom" />
-        </span>
-        <span className="text-base text-ink">+44</span>
-      </span>
-      <input
+      <CountrySearchDialog
+        value={country}
+        onChange={(c) => {
+          setCountry(c)
+          onChange("")
+        }}
+      />
+      <BareInput
         id={id}
-        type="tel"
+        country={country}
+        value={value}
+        onChange={(v) => onChange(v ?? "")}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder={focused ? "" : "7911 123456"}
         inputMode="tel"
-        maxLength={11}
-        value={national}
-        onChange={handleChange}
-        placeholder="7911 123456"
-        className="h-full flex-1 min-w-0 border-0 bg-transparent pl-3 pr-4 text-base text-ink placeholder:text-ink-muted focus:outline-none"
+        className="h-full flex-1 min-w-0 border-0 bg-transparent px-4 text-base text-ink placeholder:text-ink-muted focus:outline-none"
       />
     </div>
   )

@@ -129,7 +129,7 @@ function Login() {
             <form onSubmit={handleSendCode} className="space-y-4">
               <div>
                 <Label htmlFor="phone">Phone number</Label>
-                <PhoneInput id="phone" value={phone} onChange={setPhone} international />
+                <PhoneInput id="phone" value={phone} onChange={setPhone} />
               </div>
               <FieldError>{error}</FieldError>
 

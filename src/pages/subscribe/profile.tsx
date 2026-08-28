@@ -16,6 +16,15 @@ import { useState } from "react"
 
 const GENDERS: Gender[] = ["Female", "Male", "Non-binary", "Prefer not to say"]
 
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+]
+
+// Only the years that satisfy the 16-100 check below, so nothing in the list can be picked
+// and then immediately rejected.
+const CURRENT_YEAR = new Date().getFullYear()
+const DOB_YEARS = Array.from({ length: 100 - 16 + 1 }, (_, i) => CURRENT_YEAR - 16 - i)
 
 function Profile() {
   const { state, update } = useSubscribe()
@@ -24,15 +33,19 @@ function Profile() {
   const p = state.profile
   const { firstName, lastName } = splitFullName(p.fullName)
 
-  const birthMonth = p.dateOfBirth ? p.dateOfBirth.slice(0, 7) : ""
+  // Held locally as well as in context so a half-finished pick (month chosen, year not yet)
+  // still shows in the dropdowns — dateOfBirth stays empty until both are set.
+  const initialDob = p.dateOfBirth ? p.dateOfBirth.split("-").map(Number) : []
+  const [dobMonth, setDobMonth] = useState<number | undefined>(initialDob[1])
+  const [dobYear, setDobYear] = useState<number | undefined>(initialDob[0])
 
-  const now = new Date()
-  const maxBirthMonth = `${now.getFullYear() - 16}-${String(now.getMonth() + 1).padStart(2, "0")}`
-  const minBirthMonth = `${now.getFullYear() - 100}-01`
-
-  function updateBirthMonth(value: string) {
+  function updateBirthMonth(month?: number, year?: number) {
+    setDobMonth(month)
+    setDobYear(year)
     // Day is fixed to the 1st — we only ever collect month + year of birth, never the day.
-    update({ profile: { ...p, dateOfBirth: value ? `${value}-01` : "" } })
+    update({
+      profile: { ...p, dateOfBirth: month && year ? `${year}-${String(month).padStart(2, "0")}-01` : "" },
+    })
   }
 
   const height = parseFloat(p.heightCm)
@@ -104,16 +117,35 @@ function Profile() {
         </div>
 
         <div>
-          <Label htmlFor="birthMonth">Birth month &amp; year</Label>
-          <Input
-            id="birthMonth"
-            type="month"
-            min={minBirthMonth}
-            max={maxBirthMonth}
-            aria-invalid={p.dateOfBirth !== "" && !dobValid}
-            value={birthMonth}
-            onChange={(e) => updateBirthMonth(e.target.value)}
-          />
+          <Label htmlFor="dobMonth">Birth month &amp; year</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <Select
+              value={dobMonth ? String(dobMonth) : ""}
+              onValueChange={(v) => updateBirthMonth(Number(v), dobYear)}
+            >
+              <SelectTrigger id="dobMonth" aria-label="Month" aria-invalid={p.dateOfBirth !== "" && !dobValid}>
+                <SelectValue placeholder="Month" />
+              </SelectTrigger>
+              <SelectContent>
+                {MONTHS.map((month, i) => (
+                  <SelectItem key={month} value={String(i + 1)}>{month}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={dobYear ? String(dobYear) : ""}
+              onValueChange={(v) => updateBirthMonth(dobMonth, Number(v))}
+            >
+              <SelectTrigger aria-label="Year" aria-invalid={p.dateOfBirth !== "" && !dobValid}>
+                <SelectValue placeholder="Year" />
+              </SelectTrigger>
+              <SelectContent>
+                {DOB_YEARS.map((year) => (
+                  <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           {p.dateOfBirth !== "" && !dobValid && (
             <p className="mt-1.5 text-sm text-coral-600">You must be between 16 and 100 years old.</p>
           )}
