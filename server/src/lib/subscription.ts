@@ -15,10 +15,35 @@ export function pausesUsedTotal(pausedDates: Date[]): number {
   return pausedDates.length
 }
 
-// Delivery dates are stored as UTC midnight — the cutoff is noon the day before, i.e. 12
-// hours before that midnight instant.
+// UTC offset (in minutes) Europe/London is running at a given instant — 0 (GMT) or 60 (BST).
+// Diffing two locale-formatted strings of the same instant cancels out the host's own TZ, so
+// this is accurate regardless of what timezone the server itself runs in.
+function londonOffsetMinutes(instant: Date): number {
+  const utc = new Date(instant.toLocaleString("en-US", { timeZone: "UTC" }))
+  const london = new Date(instant.toLocaleString("en-US", { timeZone: "Europe/London" }))
+  return (london.getTime() - utc.getTime()) / 60_000
+}
+
+// "Today" as the calendar day currently in effect in the UK, encoded as UTC midnight (this
+// codebase's existing convention for calendar-day-only dates). Shifting `now` by the London
+// offset and reading its UTC date fields gives the London wall-clock date without needing the
+// server's own timezone to be London — used anywhere "today" means "today for our customers",
+// not just a log timestamp.
+export function londonToday(now = new Date()): Date {
+  const local = new Date(now.getTime() + londonOffsetMinutes(now) * 60_000)
+  return new Date(Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate()))
+}
+
+// Delivery dates are stored as UTC midnight representing a calendar day. The pause cutoff is
+// 12:30pm UK wall-clock time the day before — computed via Europe/London, not a fixed UTC
+// offset, so it doesn't silently shift by an hour across the BST/GMT changeover. The offset
+// lookup uses a same-day noon guess: safe because DST transitions happen near 1am UK time,
+// nowhere near noon, so the guess can't land on the wrong side of a changeover.
 export function canPauseDate(date: Date, now = new Date()): boolean {
-  return now.getTime() < date.getTime() - 12 * 60 * 60 * 1000
+  const dayBefore = addDays(date, -1)
+  const guess = new Date(Date.UTC(dayBefore.getUTCFullYear(), dayBefore.getUTCMonth(), dayBefore.getUTCDate(), 12, 30))
+  const cutoff = new Date(guess.getTime() - londonOffsetMinutes(guess) * 60_000)
+  return now.getTime() < cutoff.getTime()
 }
 
 export function buildDeliveryDates(startDate: Date, planDuration: number, pausedDates: Date[]): Date[] {

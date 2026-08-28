@@ -1,0 +1,95 @@
+<mjml lang="en">
+  <mj-head>
+    <mj-title>Still there? Your OlivePinch plan ended a while ago</mj-title>
+    <mj-preview>Start a new plan any time — or clear the details we still hold.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, Helvetica, sans-serif" />
+      <mj-text color="#272c0f" font-size="15px" line-height="1.6" padding="0" />
+      <mj-section padding="0" />
+    </mj-attributes>
+    <mj-html-attributes>
+      <mj-selector path=".email-heading div">
+        <mj-html-attribute name="role">heading</mj-html-attribute>
+        <mj-html-attribute name="aria-level">1</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body background-color="#f7f4ec" width="600px">
+
+    <!-- Masthead -->
+    <mj-section padding="40px 32px 12px">
+      <mj-column>
+        <mj-text align="center" font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 10px">
+          BIRMINGHAM &middot; FRESHLY PREPARED, DAILY
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="bold" font-size="34px" color="#1b2a0c" padding="0">
+          OlivePinch
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section padding="0 32px 24px">
+      <mj-column>
+        <mj-divider border-width="2px" border-color="#646e38" width="56px" padding="0" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Card: an invitation block, then the data choice as a clearly subordinate block. -->
+    <mj-wrapper background-color="#ffffff" border-radius="16px" padding="44px 36px">
+
+      <mj-section>
+        <mj-column>
+          <mj-text font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 14px">
+            IT'S BEEN A WHILE
+          </mj-text>
+          <mj-text css-class="email-heading" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="30px" line-height="1.25" color="#272c0f" padding="0 0 14px">
+            Still cooking for you, {{name}}?
+          </mj-text>
+          <mj-text padding="0 0 28px" color="#4b4b3f" font-size="16px">
+            It's been over a year since your last OlivePinch plan ended. Same kitchen, same city, same fresh meals cooked the morning they go out. Pick a goal and you can be back on a plan today.
+          </mj-text>
+          <mj-button background-color="#c9502c" color="#ffffff" font-size="14px" font-weight="bold" border-radius="999px" padding="0" inner-padding="14px 30px" href="{{dashboardUrl}}">
+            Start a new plan
+          </mj-button>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="32px 0">
+        <mj-column>
+          <mj-divider border-width="1px" border-color="#ececdf" padding="0" />
+        </mj-column>
+      </mj-section>
+
+      <!-- Olive wash, lighter than the renewal email's olive tint, so the two don't read
+           as the same component. No button here: this must not compete with the CTA. -->
+      <mj-section background-color="#f2f4e9" border-radius="12px" padding="20px 22px">
+        <mj-column>
+          <mj-text font-size="10px" letter-spacing="2px" color="#5c6440" font-weight="bold" padding="0 0 10px">
+            OR CLEAR YOUR DATA
+          </mj-text>
+          <mj-text font-size="14px" color="#4b4b3f" padding="0">
+            If you'd rather we didn't keep your details, you can <a href="{{privacyUrl}}" style="color:#646e38;font-weight:bold;">export or delete your data</a> yourself, any time &mdash; no need to ask us.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+    </mj-wrapper>
+
+    <!-- Footer -->
+    <mj-section padding="32px 36px 0">
+      <mj-column>
+        <mj-divider border-width="1px" border-color="#e6dfcd" padding="0" />
+      </mj-column>
+    </mj-section>
+    <mj-section padding="20px 24px 36px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" color="#8a8a78" padding="0 0 12px">
+          OlivePinch &middot; Birmingham, UK<br />
+          Questions? Just reply to this email.
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="13px" color="#a09c85" padding="0">
+          Hand-delivered across Birmingham.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

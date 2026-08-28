@@ -1,7 +1,7 @@
 import { Router, type Request } from "express"
 import { prisma } from "../lib/prisma.js"
 import { sendEmail } from "../lib/email.js"
-import { renewalReminderEmail, lapsedRetentionEmail } from "../lib/email-templates.js"
+import { renewalReminderEmail, lapsedRetentionEmail, accountRecoveryEmail } from "../lib/email-templates.js"
 import { computeEndDate, addDays } from "../lib/subscription.js"
 
 export const internalRouter = Router()
@@ -25,11 +25,8 @@ export async function runRecoverySweep() {
   for (const customer of candidates) {
     if (!customer.email) continue
     const link = `${process.env.APP_URL ?? "http://localhost:5173"}/login?phone=${encodeURIComponent(customer.phone)}`
-    await sendEmail(
-      customer.email,
-      "Finish setting up your OlivePinch account",
-      `Your payment went through, but your account isn't fully set up yet. Finish here: ${link}`
-    )
+    const { subject, text, html } = accountRecoveryEmail({ name: customer.fullName, link })
+    await sendEmail(customer.email, subject, text, html)
     await prisma.notification.create({
       data: { customerId: customer.id, channel: "email", message: `recovery: sent to ${customer.email}`, status: "sent", sentAt: new Date() },
     })
@@ -136,6 +133,7 @@ export async function runLapsedRetentionSweep() {
     try {
       const { subject, text, html } = lapsedRetentionEmail({
         name: customer.fullName,
+        dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
         privacyUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/privacy`,
       })
       await sendEmail(customer.email, subject, text, html)

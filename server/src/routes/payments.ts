@@ -4,8 +4,9 @@ import { prisma } from "../lib/prisma.js"
 import { worldpayConfig, createHostedPayment, queryPaymentStatus } from "../lib/worldpay.js"
 import { validateBody } from "../middleware/validate.js"
 import { sendEmail } from "../lib/email.js"
-import { subscriptionConfirmationEmail } from "../lib/email-templates.js"
+import { subscriptionConfirmationEmail, renewalConfirmationEmail } from "../lib/email-templates.js"
 import { planPrice } from "../lib/pricing.js"
+import { GOAL_LABELS } from "../lib/enums.js"
 import type { Goal, PlanTier } from "@prisma/client"
 
 export const paymentsRouter = Router()
@@ -131,14 +132,32 @@ paymentsRouter.post(
         const total = await subscriptionTotal(subscriptionId)
         const { subject, text, html } = subscriptionConfirmationEmail({
           name: subscription.customer.fullName,
+          goalLabel: GOAL_LABELS[subscription.customer.goal as Goal],
           planDuration: subscription.planDuration,
           startDate: subscription.startDate.toISOString().slice(0, 10),
           mealsPerDay: subscription.mealsPerDay,
+          deliveryTimeSlot: subscription.deliveryTimeSlot,
           total,
+          dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
         })
         await sendEmail(subscription.customer.email, subject, text, html)
       } catch (err) {
         console.error("subscription confirmation email failed", subscriptionId, err)
+      }
+    } else if (subscription.customer.email) {
+      try {
+        const total = await subscriptionTotal(subscriptionId)
+        const { subject, text, html } = renewalConfirmationEmail({
+          name: subscription.customer.fullName,
+          planDuration: subscription.planDuration,
+          startDate: subscription.startDate.toISOString().slice(0, 10),
+          mealsPerDay: subscription.mealsPerDay,
+          total,
+          dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
+        })
+        await sendEmail(subscription.customer.email, subject, text, html)
+      } catch (err) {
+        console.error("renewal confirmation email failed", subscriptionId, err)
       }
     }
 

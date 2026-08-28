@@ -1,0 +1,108 @@
+<mjml lang="en">
+  <mj-head>
+    <mj-title>Renewed — your OlivePinch plan continues</mj-title>
+    <mj-preview>Payment received. Your next plan picks up with no gap in your deliveries.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, Helvetica, sans-serif" />
+      <mj-text color="#272c0f" font-size="15px" line-height="1.6" padding="0" />
+      <mj-section padding="0" />
+    </mj-attributes>
+    <mj-html-attributes>
+      <mj-selector path=".email-heading div">
+        <mj-html-attribute name="role">heading</mj-html-attribute>
+        <mj-html-attribute name="aria-level">1</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body background-color="#f7f4ec" width="600px">
+
+    <!-- Masthead -->
+    <mj-section padding="40px 32px 12px">
+      <mj-column>
+        <mj-text align="center" font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 10px">
+          BIRMINGHAM &middot; FRESHLY PREPARED, DAILY
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="bold" font-size="34px" color="#1b2a0c" padding="0">
+          OlivePinch
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section padding="0 32px 24px">
+      <mj-column>
+        <mj-divider border-width="2px" border-color="#646e38" width="56px" padding="0" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Card -->
+    <mj-wrapper background-color="#ffffff" border-radius="16px" padding="40px 36px">
+
+      <mj-section>
+        <mj-column>
+          <mj-text font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 14px">
+            RENEWAL CONFIRMED
+          </mj-text>
+          <mj-text css-class="email-heading" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="28px" line-height="1.25" color="#272c0f" padding="0 0 12px">
+            No break in your deliveries, {{name}}.
+          </mj-text>
+          <mj-text padding="0 0 24px" color="#4b4b3f">
+            Payment received. Your next {{planDuration}} days of meals pick up straight after your current plan ends.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+      <!-- Plan detail panel: olive tint, distinguishing a renewal from a first order -->
+      <mj-section background-color="#e2e8cb" border-radius="12px" padding="18px 22px">
+        <mj-column>
+          <mj-table cellpadding="0" font-size="15px" color="#272c0f">
+            <tr>
+              <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0;">NEXT PLAN STARTS</td>
+              <td align="right" style="font-weight:bold;padding:8px 0;">{{startDate}}</td>
+            </tr>
+            <tr>
+              <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0;">PLAN LENGTH</td>
+              <td align="right" style="font-weight:bold;padding:8px 0;">{{planDuration}} days</td>
+            </tr>
+            <tr>
+              <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #cdd6b0;">MEALS PER DAY</td>
+              <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #cdd6b0;">{{mealsPerDay}}</td>
+            </tr>
+            <tr>
+              <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:16px 8px 8px 0;">TOTAL PAID</td>
+              <td align="right" style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:bold;padding:14px 0 8px;">&pound;{{total}}</td>
+            </tr>
+          </mj-table>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="28px 0 0">
+        <mj-column>
+          <mj-button background-color="#c9502c" color="#ffffff" font-size="14px" font-weight="bold" border-radius="999px" padding="0 0 16px" inner-padding="14px 30px" href="{{dashboardUrl}}">
+            View my plan
+          </mj-button>
+          <mj-text align="center" font-size="13px" color="#6b6b5f" padding="0">
+            Your delivery details carry over. Change them any time from your dashboard.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+    </mj-wrapper>
+
+    <!-- Footer -->
+    <mj-section padding="32px 36px 0">
+      <mj-column>
+        <mj-divider border-width="1px" border-color="#e6dfcd" padding="0" />
+      </mj-column>
+    </mj-section>
+    <mj-section padding="20px 24px 36px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" color="#8a8a78" padding="0 0 12px">
+          OlivePinch &middot; Birmingham, UK<br />
+          Questions? Just reply to this email.
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="13px" color="#a09c85" padding="0">
+          Hand-delivered across Birmingham.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

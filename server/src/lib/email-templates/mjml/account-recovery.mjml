@@ -1,0 +1,109 @@
+<mjml lang="en">
+  <mj-head>
+    <mj-title>Finish setting up your OlivePinch account</mj-title>
+    <mj-preview>Your payment went through — one step left before your first delivery.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, Helvetica, sans-serif" />
+      <mj-text color="#272c0f" font-size="15px" line-height="1.6" padding="0" />
+      <mj-section padding="0" />
+    </mj-attributes>
+    <mj-html-attributes>
+      <mj-selector path=".email-heading div">
+        <mj-html-attribute name="role">heading</mj-html-attribute>
+        <mj-html-attribute name="aria-level">1</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body background-color="#f7f4ec" width="600px">
+
+    <!-- Masthead -->
+    <mj-section padding="40px 32px 12px">
+      <mj-column>
+        <mj-text align="center" font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 10px">
+          BIRMINGHAM &middot; FRESHLY PREPARED, DAILY
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="bold" font-size="34px" color="#1b2a0c" padding="0">
+          OlivePinch
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section padding="0 32px 24px">
+      <mj-column>
+        <mj-divider border-width="2px" border-color="#646e38" width="56px" padding="0" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Card. Shortest of the family: the button sits directly under the copy so it's
+         reachable without scrolling on a phone. -->
+    <mj-wrapper background-color="#ffffff" border-radius="16px" padding="40px 36px">
+
+      <mj-section>
+        <mj-column>
+          <mj-text font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 14px">
+            ONE STEP LEFT
+          </mj-text>
+          <mj-text css-class="email-heading" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="26px" line-height="1.25" color="#272c0f" padding="0 0 12px">
+            Your payment went through. Your account didn't, {{name}}.
+          </mj-text>
+          <mj-text padding="0 0 28px" color="#4b4b3f">
+            We've got your payment, but we can't schedule your deliveries until your phone number is verified. It takes about a minute.
+          </mj-text>
+          <mj-button background-color="#c9502c" color="#ffffff" font-size="14px" font-weight="bold" border-radius="999px" padding="0 0 28px" inner-padding="16px 34px" href="{{link}}">
+            Verify my number
+          </mj-button>
+        </mj-column>
+      </mj-section>
+
+      <!-- Two-step strip. Separate columns so it stacks on narrow screens. -->
+      <mj-section background-color="#ebe3d2" border-radius="12px" padding="18px 18px">
+        <mj-column width="50%" padding="0">
+          <mj-table cellpadding="0" font-size="14px" color="#4b4b3f">
+            <tr>
+              <td width="34" valign="top" style="padding:0 10px 0 0;">
+                <div style="width:24px;height:24px;line-height:24px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">1</div>
+              </td>
+              <td valign="top" style="padding:2px 0 0 0;line-height:1.5;">Tap the button above.</td>
+            </tr>
+          </mj-table>
+        </mj-column>
+        <mj-column width="50%" padding="0">
+          <mj-table cellpadding="0" font-size="14px" color="#4b4b3f">
+            <tr>
+              <td width="34" valign="top" style="padding:0 10px 0 0;">
+                <div style="width:24px;height:24px;line-height:24px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">2</div>
+              </td>
+              <td valign="top" style="padding:2px 0 0 0;line-height:1.5;">Enter the 6-digit code we text you.</td>
+            </tr>
+          </mj-table>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="22px 0 0">
+        <mj-column>
+          <mj-text align="center" font-size="13px" color="#6b6b5f" padding="0">
+            Nothing else is needed &mdash; your plan and payment are already saved.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+    </mj-wrapper>
+
+    <!-- Footer -->
+    <mj-section padding="32px 36px 0">
+      <mj-column>
+        <mj-divider border-width="1px" border-color="#e6dfcd" padding="0" />
+      </mj-column>
+    </mj-section>
+    <mj-section padding="20px 24px 36px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" color="#8a8a78" padding="0 0 12px">
+          OlivePinch &middot; Birmingham, UK<br />
+          Questions? Just reply to this email.
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="13px" color="#a09c85" padding="0">
+          Hand-delivered across Birmingham.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

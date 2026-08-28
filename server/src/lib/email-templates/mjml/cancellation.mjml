@@ -1,0 +1,101 @@
+<mjml lang="en">
+  <mj-head>
+    <mj-title>Your OlivePinch plan is cancelled</mj-title>
+    <mj-preview>This confirms your subscription has been cancelled. Nothing further will be charged.</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Arial, Helvetica, sans-serif" />
+      <mj-text color="#272c0f" font-size="15px" line-height="1.6" padding="0" />
+      <mj-section padding="0" />
+    </mj-attributes>
+    <mj-html-attributes>
+      <mj-selector path=".email-heading div">
+        <mj-html-attribute name="role">heading</mj-html-attribute>
+        <mj-html-attribute name="aria-level">1</mj-html-attribute>
+      </mj-selector>
+    </mj-html-attributes>
+  </mj-head>
+  <mj-body background-color="#f7f4ec" width="600px">
+
+    <!-- Masthead -->
+    <mj-section padding="40px 32px 12px">
+      <mj-column>
+        <mj-text align="center" font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 10px">
+          BIRMINGHAM &middot; FRESHLY PREPARED, DAILY
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="bold" font-size="34px" color="#1b2a0c" padding="0">
+          OlivePinch
+        </mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section padding="0 32px 24px">
+      <mj-column>
+        <mj-divider border-width="2px" border-color="#646e38" width="56px" padding="0" />
+      </mj-column>
+    </mj-section>
+
+    <!-- Card. No button anywhere: there is nothing to act on, and no coral in this email. -->
+    <mj-wrapper background-color="#ffffff" border-radius="16px" padding="40px 36px">
+
+      <mj-section>
+        <mj-column>
+          <mj-text font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 14px">
+            CANCELLATION CONFIRMED
+          </mj-text>
+          <mj-text css-class="email-heading" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" font-size="28px" line-height="1.25" color="#272c0f" padding="0 0 14px">
+            Your plan is cancelled, {{name}}.
+          </mj-text>
+          <mj-text padding="0 0 12px" color="#4b4b3f">
+            We've stopped your deliveries and you won't be charged again.
+          </mj-text>
+          <mj-text padding="0 0 24px" color="#4b4b3f">
+            If a refund is due, our team will arrange it with you directly over the phone.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+      <!-- Neutral cream inset, not the sand/olive/coral panels the other emails use — this one
+           is a record of fact, so it shouldn't read as a highlight. -->
+      <mj-section background-color="#f4f1e7" border-radius="12px" padding="18px 22px">
+        <mj-column>
+          <mj-table cellpadding="0" font-size="15px" color="#272c0f">
+            <tr>
+              <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #e6e0cf;">NO DELIVERIES FROM</td>
+              <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #e6e0cf;">{{effectiveDate}}</td>
+            </tr>
+            <tr>
+              <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:14px 8px 8px 0;">FURTHER CHARGES</td>
+              <td align="right" style="font-weight:bold;padding:14px 0 8px;">None</td>
+            </tr>
+          </mj-table>
+        </mj-column>
+      </mj-section>
+
+      <mj-section padding="24px 0 0">
+        <mj-column>
+          <mj-text color="#4b4b3f" padding="0">
+            Whenever you want to come back, you can <a href="{{dashboardUrl}}" style="color:#646e38;font-weight:bold;">start a new plan</a> from your dashboard.
+          </mj-text>
+        </mj-column>
+      </mj-section>
+
+    </mj-wrapper>
+
+    <!-- Footer -->
+    <mj-section padding="32px 36px 0">
+      <mj-column>
+        <mj-divider border-width="1px" border-color="#e6dfcd" padding="0" />
+      </mj-column>
+    </mj-section>
+    <mj-section padding="20px 24px 36px">
+      <mj-column>
+        <mj-text align="center" font-size="12px" color="#8a8a78" padding="0 0 12px">
+          OlivePinch &middot; Birmingham, UK<br />
+          Questions? Just reply to this email.
+        </mj-text>
+        <mj-text align="center" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-size="13px" color="#a09c85" padding="0">
+          Hand-delivered across Birmingham.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

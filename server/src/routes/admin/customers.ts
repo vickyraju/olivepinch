@@ -7,7 +7,9 @@ import { formatAddress } from "../../lib/address.js"
 import { isPostcodeInActiveZone } from "../../lib/postcode.js"
 import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
 import { PHONE_REGEX } from "../customers.js"
-import { computeEndDate } from "../../lib/subscription.js"
+import { computeEndDate, londonToday } from "../../lib/subscription.js"
+import { sendEmail } from "../../lib/email.js"
+import { cancellationEmail } from "../../lib/email-templates.js"
 
 export const adminCustomersRouter = Router()
 adminCustomersRouter.use(requireAdminAuth)
@@ -245,12 +247,12 @@ adminCustomersRouter.post(
     const { subscriptionId, reason } = req.body as { subscriptionId: string; reason?: string }
     const subscription = await prisma.subscription.findFirstOrThrow({
       where: { id: subscriptionId, customerId: req.params.id as string },
+      include: { customer: true },
     })
     if (subscription.status !== "ACTIVE") {
       return res.status(400).json({ error: "Only active subscriptions can be cancelled" })
     }
-    const today = new Date()
-    today.setUTCHours(0, 0, 0, 0)
+    const today = londonToday()
     const endDate = computeEndDate(subscription.startDate, subscription.planDuration, subscription.pausedDates)
     if (endDate.getTime() <= today.getTime()) {
       return res.status(400).json({ error: "This plan can't be cancelled on its last day" })
@@ -269,6 +271,20 @@ adminCustomersRouter.post(
       req.params.id as string,
       reason ? `subscription ${subscription.id}: ${reason}` : `subscription ${subscription.id}`
     )
+    if (subscription.customer.email) {
+      try {
+        const { subject, text, html } = cancellationEmail({
+          name: subscription.customer.fullName,
+          // Orders from `today` onward were just paused above, so this is the first day
+          // with no delivery — the fact the customer actually needs confirmed.
+          effectiveDate: today.toISOString().slice(0, 10),
+          dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
+        })
+        await sendEmail(subscription.customer.email, subject, text, html)
+      } catch (err) {
+        console.error("cancellation email failed", subscription.id, err)
+      }
+    }
     res.json({ id: updated.id, status: updated.status })
   }
 )

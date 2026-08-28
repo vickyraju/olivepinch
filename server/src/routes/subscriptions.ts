@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
-import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
+import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
 import { validatePromoCode } from "../lib/promo.js"
@@ -238,8 +238,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
   })
 
   const slots = SLOTS_BY_MEALS_PER_DAY[body.mealsPerDay]
-  const startDate = new Date()
-  startDate.setUTCHours(0, 0, 0, 0)
+  const startDate = londonToday()
   const deliveryDates = buildDeliveryDates(startDate, body.planDuration, [])
   const dayItems = await Promise.all(
     deliveryDates.map((date) =>

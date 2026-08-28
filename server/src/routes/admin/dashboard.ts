@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
-import { computeEndDate } from "../../lib/subscription.js"
+import { computeEndDate, londonToday, addDays } from "../../lib/subscription.js"
 
 export const adminDashboardRouter = Router()
 adminDashboardRouter.use(requireAdminAuth)
@@ -19,7 +19,7 @@ function bucketBy<T>(rows: T[], key: (row: T) => string): { status: string; coun
 // Every aggregation here is manual Map-bucketing over a narrow-select findMany, matching
 // this codebase's existing convention in revenue.ts (no Prisma groupBy/aggregate).
 adminDashboardRouter.get("/summary", async (_req, res) => {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = londonToday()
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
@@ -53,8 +53,7 @@ adminDashboardRouter.get("/summary", async (_req, res) => {
   // Customers whose plan ends within the next 14 days — lets admins get ahead of renewals
   // instead of finding out the day it lapses. Reuses the same endDate math as the renewal
   // reminder sweep (lib/subscription.ts) rather than storing a separate endDate column.
-  const renewalWindowEnd = new Date(today)
-  renewalWindowEnd.setUTCDate(renewalWindowEnd.getUTCDate() + 14)
+  const renewalWindowEnd = addDays(today, 14)
   const upcomingRenewals = activeSubscriptions
     .map((sub) => ({
       customerId: sub.customer.id,
