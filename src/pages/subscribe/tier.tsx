@@ -29,10 +29,7 @@ function Tier() {
               key={tier}
               type="button"
               aria-pressed={active}
-              onClick={() => {
-                update({ tier })
-                setTimeout(() => navigate("/subscribe/plan"), 200)
-              }}
+              onClick={() => update({ tier })}
               className={cn(
                 "text-left rounded-2xl border-2 p-6 transition-colors cursor-pointer",
                 active ? "border-olive-600 bg-olive-50" : "border-border bg-surface hover:border-olive-300"
@@ -48,7 +45,11 @@ function Tier() {
         })}
       </div>
 
-      <StepNav backTo="/subscribe/goal" hideContinue />
+      <StepNav
+        backTo="/subscribe/goal"
+        continueDisabled={!state.tier}
+        onContinue={() => navigate("/subscribe/plan")}
+      />
     </div>
   )
 }
