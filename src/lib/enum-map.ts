@@ -73,8 +73,10 @@ export function orderStatusFromEnum(value: string): OrderStatus {
   return ORDER_STATUS_FROM_ENUM[value] ?? "Scheduled"
 }
 
-export type BackendSubscriptionStatus = "PENDING_PAYMENT" | "ACTIVE" | "EXPIRED"
+export type BackendSubscriptionStatus = "PENDING_PAYMENT" | "ACTIVE" | "EXPIRED" | "CANCELLED"
 
-export function subscriptionStatusFromEnum(value: BackendSubscriptionStatus): "active" | "expired" {
-  return value === "EXPIRED" ? "expired" : "active"
+export function subscriptionStatusFromEnum(value: BackendSubscriptionStatus): "active" | "expired" | "cancelled" {
+  if (value === "EXPIRED") return "expired"
+  if (value === "CANCELLED") return "cancelled"
+  return "active"
 }

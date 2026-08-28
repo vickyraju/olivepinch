@@ -28,7 +28,7 @@ export interface OrderDay {
 
 export interface Subscription {
   id: string
-  status: "active" | "expired"
+  status: "active" | "expired" | "cancelled"
   planDuration: 7 | 14 | 28
   startDate: string
   mealsPerDay: 1 | 2 | 3

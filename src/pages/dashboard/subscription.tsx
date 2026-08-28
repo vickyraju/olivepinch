@@ -50,8 +50,9 @@ function Subscription() {
 
   const plans = usePlans()
   const isExpired = sub.status === "expired"
+  const isCancelled = sub.status === "cancelled"
   const daysUntilEnd = Math.ceil((new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-  const showRenewal = isExpired || daysUntilEnd <= (REMINDER_OFFSET_DAYS[sub.planDuration] ?? 7)
+  const showRenewal = isExpired || isCancelled || daysUntilEnd <= (REMINDER_OFFSET_DAYS[sub.planDuration] ?? 7)
   const rawTotal = priceFor(plans, goal, duration, "Basic", mealsPerDay)
   const total = rawTotal !== null && promoDiscount ? Math.max(0, rawTotal - promoDiscount) : rawTotal
 
@@ -162,12 +163,31 @@ function Subscription() {
         </Card>
       )}
 
+      {isCancelled && (
+        <Card className="p-5 bg-coral-50 border-coral-100">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-coral-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-coral-600">Your plan was cancelled</p>
+              <p className="text-sm text-ink-muted mt-1">
+                Your remaining deliveries have been stopped. Start a new plan any time — your account
+                and data are still here.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       <Card className="p-6 sm:p-8">
         <h2 className="text-lg text-ink mb-4">Current plan</h2>
         <dl className="grid grid-cols-2 sm:grid-cols-4 gap-6">
           <div>
             <dt className="text-xs text-ink-muted uppercase tracking-wide">Status</dt>
-            <dd className="mt-1"><Badge variant={isExpired ? "coral" : "olive"}>{isExpired ? "Expired" : "Active"}</Badge></dd>
+            <dd className="mt-1">
+              <Badge variant={isExpired || isCancelled ? "coral" : "olive"}>
+                {isCancelled ? "Cancelled" : isExpired ? "Expired" : "Active"}
+              </Badge>
+            </dd>
           </div>
           <div>
             <dt className="text-xs text-ink-muted uppercase tracking-wide">Length</dt>
