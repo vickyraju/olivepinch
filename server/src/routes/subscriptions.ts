@@ -139,7 +139,7 @@ subscriptionsRouter.use(requireAuth)
 
 subscriptionsRouter.get("/current", async (req, res) => {
   const subscription = await prisma.subscription.findFirst({
-    where: { customerId: req.customerId, status: { in: ["ACTIVE", "PENDING_PAYMENT"] } },
+    where: { customerId: req.customerId },
     orderBy: { createdAt: "desc" },
     include: { orders: { include: { items: { include: { menuItem: true } } }, orderBy: { deliveryDate: "asc" } } },
   })

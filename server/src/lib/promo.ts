@@ -45,7 +45,7 @@ export async function validatePromoCode(code: string, ctx: ValidateContext, plan
     }
     if (promoCode.firstSubscriptionOnly) {
       const priorSubscriptions = await prisma.subscription.count({
-        where: { customerId: ctx.customerId, status: { in: ["ACTIVE", "EXPIRED"] } },
+        where: { customerId: ctx.customerId, status: { in: ["ACTIVE", "EXPIRED", "CANCELLED"] } },
       })
       if (priorSubscriptions > 0) return { error: "This promo code is only valid for a first subscription" }
     }

@@ -235,6 +235,44 @@ adminCustomersRouter.patch("/:id/preferences", validateBody(preferencesSchema), 
   res.json({ id: customer.id })
 })
 
+// FR-A05: admin-initiated cancellation. Refunds are handled offline in Worldpay by the admin;
+// this just stops the plan going forward. Blocked on the plan's last day since there's nothing
+// left to stop by then (a 7-day plan can be cancelled through day 6, not day 7).
+adminCustomersRouter.post(
+  "/:id/cancel-subscription",
+  validateBody(z.object({ subscriptionId: z.string(), reason: z.string().optional() })),
+  async (req, res) => {
+    const { subscriptionId, reason } = req.body as { subscriptionId: string; reason?: string }
+    const subscription = await prisma.subscription.findFirstOrThrow({
+      where: { id: subscriptionId, customerId: req.params.id as string },
+    })
+    if (subscription.status !== "ACTIVE") {
+      return res.status(400).json({ error: "Only active subscriptions can be cancelled" })
+    }
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+    const endDate = computeEndDate(subscription.startDate, subscription.planDuration, subscription.pausedDates)
+    if (endDate.getTime() <= today.getTime()) {
+      return res.status(400).json({ error: "This plan can't be cancelled on its last day" })
+    }
+    const updated = await prisma.subscription.update({
+      where: { id: subscription.id },
+      data: { status: "CANCELLED" },
+    })
+    await prisma.order.updateMany({
+      where: { subscriptionId: subscription.id, deliveryDate: { gte: today }, status: "SCHEDULED" },
+      data: { status: "PAUSED" },
+    })
+    await logAction(
+      req.adminId!,
+      "cancel-subscription",
+      req.params.id as string,
+      reason ? `subscription ${subscription.id}: ${reason}` : `subscription ${subscription.id}`
+    )
+    res.json({ id: updated.id, status: updated.status })
+  }
+)
+
 // Support-action history for this customer, shown in the admin detail view
 adminCustomersRouter.get("/:id/audit-log", async (req, res) => {
   const logs = await prisma.adminAuditLog.findMany({

@@ -38,6 +38,7 @@ enum SubscriptionStatus {
   PENDING_PAYMENT
   ACTIVE
   EXPIRED
+  CANCELLED
 }
 
 enum DeliverySlot {
