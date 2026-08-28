@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { api, ApiError } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
-import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, formatPhone } from "@/lib/status-styles"
+import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES, formatPhone } from "@/lib/status-styles"
 
 interface OrderItemRow {
   slot: string
@@ -62,6 +62,7 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
   "pause-override": "Pause override",
   refund: "Refund",
   reactivate: "Reactivate",
+  "cancel-subscription": "Cancel subscription",
 }
 
 const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
@@ -175,6 +176,18 @@ function CustomerDetail() {
     await invalidate()
   }
 
+  async function cancelSubscription(subscriptionId: string) {
+    if (!confirm("Cancel this subscription? Any refund must be issued separately in Worldpay.")) return
+    const reason = prompt("Reason (optional):") ?? undefined
+    setError("")
+    try {
+      await api.post(`/customers/${id}/cancel-subscription`, { subscriptionId, reason })
+      await invalidate()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not cancel that subscription.")
+    }
+  }
+
   if (customerQuery.isLoading || !customer) {
     return (
       <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
@@ -255,21 +268,43 @@ function CustomerDetail() {
                 <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Meals/day</th>
                 <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Paused Days</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {customer.subscriptions.map((s) => (
-                <tr key={s.id}>
-                  <td className="py-3 px-6 text-gray-900">{new Date(s.startDate).toLocaleDateString("en-GB")}</td>
-                  <td className="py-3 px-6 text-gray-600">{s.planDuration} days</td>
-                  <td className="py-3 px-6 text-gray-600">{s.mealsPerDay}</td>
-                  <td className="py-3 px-6 text-gray-600">{s.status}</td>
-                  <td className="py-3 px-6 text-gray-600">{s.pausedDates.length}</td>
-                </tr>
-              ))}
+              {customer.subscriptions.map((s) => {
+                const subStyle = SUBSCRIPTION_STATUS_STYLES[s.status]
+                return (
+                  <tr key={s.id}>
+                    <td className="py-3 px-6 text-gray-900">{new Date(s.startDate).toLocaleDateString("en-GB")}</td>
+                    <td className="py-3 px-6 text-gray-600">{s.planDuration} days</td>
+                    <td className="py-3 px-6 text-gray-600">{s.mealsPerDay}</td>
+                    <td className="py-3 px-6">
+                      {subStyle ? (
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${subStyle.className}`}>
+                          {subStyle.label}
+                        </span>
+                      ) : (
+                        s.status
+                      )}
+                    </td>
+                    <td className="py-3 px-6 text-gray-600">{s.pausedDates.length}</td>
+                    <td className="py-3 px-6 text-right">
+                      {s.status === "ACTIVE" ? (
+                        <button
+                          onClick={() => cancelSubscription(s.id)}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel
+                        </button>
+                      ) : null}
+                    </td>
+                  </tr>
+                )
+              })}
               {customer.subscriptions.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-sm text-gray-400">
+                  <td colSpan={6} className="py-8 text-center text-sm text-gray-400">
                     No subscriptions yet.
                   </td>
                 </tr>

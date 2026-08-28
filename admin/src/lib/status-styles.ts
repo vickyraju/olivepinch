@@ -13,6 +13,13 @@ export const ACCOUNT_STATUS_STYLES: Record<string, { label: string; className: s
   DELETED: { label: "Deleted", className: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-500" },
 }
 
+export const SUBSCRIPTION_STATUS_STYLES: Record<string, { label: string; className: string; dot: string }> = {
+  PENDING_PAYMENT: { label: "Pending Payment", className: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500" },
+  ACTIVE: { label: "Active", className: "bg-green-50 text-green-700 border-green-200", dot: "bg-green-500" },
+  EXPIRED: { label: "Expired", className: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
+  CANCELLED: { label: "Cancelled", className: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-500" },
+}
+
 export const MEAL_SLOT_STYLES: Record<string, { label: string; className: string }> = {
   BREAKFAST: { label: "Box1", className: "bg-amber-50 text-amber-700 border-amber-200" },
   LUNCH: { label: "Box2", className: "bg-blue-50 text-blue-700 border-blue-200" },
