@@ -21,10 +21,10 @@ const MONTHS = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ]
 
-// Only the years that satisfy the 16-100 check below, so nothing in the list can be picked
-// and then immediately rejected.
+// Runs from this year back, rather than starting at the youngest allowed birth year — a list
+// that opens at 2010 reads like a bug. The 16-100 check below still rejects a too-recent pick.
 const CURRENT_YEAR = new Date().getFullYear()
-const DOB_YEARS = Array.from({ length: 100 - 16 + 1 }, (_, i) => CURRENT_YEAR - 16 - i)
+const DOB_YEARS = Array.from({ length: 101 }, (_, i) => CURRENT_YEAR - i)
 
 function Profile() {
   const { state, update } = useSubscribe()
