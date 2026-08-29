@@ -4,6 +4,7 @@ import { Logo } from "@/components/logo"
 
 const navItems = [
   { path: "/", label: "Dashboard", icon: "dashboard" },
+  { path: "/reports", label: "Reports", icon: "monitoring" },
   { path: "/menu", label: "Menu Control", icon: "restaurant_menu" },
   { path: "/menu-weeks", label: "Weekly Menu", icon: "calendar_month" },
   { path: "/plans", label: "Plans", icon: "sell" },
