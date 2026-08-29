@@ -4,7 +4,7 @@ export function Logo({ className = "text-xl" }: { className?: string }) {
       className={`italic font-bold ${className}`}
       style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#1b2a0c" }}
     >
-      Olive Pinch
+      OlivePinch
     </span>
   )
 }
