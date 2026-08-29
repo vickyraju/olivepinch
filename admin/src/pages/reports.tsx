@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
@@ -26,6 +27,14 @@ interface ReportsSummary {
   revenueByMealsPerDay: RevenueRow[]
   menuItemPopularity: { name: string; count: number }[]
 }
+
+const RANGE_OPTIONS = [
+  { value: "7", label: "7 Days" },
+  { value: "30", label: "30 Days" },
+  { value: "90", label: "90 Days" },
+  { value: "180", label: "6 Months" },
+  { value: "all", label: "All Time" },
+] as const
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -97,11 +106,13 @@ function ChartPanel({
 }
 
 function Reports() {
+  const [range, setRange] = useState<string>("180")
   const { data, isLoading } = useQuery({
-    queryKey: ["reports-summary"],
-    queryFn: () => api.get<ReportsSummary>("/reports/summary"),
+    queryKey: ["reports-summary", range],
+    queryFn: () => api.get<ReportsSummary>(`/reports/summary?range=${range}`),
   })
 
+  const rangeLabel = RANGE_OPTIONS.find((o) => o.value === range)?.label ?? ""
   const renewalRate = overallRate(data?.renewalTrend ?? [], "renewed")
   const engagementRate = overallRate(data?.engagementTrend ?? [], "chosen")
   const revenueWindow = (data?.revenueByGoal ?? []).reduce((sum, r) => sum + r.total, 0)
@@ -109,12 +120,30 @@ function Reports() {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
-      <Header title="Reports" />
+      <Header
+        title="Reports"
+        actions={
+          <div className="flex items-center rounded-lg border border-gray-200 p-1 bg-gray-50">
+            {RANGE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setRange(opt.value)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+                  range === opt.value ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        }
+      />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
           <KpiCard label="Renewal Rate" value={formatPercent(renewalRate)} loading={isLoading} />
           <KpiCard label="Menu Selection Engagement" value={formatPercent(engagementRate)} loading={isLoading} />
-          <KpiCard label="Revenue (90d)" value={formatGBP(revenueWindow)} loading={isLoading} />
+          <KpiCard label={`Revenue (${rangeLabel})`} value={formatGBP(revenueWindow)} loading={isLoading} />
           <KpiCard label="Most Served Meal" value={topItem} loading={isLoading} />
         </div>
 
@@ -129,7 +158,7 @@ function Reports() {
           />
           <ChartPanel
             title="Menu Selection Engagement"
-            subtitle={`Last ${data?.engagementTrend.length ?? 12} weeks`}
+            subtitle={`By week, ${rangeLabel.toLowerCase()}`}
             loading={isLoading}
             data={(data?.engagementTrend ?? []).map((r) => ({ label: formatWeekLabel(r.week), value: r.rate * 100 }))}
             formatValue={formatPercent}
@@ -140,7 +169,7 @@ function Reports() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px]">
           <ChartPanel
             title="Revenue by Goal"
-            subtitle="Last 90 days"
+            subtitle={rangeLabel}
             loading={isLoading}
             data={(data?.revenueByGoal ?? []).map((r) => ({ label: r.label, value: r.total }))}
             formatValue={formatGBP}
@@ -148,7 +177,7 @@ function Reports() {
           />
           <ChartPanel
             title="Revenue by Tier"
-            subtitle="Last 90 days"
+            subtitle={rangeLabel}
             loading={isLoading}
             data={(data?.revenueByTier ?? []).map((r) => ({ label: r.label, value: r.total }))}
             formatValue={formatGBP}
@@ -156,7 +185,7 @@ function Reports() {
           />
           <ChartPanel
             title="Revenue by Plan Duration"
-            subtitle="Last 90 days"
+            subtitle={rangeLabel}
             loading={isLoading}
             data={(data?.revenueByDuration ?? []).map((r) => ({ label: r.label, value: r.total }))}
             formatValue={formatGBP}
@@ -164,7 +193,7 @@ function Reports() {
           />
           <ChartPanel
             title="Revenue by Meals Per Day"
-            subtitle="Last 90 days"
+            subtitle={rangeLabel}
             loading={isLoading}
             data={(data?.revenueByMealsPerDay ?? []).map((r) => ({ label: r.label, value: r.total }))}
             formatValue={formatGBP}
@@ -174,7 +203,7 @@ function Reports() {
 
         <ChartPanel
           title="Most Popular Meals"
-          subtitle="Times served, last 90 days"
+          subtitle={`Times served, ${rangeLabel.toLowerCase()}`}
           loading={isLoading}
           data={(data?.menuItemPopularity ?? []).map((r) => ({ label: r.name, value: r.count }))}
           formatValue={(v) => `${v} served`}
