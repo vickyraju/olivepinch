@@ -1,4 +1,5 @@
 import { Router, type Request } from "express"
+import { timingSafeEqual } from "node:crypto"
 import { prisma } from "../lib/prisma.js"
 import { sendEmail } from "../lib/email.js"
 import { renewalReminderEmail, lapsedRetentionEmail, accountRecoveryEmail, weeklyMenuSelectionEmail } from "../lib/email-templates.js"
@@ -210,7 +211,15 @@ export async function runMenuSelectionSweep() {
 function checkCronSecret(req: Request): [number, string] | null {
   const secret = process.env.CRON_SECRET
   if (!secret) return [501, "CRON_SECRET is not configured"]
-  if (req.headers.authorization !== `Bearer ${secret}`) return [401, "Invalid cron secret"]
+  const provided = req.headers.authorization ?? ""
+  const expected = `Bearer ${secret}`
+  // Plain !== short-circuits on the first differing byte, which leaks how many characters
+  // matched via response timing — timingSafeEqual takes constant time regardless. Lengths
+  // must match first, since timingSafeEqual throws (rather than returning false) otherwise.
+  const valid =
+    Buffer.byteLength(provided) === Buffer.byteLength(expected) &&
+    timingSafeEqual(Buffer.from(provided), Buffer.from(expected))
+  if (!valid) return [401, "Invalid cron secret"]
   return null
 }
 

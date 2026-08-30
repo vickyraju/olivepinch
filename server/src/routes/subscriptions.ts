@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
-import { requireAuth } from "../middleware/auth.js"
+import { requireAuth, requireSignupToken } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
@@ -38,7 +38,11 @@ const createSchema = z.object({
 // from the caller's day-by-day selections (validated against real MenuItem ids) or the
 // goal/diet-matched default — and creates the Subscription + Order + OrderItem rows in one
 // transaction.
-subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
+subscriptionsRouter.post(
+  "/",
+  validateBody(createSchema),
+  requireSignupToken((req) => (req.body as z.infer<typeof createSchema>).customerId),
+  async (req, res) => {
   const body = req.body as z.infer<typeof createSchema>
   const customer = await prisma.customer.findUniqueOrThrow({ where: { id: body.customerId } })
   if (!customer.goal || customer.dietTypes.length === 0) {
@@ -133,7 +137,8 @@ subscriptionsRouter.post("/", validateBody(createSchema), async (req, res) => {
   const total = Math.max(0, price - discountAmount)
 
   res.status(201).json({ subscriptionId: subscription.id, total, dayCount: subscription.orders.length })
-})
+  }
+)
 
 subscriptionsRouter.use(requireAuth)
 

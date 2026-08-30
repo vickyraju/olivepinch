@@ -1,6 +1,15 @@
 import ExcelJS from "exceljs"
 import { prisma } from "./prisma.js"
 
+// customerName comes straight from the signup form — a customer could set their name to
+// something like `=HYPERLINK(...)` or `=cmd|...`. A leading apostrophe is the standard
+// (OWASP-recommended) mitigation: it forces the cell to display as literal text in Excel
+// rather than risk it being read as a formula.
+const RISKY_LEADING_CHARS = ["=", "+", "-", "@", "\t", "\r"]
+function sanitizeForSpreadsheet(value: string): string {
+  return RISKY_LEADING_CHARS.some((c) => value.startsWith(c)) ? `'${value}` : value
+}
+
 interface Row {
   date: string
   slot: string
@@ -80,8 +89,8 @@ export async function buildKitchenExportWorkbook(from: string, to: string): Prom
       date: row.date,
       deliveryTime: row.deliveryTime,
       slot: row.slot,
-      item: row.itemName,
-      customerName: row.customerName,
+      item: sanitizeForSpreadsheet(row.itemName),
+      customerName: sanitizeForSpreadsheet(row.customerName),
       type: row.type,
     })
     const fill = SLOT_FILL[row.slot]

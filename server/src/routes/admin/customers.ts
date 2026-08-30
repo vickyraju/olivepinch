@@ -175,6 +175,10 @@ adminCustomersRouter.post(
   validateBody(z.object({ paymentId: z.string() })),
   async (req, res) => {
     const { paymentId } = req.body as { paymentId: string }
+    // Verify the payment actually belongs to the customer in the URL before touching it —
+    // without this, any valid paymentId would be accepted regardless of :id, so the audit
+    // log could misattribute a refund to the wrong customer.
+    await prisma.payment.findFirstOrThrow({ where: { id: paymentId, customerId: req.params.id as string } })
     const payment = await prisma.payment.update({
       where: { id: paymentId },
       data: { status: "refunded" },

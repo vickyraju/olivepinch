@@ -17,10 +17,25 @@ import { adminRouter } from "./routes/admin/index.js"
 import { internalRouter } from "./routes/internal.js"
 import { errorHandler } from "./middleware/error.js"
 
+// Used only when CORS_ORIGIN isn't set — a safe floor (the two real frontends) rather than
+// the wildcard this used to fall back to, which would accept requests from any origin.
+const DEFAULT_PRODUCTION_ORIGINS = ["https://olivepinch.vercel.app", "https://olivepinch-admin.vercel.app"]
+
 export function createApp() {
   const app = express()
 
-  const allowedOrigins = (process.env.CORS_ORIGIN ?? "*").split(",").map((o) => o.trim())
+  // Render sits in front of this app as a reverse proxy — without this, req.ip (and
+  // therefore express-rate-limit's per-IP buckets below) sees Render's proxy address for
+  // every request instead of the real client, making rate limiting apply to all traffic
+  // as if from one source. `1` trusts exactly one hop, matching Render's setup.
+  app.set("trust proxy", 1)
+
+  const corsOrigin = process.env.CORS_ORIGIN
+  const allowedOrigins = corsOrigin
+    ? corsOrigin.split(",").map((o) => o.trim())
+    : process.env.NODE_ENV === "production"
+      ? DEFAULT_PRODUCTION_ORIGINS
+      : ["*"]
   app.use(cors({ origin: allowedOrigins.includes("*") ? "*" : allowedOrigins }))
 
   // Webhook signature verification needs raw body — keep this ahead of the global

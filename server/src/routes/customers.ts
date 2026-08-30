@@ -3,10 +3,11 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
 import { calculateAge } from "../lib/age.js"
-import { requireAuth, verifyFirebaseUser } from "../middleware/auth.js"
+import { requireAuth, requireSignupToken, verifyFirebaseUser } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
+import { signSignupToken } from "../lib/auth.js"
 
 export const customersRouter = Router()
 
@@ -122,7 +123,9 @@ customersRouter.post("/provisional", validateBody(provisionalSchema), async (req
   }
 
   const bmi = calculateBmi(body.heightCm, body.weightKg)
-  res.status(201).json({ customerId: customer.id, bmi, bmiCategory: bmiCategory(bmi) })
+  // Binds the rest of this signup session to this customerId — see requireSignupToken.
+  const signupToken = signSignupToken(customer.id)
+  res.status(201).json({ customerId: customer.id, bmi, bmiCategory: bmiCategory(bmi), signupToken })
 })
 
 const preferencesSchema = z.object({
@@ -132,19 +135,24 @@ const preferencesSchema = z.object({
   postcode: z.string().optional(),
 })
 
-customersRouter.patch("/:id/preferences", validateBody(preferencesSchema), async (req, res) => {
-  const body = req.body as z.infer<typeof preferencesSchema>
-  const customer = await prisma.customer.update({
-    where: { id: req.params.id as string },
-    data: {
-      goal: body.goal as never,
-      dietTypes: body.dietTypes as never,
-      allergens: body.allergens,
-      postcode: body.postcode,
-    },
-  })
-  res.json({ customerId: customer.id })
-})
+customersRouter.patch(
+  "/:id/preferences",
+  requireSignupToken((req) => req.params.id as string),
+  validateBody(preferencesSchema),
+  async (req, res) => {
+    const body = req.body as z.infer<typeof preferencesSchema>
+    const customer = await prisma.customer.update({
+      where: { id: req.params.id as string },
+      data: {
+        goal: body.goal as never,
+        dietTypes: body.dietTypes as never,
+        allergens: body.allergens,
+        postcode: body.postcode,
+      },
+    })
+    res.json({ customerId: customer.id })
+  }
+)
 
 customersRouter.get("/me", requireAuth, async (req, res) => {
   const customer = await prisma.customer.findUniqueOrThrow({ where: { id: req.customerId } })
