@@ -93,6 +93,7 @@ adminReportsRouter.get("/summary", async (req, res) => {
     where: { status: "succeeded", ...(since ? { paidAt: { gte: since } } : {}), subscriptionId: { not: null } },
     select: {
       amount: true,
+      customerId: true,
       subscription: { select: { tier: true, planDuration: true, mealsPerDay: true, customer: { select: { goal: true } } } },
     },
   })
@@ -109,6 +110,19 @@ adminReportsRouter.get("/summary", async (req, res) => {
   const revenueByDuration = sumBy((p) => `${p.subscription?.planDuration} Days`)
   const revenueByMealsPerDay = sumBy((p) => `${p.subscription?.mealsPerDay} meals/day`)
 
+  // --- Goal split: part-to-whole, not magnitude — how many paying customers are on each
+  // goal, not how much they spent. Distinct customers from the same payment set above.
+  // Fixed category order (not sorted by count) so a segment's color/position never shifts
+  // as the range selection changes which goal happens to be biggest.
+  const GOAL_ORDER = ["WEIGHT_LOSS", "MUSCLE_BUILDING", "WEIGHT_MAINTENANCE", "WEIGHT_GAIN", "Unknown"]
+  const customerGoalById = new Map<string, string>()
+  for (const p of payments) customerGoalById.set(p.customerId, p.subscription?.customer.goal ?? "Unknown")
+  const goalCounts = new Map<string, number>()
+  for (const goal of customerGoalById.values()) goalCounts.set(goal, (goalCounts.get(goal) ?? 0) + 1)
+  const customersByGoal = GOAL_ORDER
+    .filter((label) => goalCounts.has(label))
+    .map((label) => ({ label, count: goalCounts.get(label)! }))
+
   // --- Food popularity: what's actually being served, from OrderItem rows in the same window.
   const orderItems = await prisma.orderItem.findMany({
     where: { order: { deliveryDate: { ...(since ? { gte: since } : {}), lte: today } } },
@@ -121,5 +135,5 @@ adminReportsRouter.get("/summary", async (req, res) => {
     .sort((a, b) => b.count - a.count)
     .slice(0, 15)
 
-  res.json({ renewalTrend, engagementTrend, revenueByGoal, revenueByTier, revenueByDuration, revenueByMealsPerDay, menuItemPopularity })
+  res.json({ renewalTrend, engagementTrend, revenueByGoal, revenueByTier, revenueByDuration, revenueByMealsPerDay, customersByGoal, menuItemPopularity })
 })
