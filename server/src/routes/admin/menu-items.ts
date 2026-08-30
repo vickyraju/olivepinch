@@ -1,6 +1,7 @@
 import { Router } from "express"
 import type { Response } from "express"
 import { z } from "zod"
+import { Prisma } from "@prisma/client"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
@@ -59,6 +60,18 @@ adminMenuItemsRouter.patch("/:id", validateBody(menuItemSchema.partial()), async
 })
 
 adminMenuItemsRouter.delete("/:id", async (req, res) => {
-  await prisma.menuItem.delete({ where: { id: req.params.id as string } })
-  res.status(204).send()
+  try {
+    await prisma.menuItem.delete({ where: { id: req.params.id as string } })
+    res.status(204).send()
+  } catch (err) {
+    // P2003: foreign key violation — this item is referenced by an OrderItem (near-certain
+    // for anything that's ever actually been served, since orders are created for the whole
+    // plan duration up front) or a MenuWeekItem. There's no soft-delete/active flag on
+    // MenuItem to redirect to yet, so the clearest thing to do today is explain why, rather
+    // than let the raw constraint error surface as an opaque 500.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
+      return res.status(409).json({ error: "This item has already been used in orders and can't be deleted." })
+    }
+    throw err
+  }
 })
