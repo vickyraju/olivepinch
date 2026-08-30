@@ -2,6 +2,7 @@ import { useMemo, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
+import { QueryError } from "@/components/query-error"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 
@@ -162,7 +163,13 @@ function Plans() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {plansQuery.isLoading ? (
+              {plansQuery.isError ? (
+                <tr>
+                  <td colSpan={20}>
+                    <QueryError onRetry={() => plansQuery.refetch()} />
+                  </td>
+                </tr>
+              ) : plansQuery.isLoading ? (
                 <TableSkeleton columns={4} rows={4} />
               ) : (
                 GOALS.map((goal) => (

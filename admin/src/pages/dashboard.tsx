@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router-dom"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
+import { QueryError } from "@/components/query-error"
 import { TrendBarChart } from "@/components/trend-bar-chart"
 import { api, BASE_URL, getToken } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
@@ -187,6 +188,14 @@ function Dashboard() {
         }
       />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
+        {summaryQuery.isError || revenueQuery.isError ? (
+          <QueryError
+            onRetry={() => {
+              summaryQuery.refetch()
+              revenueQuery.refetch()
+            }}
+          />
+        ) : null}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px]">
           <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label="Revenue (30d)" value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
           <KpiCard icon="person_add" iconBg="bg-purple-50" iconColor="text-purple-600" label="New Customers (7d)" value={summary ? String(summary.newCustomersThisWeek) : "—"} loading={summaryQuery.isLoading} />

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
+import { QueryError } from "@/components/query-error"
 import { TrendBarChart } from "@/components/trend-bar-chart"
 import { PartToWholeBar } from "@/components/part-to-whole-bar"
 import { api } from "@/lib/api"
@@ -127,7 +128,7 @@ function ChartPanel({
 
 function Reports() {
   const [range, setRange] = useState<string>("180")
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["reports-summary", range],
     queryFn: () => api.get<ReportsSummary>(`/reports/summary?range=${range}`),
   })
@@ -160,6 +161,7 @@ function Reports() {
         }
       />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
+        {isError ? <QueryError onRetry={() => refetch()} /> : null}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-[16px]">
           <KpiCard label="Renewal Rate" value={formatPercent(renewalRate)} loading={isLoading} />
           <KpiCard label="Menu Selection Engagement" value={formatPercent(engagementRate)} loading={isLoading} />

@@ -3,6 +3,7 @@ import type { FormEvent } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
+import { QueryError } from "@/components/query-error"
 import { api } from "@/lib/api"
 
 interface DeliveryTimeSlot {
@@ -19,6 +20,7 @@ function DeliverySlots() {
   const [label, setLabel] = useState("")
   const [sortOrder, setSortOrder] = useState("0")
   const [error, setError] = useState("")
+  const [saving, setSaving] = useState(false)
 
   const slotsQuery = useQuery({ queryKey: ["delivery-time-slots"], queryFn: () => api.get<DeliveryTimeSlot[]>("/delivery-time-slots") })
 
@@ -45,6 +47,7 @@ function DeliverySlots() {
       setError("Enter a label, e.g. 6:00 – 7:00.")
       return
     }
+    setSaving(true)
     try {
       const data = { label: label.trim(), sortOrder: Number(sortOrder) || 0 }
       if (editingId) {
@@ -56,6 +59,8 @@ function DeliverySlots() {
       await queryClient.invalidateQueries({ queryKey: ["delivery-time-slots"] })
     } catch {
       setError("Could not save this delivery slot.")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -89,7 +94,13 @@ function DeliverySlots() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {slotsQuery.isLoading ? (
+              {slotsQuery.isError ? (
+                <tr>
+                  <td colSpan={4}>
+                    <QueryError onRetry={() => slotsQuery.refetch()} />
+                  </td>
+                </tr>
+              ) : slotsQuery.isLoading ? (
                 <TableSkeleton columns={4} rows={3} />
               ) : (
                 (slotsQuery.data ?? []).map((slot) => (
@@ -124,7 +135,7 @@ function DeliverySlots() {
                   </tr>
                 ))
               )}
-              {!slotsQuery.isLoading && (slotsQuery.data ?? []).length === 0 ? (
+              {!slotsQuery.isLoading && !slotsQuery.isError && (slotsQuery.data ?? []).length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-10 text-center text-sm text-gray-400">
                     No delivery slots configured yet.
@@ -170,8 +181,8 @@ function DeliverySlots() {
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
                   Cancel
                 </button>
-                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm cursor-pointer">
-                  {editingId ? "Save Changes" : "Save Slot"}
+                <button type="submit" disabled={saving} className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm disabled:opacity-60 cursor-pointer">
+                  {saving ? "Saving..." : editingId ? "Save Changes" : "Save Slot"}
                 </button>
               </div>
             </form>

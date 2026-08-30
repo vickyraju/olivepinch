@@ -3,6 +3,7 @@ import type { FormEvent } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
+import { QueryError } from "@/components/query-error"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 
@@ -48,6 +49,7 @@ function PromoCodes() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [error, setError] = useState("")
+  const [saving, setSaving] = useState(false)
 
   const promoQuery = useQuery({ queryKey: ["promo-codes"], queryFn: () => api.get<PromoCode[]>("/promo-codes") })
 
@@ -63,6 +65,7 @@ function PromoCodes() {
       setError("Enter a code and a discount value greater than 0.")
       return
     }
+    setSaving(true)
     try {
       await api.post("/promo-codes", {
         code: form.code.trim(),
@@ -81,6 +84,8 @@ function PromoCodes() {
       await queryClient.invalidateQueries({ queryKey: ["promo-codes"] })
     } catch {
       setError("Could not save this promo code — check the code is unique.")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -130,7 +135,13 @@ function PromoCodes() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {promoQuery.isLoading ? (
+              {promoQuery.isError ? (
+                <tr>
+                  <td colSpan={6}>
+                    <QueryError onRetry={() => promoQuery.refetch()} />
+                  </td>
+                </tr>
+              ) : promoQuery.isLoading ? (
                 <TableSkeleton columns={6} rows={3} />
               ) : (
                 (promoQuery.data ?? []).map((promo) => (
@@ -162,7 +173,7 @@ function PromoCodes() {
                   </tr>
                 ))
               )}
-              {!promoQuery.isLoading && (promoQuery.data ?? []).length === 0 ? (
+              {!promoQuery.isLoading && !promoQuery.isError && (promoQuery.data ?? []).length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-10 text-center text-sm text-gray-400">
                     No promo codes configured yet.
@@ -308,8 +319,8 @@ function PromoCodes() {
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
                   Cancel
                 </button>
-                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm cursor-pointer">
-                  Save Promo Code
+                <button type="submit" disabled={saving} className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm disabled:opacity-60 cursor-pointer">
+                  {saving ? "Saving..." : "Save Promo Code"}
                 </button>
               </div>
             </form>

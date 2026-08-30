@@ -3,6 +3,7 @@ import type { ChangeEvent, FormEvent } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { CardGridSkeleton } from "@/components/skeletons/card-grid-skeleton"
+import { QueryError } from "@/components/query-error"
 import { api, ApiError } from "@/lib/api"
 
 interface MenuItem {
@@ -331,7 +332,11 @@ function MenuControl() {
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {menuQuery.isLoading ? (
+          {menuQuery.isError ? (
+            <div className="col-span-full">
+              <QueryError onRetry={() => menuQuery.refetch()} />
+            </div>
+          ) : menuQuery.isLoading ? (
             <CardGridSkeleton />
           ) : (
             <>

@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useParams, Link } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
+import { QueryError } from "@/components/query-error"
 import { api, ApiError } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES, formatPhone } from "@/lib/status-styles"
@@ -186,6 +187,17 @@ function CustomerDetail() {
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Could not cancel that subscription.")
     }
+  }
+
+  if (customerQuery.isError) {
+    return (
+      <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
+        <Header title="Customer" />
+        <div className="flex-1 flex items-center justify-center">
+          <QueryError onRetry={() => customerQuery.refetch()} />
+        </div>
+      </div>
+    )
   }
 
   if (customerQuery.isLoading || !customer) {

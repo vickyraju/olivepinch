@@ -3,6 +3,7 @@ import type { FormEvent } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
+import { QueryError } from "@/components/query-error"
 import { api } from "@/lib/api"
 
 interface Allergen {
@@ -19,6 +20,7 @@ function Allergens() {
   const [name, setName] = useState("")
   const [sortOrder, setSortOrder] = useState("0")
   const [error, setError] = useState("")
+  const [saving, setSaving] = useState(false)
 
   const allergensQuery = useQuery({ queryKey: ["allergens"], queryFn: () => api.get<Allergen[]>("/allergens") })
 
@@ -45,6 +47,7 @@ function Allergens() {
       setError("Enter a name, e.g. Peanuts.")
       return
     }
+    setSaving(true)
     try {
       const data = { name: name.trim(), sortOrder: Number(sortOrder) || 0 }
       if (editingId) {
@@ -56,6 +59,8 @@ function Allergens() {
       await queryClient.invalidateQueries({ queryKey: ["allergens"] })
     } catch {
       setError("Could not save this allergen.")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -91,7 +96,13 @@ function Allergens() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {allergensQuery.isLoading ? (
+              {allergensQuery.isError ? (
+                <tr>
+                  <td colSpan={4}>
+                    <QueryError onRetry={() => allergensQuery.refetch()} />
+                  </td>
+                </tr>
+              ) : allergensQuery.isLoading ? (
                 <TableSkeleton columns={4} rows={3} />
               ) : (
                 (allergensQuery.data ?? []).map((allergen) => (
@@ -126,7 +137,7 @@ function Allergens() {
                   </tr>
                 ))
               )}
-              {!allergensQuery.isLoading && (allergensQuery.data ?? []).length === 0 ? (
+              {!allergensQuery.isLoading && !allergensQuery.isError && (allergensQuery.data ?? []).length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-10 text-center text-sm text-gray-400">
                     No allergens configured yet.
@@ -172,8 +183,8 @@ function Allergens() {
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
                   Cancel
                 </button>
-                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm cursor-pointer">
-                  {editingId ? "Save Changes" : "Save Allergen"}
+                <button type="submit" disabled={saving} className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm disabled:opacity-60 cursor-pointer">
+                  {saving ? "Saving..." : editingId ? "Save Changes" : "Save Allergen"}
                 </button>
               </div>
             </form>

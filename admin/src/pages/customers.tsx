@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
+import { QueryError } from "@/components/query-error"
 import { api } from "@/lib/api"
 import { getInitials, formatPhone } from "@/lib/status-styles"
 
@@ -114,8 +115,16 @@ function Customers() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
+                {customersQuery.isError ? (
+                  <tr>
+                    <td colSpan={9}>
+                      <QueryError onRetry={() => customersQuery.refetch()} />
+                    </td>
+                  </tr>
+                ) : null}
                 {customersQuery.isLoading ? <TableSkeleton columns={9} /> : null}
                 {!customersQuery.isLoading &&
+                  !customersQuery.isError &&
                   (data?.customers ?? []).map((c) => {
                     return (
                       <tr key={c.id} className="hover:bg-gray-50/50">
@@ -158,7 +167,7 @@ function Customers() {
                       </tr>
                     )
                   })}
-                {!customersQuery.isLoading && (data?.customers ?? []).length === 0 ? (
+                {!customersQuery.isLoading && !customersQuery.isError && (data?.customers ?? []).length === 0 ? (
                   <tr>
                     <td colSpan={9} className="py-10 text-center text-sm text-gray-400">
                       No customers found.

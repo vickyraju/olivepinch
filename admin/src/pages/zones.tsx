@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import * as XLSX from "xlsx"
 import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
+import { QueryError } from "@/components/query-error"
 import { api } from "@/lib/api"
 
 interface Zone {
@@ -25,6 +26,7 @@ function Zones() {
   const [name, setName] = useState("")
   const [prefixes, setPrefixes] = useState("")
   const [error, setError] = useState("")
+  const [saving, setSaving] = useState(false)
 
   const zonesQuery = useQuery({ queryKey: ["zones"], queryFn: () => api.get<Zone[]>("/zones") })
 
@@ -64,6 +66,7 @@ function Zones() {
       setError("Enter a zone name and at least one postcode (e.g. B14).")
       return
     }
+    setSaving(true)
     try {
       if (editingId) {
         await api.patch(`/zones/${editingId}`, { name, postcodePrefixes: list })
@@ -74,6 +77,8 @@ function Zones() {
       await queryClient.invalidateQueries({ queryKey: ["zones"] })
     } catch {
       setError("Could not save this zone.")
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -107,7 +112,13 @@ function Zones() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {zonesQuery.isLoading ? (
+              {zonesQuery.isError ? (
+                <tr>
+                  <td colSpan={4}>
+                    <QueryError onRetry={() => zonesQuery.refetch()} />
+                  </td>
+                </tr>
+              ) : zonesQuery.isLoading ? (
                 <TableSkeleton columns={4} rows={3} />
               ) : (
                 (zonesQuery.data ?? []).map((zone) => (
@@ -150,7 +161,7 @@ function Zones() {
                   </tr>
                 ))
               )}
-              {!zonesQuery.isLoading && (zonesQuery.data ?? []).length === 0 ? (
+              {!zonesQuery.isLoading && !zonesQuery.isError && (zonesQuery.data ?? []).length === 0 ? (
                 <tr>
                   <td colSpan={4} className="py-10 text-center text-sm text-gray-400">
                     No zones configured yet.
@@ -212,8 +223,8 @@ function Zones() {
                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
                   Cancel
                 </button>
-                <button type="submit" className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm cursor-pointer">
-                  {editingId ? "Save Changes" : "Save Zone"}
+                <button type="submit" disabled={saving} className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm disabled:opacity-60 cursor-pointer">
+                  {saving ? "Saving..." : editingId ? "Save Changes" : "Save Zone"}
                 </button>
               </div>
             </form>
