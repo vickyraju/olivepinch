@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
@@ -42,6 +42,9 @@ function Subscription() {
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
   const [error, setError] = useState("")
+  // See the same guard in subscribe/delivery.tsx — a ref closes the double-click/double-Enter
+  // window that a state-driven `disabled` prop alone can't, since state updates are batched.
+  const renewingRef = useRef(false)
   const [searchParams, setSearchParams] = useSearchParams()
 
   const [promoInput, setPromoInput] = useState("")
@@ -111,6 +114,8 @@ function Subscription() {
 
   async function handleRenew(e: React.FormEvent) {
     e.preventDefault()
+    if (renewingRef.current) return
+    renewingRef.current = true
     setError("")
     setRenewing(true)
     try {
@@ -118,9 +123,11 @@ function Subscription() {
       setConfirmed(true)
       setTimeout(() => setConfirmed(false), 8000)
       setRenewing(false)
+      renewingRef.current = false
     } catch {
       setError("Couldn't renew your subscription — try again.")
       setRenewing(false)
+      renewingRef.current = false
     }
   }
 

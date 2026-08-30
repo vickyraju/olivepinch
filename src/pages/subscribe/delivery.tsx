@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { AlertCircle } from "lucide-react"
 import { Label } from "@/components/ui/label"
@@ -26,6 +26,12 @@ function Delivery() {
   const [error, setError] = useState("")
   const [status, setStatus] = useState<"idle" | "checking" | "processing" | "failed">("idle")
   const [declineMessage, setDeclineMessage] = useState("")
+  // A ref, not state — state updates are batched, so a fast double-click (or the button's
+  // disabled prop not yet having painted) could invoke handlePay a second time while the
+  // first is still in flight, creating two separate subscriptions and two Worldpay hosted
+  // payment pages for one intended purchase. A ref write is synchronous and visible
+  // immediately to the second invocation, closing that window.
+  const payingRef = useRef(false)
 
   // Worldpay redirects back here on a declined/failed/cancelled payment — same failure UI
   // whether it's a real decline or a manual test visit to /subscribe/delivery?declined=1.
@@ -51,6 +57,8 @@ function Delivery() {
   )
 
   async function handlePay() {
+    if (payingRef.current) return
+    payingRef.current = true
     setError("")
     setDeclineMessage("")
     setStatus("checking")
@@ -143,6 +151,7 @@ function Delivery() {
     } catch (err) {
       setDeclineMessage(err instanceof ApiError ? err.message : err instanceof Error ? err.message : "Something went wrong processing your payment — please try again.")
       setStatus("failed")
+      payingRef.current = false
     }
   }
 
