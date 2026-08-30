@@ -117,7 +117,7 @@ function Allergens() {
                         </button>
                         <button
                           onClick={() => toggleActive(allergen)}
-                          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+                          className="w-[92px] px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                         >
                           {allergen.active ? "Deactivate" : "Activate"}
                         </button>
