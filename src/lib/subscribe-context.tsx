@@ -56,6 +56,10 @@ export interface SubscribeState {
   promoDiscount: number | null
   paymentAttempted: boolean
   customerId: string | null
+  // Issued alongside customerId by POST /customers/provisional — proves to the backend
+  // that this session is allowed to act on that customerId before any Firebase login
+  // exists. Required on the preferences PATCH and the subscription POST that follow.
+  signupToken: string | null
   subscriptionId: string | null
 }
 
@@ -98,6 +102,7 @@ const INITIAL_STATE: SubscribeState = {
   promoDiscount: null,
   paymentAttempted: false,
   customerId: null,
+  signupToken: null,
   subscriptionId: null,
 }
 

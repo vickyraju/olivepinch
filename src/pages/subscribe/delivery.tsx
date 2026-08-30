@@ -72,9 +72,10 @@ function Delivery() {
 
       setStatus("processing")
       let customerId = state.customerId
+      let signupToken = state.signupToken
       if (!customerId) {
         if (!state.goal || state.dietTypes.length === 0) throw new Error("Missing your goal and diet preferences — go back and complete the earlier steps.")
-        const provisional = await api.post<{ customerId: string }>("/customers/provisional", {
+        const provisional = await api.post<{ customerId: string; signupToken: string }>("/customers/provisional", {
           fullName: p.fullName.trim(),
           phone: p.phone.trim(),
           gender: p.gender || undefined,
@@ -84,35 +85,46 @@ function Delivery() {
           healthConsent: true,
           marketingOptIn: false,
         })
+        // signupToken proves this session is allowed to act on this customerId before any
+        // Firebase login exists — required on both this PATCH and the POST /subscriptions below.
+        signupToken = provisional.signupToken
         // Goal/diet/allergens were picked several steps ago in "Choose" but couldn't be saved
         // until now — that PATCH is customer-scoped, and this is the first point a customerId exists.
-        await api.patch(`/customers/${provisional.customerId}/preferences`, {
-          goal: GOAL_TO_ENUM[state.goal],
-          dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
-          allergens: state.allergens,
-          postcode: state.postcode,
-        })
+        await api.patch(
+          `/customers/${provisional.customerId}/preferences`,
+          {
+            goal: GOAL_TO_ENUM[state.goal],
+            dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
+            allergens: state.allergens,
+            postcode: state.postcode,
+          },
+          { Authorization: `Bearer ${signupToken}` }
+        )
         customerId = provisional.customerId
-        update({ customerId })
+        update({ customerId, signupToken })
       }
 
-      const subscription = await api.post<{ subscriptionId: string }>("/subscriptions", {
-        customerId,
-        planDuration: state.planDuration,
-        startDate: state.startDate,
-        mealsPerDay: state.mealsPerDay,
-        tier: TIER_TO_ENUM[state.tier ?? "Basic"],
-        email: p.email.trim(),
-        addressDoorNumber: deliveryAddress.doorNumber,
-        addressBuildingName: deliveryAddress.buildingName || undefined,
-        addressStreet: deliveryAddress.street,
-        addressArea: deliveryAddress.area,
-        addressPostcode: deliveryAddress.postcode,
-        deliverySlot: DELIVERY_SLOT_TO_ENUM["Daily"],
-        deliveryTimeSlot: state.deliveryTimeSlot!,
-        dayMenus: state.dayMenus,
-        promoCode: state.promoCode ?? undefined,
-      })
+      const subscription = await api.post<{ subscriptionId: string }>(
+        "/subscriptions",
+        {
+          customerId,
+          planDuration: state.planDuration,
+          startDate: state.startDate,
+          mealsPerDay: state.mealsPerDay,
+          tier: TIER_TO_ENUM[state.tier ?? "Basic"],
+          email: p.email.trim(),
+          addressDoorNumber: deliveryAddress.doorNumber,
+          addressBuildingName: deliveryAddress.buildingName || undefined,
+          addressStreet: deliveryAddress.street,
+          addressArea: deliveryAddress.area,
+          addressPostcode: deliveryAddress.postcode,
+          deliverySlot: DELIVERY_SLOT_TO_ENUM["Daily"],
+          deliveryTimeSlot: state.deliveryTimeSlot!,
+          dayMenus: state.dayMenus,
+          promoCode: state.promoCode ?? undefined,
+        },
+        { Authorization: `Bearer ${signupToken}` }
+      )
       update({ subscriptionId: subscription.subscriptionId })
 
       const intent = await api.post<{ devMode?: boolean; redirectUrl?: string }>("/payments/intent", {

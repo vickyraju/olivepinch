@@ -19,10 +19,14 @@ async function authHeader(): Promise<Record<string, string>> {
 interface RequestOptions {
   method?: "GET" | "POST" | "PATCH" | "DELETE"
   body?: unknown
+  headers?: Record<string, string>
 }
 
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  const headers: Record<string, string> = { "Content-Type": "application/json", ...(await authHeader()) }
+  // Explicit headers (e.g. the pre-auth signup token) win over the Firebase auth header —
+  // in practice these never overlap, since a Firebase session doesn't exist yet at the
+  // point anything needs the signup token.
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...(await authHeader()), ...opts.headers }
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method: opts.method ?? "GET",
@@ -41,8 +45,8 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body?: unknown) => request<T>(path, { method: "POST", body }),
-  patch: <T>(path: string, body?: unknown) => request<T>(path, { method: "PATCH", body }),
+  post: <T>(path: string, body?: unknown, headers?: Record<string, string>) => request<T>(path, { method: "POST", body, headers }),
+  patch: <T>(path: string, body?: unknown, headers?: Record<string, string>) => request<T>(path, { method: "PATCH", body, headers }),
   del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 }
 
