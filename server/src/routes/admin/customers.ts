@@ -10,6 +10,8 @@ import { PHONE_REGEX } from "../customers.js"
 import { computeEndDate, londonToday } from "../../lib/subscription.js"
 import { sendEmail } from "../../lib/email.js"
 import { cancellationEmail } from "../../lib/email-templates.js"
+import { worldpayConfig, getRefundActions, refundFull, refundPartial } from "../../lib/worldpay.js"
+import { exactFractionOfPence } from "../../lib/money.js"
 
 export const adminCustomersRouter = Router()
 adminCustomersRouter.use(requireAdminAuth)
@@ -169,24 +171,79 @@ adminCustomersRouter.post(
   }
 )
 
-// FR-A05: refund issuance
-adminCustomersRouter.post(
-  "/:id/refund",
-  validateBody(z.object({ paymentId: z.string() })),
-  async (req, res) => {
-    const { paymentId } = req.body as { paymentId: string }
-    // Verify the payment actually belongs to the customer in the URL before touching it —
-    // without this, any valid paymentId would be accepted regardless of :id, so the audit
-    // log could misattribute a refund to the wrong customer.
-    await prisma.payment.findFirstOrThrow({ where: { id: paymentId, customerId: req.params.id as string } })
-    const payment = await prisma.payment.update({
-      where: { id: paymentId },
-      data: { status: "refunded" },
-    })
-    await logAction(req.adminId!, "refund", req.params.id as string, `payment ${paymentId}`)
-    res.json(payment)
+// FR-A05: refund issuance — full, percentage, custom amount, or prorated by unused plan days.
+// Percentage/prorated math is done in exact integer pence (see lib/money.ts) rather than plain
+// floating-point pounds, for the same reason promo.ts's discount math was: a naive
+// `amount * (pct/100)` can be off by a penny at exact rounding boundaries.
+const refundSchema = z.object({
+  paymentId: z.string(),
+  mode: z.enum(["full", "percentage", "prorated", "custom"]),
+  value: z.number().positive().optional(), // percentage (1-100) for "percentage", GBP amount for "custom"
+})
+
+adminCustomersRouter.post("/:id/refund", validateBody(refundSchema), async (req, res) => {
+  const { paymentId, mode, value } = req.body as z.infer<typeof refundSchema>
+
+  // Verify the payment actually belongs to the customer in the URL before touching it —
+  // without this, any valid paymentId would be accepted regardless of :id, so the audit
+  // log could misattribute a refund to the wrong customer.
+  const payment = await prisma.payment.findFirstOrThrow({
+    where: { id: paymentId, customerId: req.params.id as string },
+    include: { subscription: true },
+  })
+  if (payment.status !== "succeeded") {
+    return res.status(400).json({ error: "Only a succeeded payment can be refunded" })
   }
-)
+  if (payment.refundedAmount != null) {
+    return res.status(409).json({ error: "This payment has already been refunded" })
+  }
+
+  const paidPence = Math.round(Number(payment.amount) * 100)
+  let refundPence: number
+  if (mode === "full") {
+    refundPence = paidPence
+  } else if (mode === "percentage") {
+    if (!value || value <= 0 || value > 100) return res.status(400).json({ error: "Enter a percentage between 1 and 100" })
+    refundPence = exactFractionOfPence(paidPence, Math.round(value * 100), 10000)
+  } else if (mode === "prorated") {
+    const sub = payment.subscription
+    if (!sub) return res.status(400).json({ error: "No subscription linked to this payment" })
+    // Days already used, inclusive of today (day 4 of a 28-day plan used today -> 4 used, 24
+    // left) — pauses aren't factored in here (a paused day is still "unused" whichever side of
+    // today it falls on), which is a deliberate simplification, not an oversight.
+    const today = londonToday()
+    const daysUsed = Math.max(0, Math.min(sub.planDuration, Math.floor((today.getTime() - sub.startDate.getTime()) / 86_400_000) + 1))
+    const remainingDays = sub.planDuration - daysUsed
+    refundPence = exactFractionOfPence(paidPence, remainingDays, sub.planDuration)
+  } else {
+    if (!value || value <= 0) return res.status(400).json({ error: "Enter a refund amount greater than 0" })
+    refundPence = Math.round(value * 100)
+  }
+  refundPence = Math.min(refundPence, paidPence) // never refund more than was actually paid
+
+  const reference = `refund-${paymentId}`
+  if (worldpayConfig) {
+    if (!payment.providerRef) return res.status(400).json({ error: "No Worldpay reference stored for this payment" })
+    const actions = await getRefundActions(payment.providerRef)
+    if (refundPence >= paidPence) {
+      if (!actions.refundHref) return res.status(502).json({ error: "Worldpay didn't return a refund action for this payment" })
+      await refundFull(actions.refundHref)
+    } else {
+      if (!actions.partialRefundHref) return res.status(502).json({ error: "Worldpay didn't return a partial-refund action for this payment" })
+      await refundPartial(actions.partialRefundHref, refundPence, "GBP", reference)
+    }
+  }
+  // Only reached once the Worldpay call above has actually succeeded (or in dev mode, where
+  // there's no real payment to refund) — a failed Worldpay call throws before this line, so a
+  // customer's payment is never marked refunded unless the money actually moved.
+
+  const updated = await prisma.payment.update({
+    where: { id: paymentId },
+    data: { status: "refunded", refundedAmount: refundPence / 100, refundReference: reference },
+  })
+  await logAction(req.adminId!, "refund", req.params.id as string, `payment ${paymentId}: ${mode} refund of £${(refundPence / 100).toFixed(2)}`)
+  res.json(updated)
+})
 
 // FR-A05: manual account reactivation within the 3-month retention window
 adminCustomersRouter.post("/:id/reactivate", async (req, res) => {

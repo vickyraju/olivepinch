@@ -230,6 +230,10 @@ model Payment {
   providerRef    String?
   paidAt         DateTime?
   createdAt      DateTime      @default(now())
+  // Set once a refund (full or partial) has actually gone through Worldpay — a non-null value
+  // both records how much and blocks a second refund attempt against the same payment.
+  refundedAmount Decimal?      @db.Decimal(8, 2)
+  refundReference String?
 }
 
 // Source of truth for FR-C10/FR-C12 pricing — a flat price per (planDuration, goal, tier,
