@@ -36,6 +36,8 @@ interface Payment {
   amount: string
   status: string
   createdAt: string
+  subscriptionId: string | null
+  refundedAmount: string | null
 }
 
 interface CustomerDetail {
@@ -132,11 +134,174 @@ function WeekMenuCard({ title, weekStart, orders }: { title: string; weekStart: 
   )
 }
 
+type RefundMode = "full" | "percentage" | "prorated" | "custom"
+
+function RefundModal({
+  payment,
+  subscription,
+  onClose,
+  onSubmit,
+}: {
+  payment: Payment
+  subscription: Subscription | undefined
+  onClose: () => void
+  onSubmit: (mode: RefundMode, value?: number) => Promise<void>
+}) {
+  const [mode, setMode] = useState<RefundMode>("full")
+  const [percentage, setPercentage] = useState("50")
+  const [customAmount, setCustomAmount] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState("")
+
+  const paid = Number(payment.amount)
+
+  // Preview only, mirroring server/src/routes/admin/customers.ts's calculation — the backend
+  // is the source of truth for the amount actually refunded (exact-pence math there, not this
+  // plain floating-point preview).
+  let remainingDays: number | null = null
+  let proratedAmount = 0
+  if (subscription) {
+    const start = new Date(subscription.startDate)
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+    const daysUsed = Math.max(0, Math.min(subscription.planDuration, Math.floor((today.getTime() - start.getTime()) / 86_400_000) + 1))
+    remainingDays = subscription.planDuration - daysUsed
+    proratedAmount = (paid * remainingDays) / subscription.planDuration
+  }
+
+  const previewAmount = Math.min(
+    paid,
+    mode === "full"
+      ? paid
+      : mode === "percentage"
+        ? (paid * (Number(percentage) || 0)) / 100
+        : mode === "prorated"
+          ? proratedAmount
+          : Number(customAmount) || 0
+  )
+
+  async function handleSubmit() {
+    setError("")
+    const value = mode === "percentage" ? Number(percentage) : mode === "custom" ? Number(customAmount) : undefined
+    if (mode === "percentage" && (!value || value <= 0 || value > 100)) return setError("Enter a percentage between 1 and 100.")
+    if (mode === "custom" && (!value || value <= 0)) return setError("Enter an amount greater than £0.")
+    if (mode === "prorated" && !subscription) return setError("No subscription found for this payment.")
+    setSubmitting(true)
+    try {
+      await onSubmit(mode, value)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not process this refund.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-white rounded-[16px] w-[440px] shadow-xl flex flex-col overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
+          <h3 className="text-[18px] font-bold">Refund Payment</h3>
+          <button onClick={onClose} className="cursor-pointer">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-500">
+            Paid <span className="font-semibold text-gray-900">{formatGBP(paid)}</span> on{" "}
+            {new Date(payment.createdAt).toLocaleDateString("en-GB")}
+          </p>
+
+          <div className="space-y-2.5">
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input type="radio" name="refund-mode" checked={mode === "full"} onChange={() => setMode("full")} />
+              <span className="text-sm text-gray-900">Full refund</span>
+            </label>
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input type="radio" name="refund-mode" checked={mode === "percentage"} onChange={() => setMode("percentage")} />
+              <span className="text-sm text-gray-900">Percentage of amount paid</span>
+            </label>
+            <label className={`flex items-center gap-2.5 ${subscription ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}>
+              <input
+                type="radio"
+                name="refund-mode"
+                checked={mode === "prorated"}
+                onChange={() => setMode("prorated")}
+                disabled={!subscription}
+              />
+              <span className="text-sm text-gray-900">Prorated by unused plan days</span>
+            </label>
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input type="radio" name="refund-mode" checked={mode === "custom"} onChange={() => setMode("custom")} />
+              <span className="text-sm text-gray-900">Custom amount</span>
+            </label>
+          </div>
+
+          {mode === "percentage" ? (
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={percentage}
+              onChange={(e) => setPercentage(e.target.value)}
+              className="w-full h-10 border border-gray-200 rounded-lg px-3"
+              placeholder="Percentage (1-100)"
+            />
+          ) : null}
+          {mode === "custom" ? (
+            <input
+              type="number"
+              min={0.01}
+              step={0.01}
+              value={customAmount}
+              onChange={(e) => setCustomAmount(e.target.value)}
+              className="w-full h-10 border border-gray-200 rounded-lg px-3"
+              placeholder="Amount in £"
+            />
+          ) : null}
+          {mode === "prorated" && subscription ? (
+            <p className="text-xs text-gray-500">
+              {remainingDays} of {subscription.planDuration} days unused.
+            </p>
+          ) : null}
+          {mode === "prorated" && !subscription ? (
+            <p className="text-xs text-status-red">No subscription linked to this payment — prorated refund isn't available.</p>
+          ) : null}
+
+          <div className="rounded-lg bg-gray-50 p-3 flex justify-between items-center">
+            <span className="text-sm text-gray-600">Refund amount</span>
+            <span className="text-lg font-bold text-gray-900">{formatGBP(previewAmount)}</span>
+          </div>
+
+          {error ? (
+            <p role="alert" className="text-sm text-status-red">
+              {error}
+            </p>
+          ) : null}
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+          <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-6 py-2 bg-status-red text-white rounded-lg font-semibold text-sm cursor-pointer disabled:opacity-60"
+          >
+            {submitting ? "Refunding..." : `Refund ${formatGBP(previewAmount)}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function CustomerDetail() {
   const { id } = useParams<{ id: string }>()
   const queryClient = useQueryClient()
   const [error, setError] = useState("")
   const [pauseDate, setPauseDate] = useState("")
+  const [refundingPayment, setRefundingPayment] = useState<Payment | null>(null)
 
   const customerQuery = useQuery({
     queryKey: ["customer", id],
@@ -166,9 +331,9 @@ function CustomerDetail() {
     }
   }
 
-  async function refund(paymentId: string) {
-    if (!confirm("Mark this payment as refunded?")) return
-    await api.post(`/customers/${id}/refund`, { paymentId })
+  async function submitRefund(paymentId: string, mode: RefundMode, value?: number) {
+    await api.post(`/customers/${id}/refund`, { paymentId, mode, value })
+    setRefundingPayment(null)
     await invalidate()
   }
 
@@ -405,50 +570,52 @@ function CustomerDetail() {
           </div>
         ) : null}
 
-        {/* Hidden for now — not needed yet. Set to true to bring back. */}
-        {false && (
-          <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-[16px] font-bold text-gray-900">Payments</h3>
-            </div>
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {(customer?.payments ?? []).map((p) => (
-                  <tr key={p.id}>
-                    <td className="py-3 px-6 text-gray-900">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
-                    <td className="py-3 px-6 text-gray-900 font-semibold">{formatGBP(Number(p.amount))}</td>
-                    <td className="py-3 px-6 text-gray-600">{p.status}</td>
-                    <td className="py-3 px-6 text-right">
-                      {p.status === "succeeded" ? (
-                        <button
-                          onClick={() => refund(p.id)}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">undo</span> Refund
-                        </button>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-                {(customer?.payments ?? []).length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
-                      No payments yet.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-[16px] font-bold text-gray-900">Payments</h3>
           </div>
-        )}
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {(customer?.payments ?? []).map((p) => (
+                <tr key={p.id}>
+                  <td className="py-3 px-6 text-gray-900">{new Date(p.createdAt).toLocaleDateString("en-GB")}</td>
+                  <td className="py-3 px-6 text-gray-900 font-semibold">{formatGBP(Number(p.amount))}</td>
+                  <td className="py-3 px-6 text-gray-600">
+                    {p.status}
+                    {p.refundedAmount ? (
+                      <span className="block text-xs text-gray-400">Refunded {formatGBP(Number(p.refundedAmount))}</span>
+                    ) : null}
+                  </td>
+                  <td className="py-3 px-6 text-right">
+                    {p.status === "succeeded" && !p.refundedAmount ? (
+                      <button
+                        onClick={() => setRefundingPayment(p)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">undo</span> Refund
+                      </button>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+              {(customer?.payments ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-8 text-center text-sm text-gray-400">
+                    No payments yet.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
 
         {/* Hidden for now — not needed yet. Set to true to bring back. */}
         {false && (
@@ -486,6 +653,14 @@ function CustomerDetail() {
           </div>
         )}
       </div>
+      {refundingPayment ? (
+        <RefundModal
+          payment={refundingPayment}
+          subscription={customer.subscriptions.find((s) => s.id === refundingPayment.subscriptionId)}
+          onClose={() => setRefundingPayment(null)}
+          onSubmit={(mode, value) => submitRefund(refundingPayment.id, mode, value)}
+        />
+      ) : null}
     </div>
   )
 }
