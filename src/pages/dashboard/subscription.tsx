@@ -3,9 +3,10 @@ import { useSearchParams } from "react-router-dom"
 import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { useAuth } from "@/lib/auth"
-import { GOALS, DIET_TYPES, ALLERGENS, type Goal, type DietType } from "@/data/menu"
+import { GOALS, DIET_TYPES, type Goal, type DietType } from "@/data/menu"
 import type { DeliveryTimeSlot } from "@/lib/subscribe-context"
 import { useDeliveryTimeSlots } from "@/lib/delivery-time-slots"
+import { useAllergens } from "@/lib/allergens"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { GOAL_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
 import { api, ApiError } from "@/lib/api"
@@ -28,6 +29,7 @@ function Subscription() {
   const { customer, endDate, renew, confirmRenewal } = useDashboard()
   const { customer: authCustomer } = useAuth()
   const deliveryTimeSlots = useDeliveryTimeSlots()
+  const allergenOptions = useAllergens()
   const sub = customer.subscription
   const [duration, setDuration] = useState<7 | 14 | 28>(sub.planDuration)
   const [mealsPerDay, setMealsPerDay] = useState<1 | 2 | 3>(sub.mealsPerDay)
@@ -347,7 +349,7 @@ function Subscription() {
               <div>
                 <Label>Any allergens to avoid?</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-                  {ALLERGENS.map((allergen) => (
+                  {allergenOptions.map((allergen) => (
                     <div key={allergen} className="flex items-center gap-2.5">
                       <Checkbox
                         id={`renew-allergen-${allergen}`}

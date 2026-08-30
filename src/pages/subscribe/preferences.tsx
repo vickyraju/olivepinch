@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom"
-import { DIET_TYPES, ALLERGENS, type DietType } from "@/data/menu"
+import { DIET_TYPES, type DietType } from "@/data/menu"
+import { useAllergens } from "@/lib/allergens"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -9,6 +10,7 @@ import { cn } from "@/lib/utils"
 function Preferences() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
+  const allergenOptions = useAllergens()
 
   function toggleDietType(diet: DietType, checked: boolean) {
     const next = checked ? [...state.dietTypes, diet] : state.dietTypes.filter((d) => d !== diet)
@@ -75,7 +77,7 @@ function Preferences() {
         <h2 className="text-lg text-ink mb-1">Any allergens to avoid?</h2>
         <p className="text-sm text-ink-muted mb-4">Select anything you need us to keep out of your meals.</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          {ALLERGENS.map((allergen) => (
+          {allergenOptions.map((allergen) => (
             <div key={allergen} className="flex items-center gap-2.5">
               <Checkbox
                 id={`allergen-${allergen}`}

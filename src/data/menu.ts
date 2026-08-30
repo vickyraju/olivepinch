@@ -35,10 +35,6 @@ export const MENU_ITEM_PHOTOS: Record<string, string> = {
 
 export const DIET_TYPES: DietType[] = ["Meat", "Fish", "Vegan", "Vegetarian", "Egg"]
 
-export const ALLERGENS = [
-  "Gluten", "Dairy", "Tree Nuts", "Peanuts", "Shellfish", "Soy", "Eggs", "Sesame",
-]
-
 export interface MenuItem {
   id: string
   name: string
