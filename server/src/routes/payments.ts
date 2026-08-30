@@ -98,92 +98,102 @@ async function activateSubscription(subscriptionId: string) {
   })
 }
 
-// Dev-mode auto-succeeds. With Worldpay configured, resolves the outcome server-side
-// via the status-query URL saved on the pending Payment row — never trusts a
-// client-supplied "it succeeded" flag.
+type ConfirmResult = { ok: true; customerId: string; status: string } | { ok: false; httpStatus: number; error: string }
+
+// Shared by the /confirm route and the stuck-pending-payment sweep in internal.ts (a customer
+// whose payment succeeded at Worldpay but whose browser never made it back to call /confirm —
+// closed tab, lost network mid-redirect — would otherwise sit unpaid-looking forever).
+// Dev-mode auto-succeeds. With Worldpay configured, resolves the outcome server-side via the
+// status-query URL saved on the pending Payment row — never trusts a client-supplied flag.
+async function confirmPayment(subscriptionId: string): Promise<ConfirmResult> {
+  // Idempotency: a browser retry, a duplicate confirm call after the customer already landed
+  // on the success page, or the sweep re-checking something already resolved should never
+  // re-query Worldpay, re-run activation side effects, or send a second confirmation email.
+  const existing = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
+  if (existing.status === "ACTIVE") {
+    return { ok: true, customerId: existing.customerId, status: existing.status }
+  }
+  // A replayed/late confirm call must never move a subscription the admin has since cancelled
+  // (or one that's already expired) back to ACTIVE — PENDING_PAYMENT is the only state
+  // confirmation is meaningful from.
+  if (existing.status !== "PENDING_PAYMENT") {
+    return { ok: false, httpStatus: 409, error: `This subscription is ${existing.status.toLowerCase()} and can't be confirmed` }
+  }
+
+  if (worldpayConfig) {
+    const pending = await prisma.payment.findFirst({
+      where: { subscriptionId, status: "pending" },
+      orderBy: { createdAt: "desc" },
+    })
+    if (!pending?.providerRef) {
+      return { ok: false, httpStatus: 402, error: "No pending payment found for this subscription" }
+    }
+    const { succeeded } = await queryPaymentStatus(pending.providerRef)
+    if (!succeeded) {
+      await prisma.payment.update({ where: { id: pending.id }, data: { status: "failed" } })
+      return { ok: false, httpStatus: 402, error: "Payment has not succeeded" }
+    }
+    await prisma.payment.update({ where: { id: pending.id }, data: { status: "succeeded", paidAt: new Date() } })
+  } else {
+    const total = await subscriptionTotal(subscriptionId)
+    await prisma.payment.create({
+      data: { customerId: existing.customerId, subscriptionId, amount: total, status: "succeeded", paidAt: new Date() },
+    })
+  }
+
+  const subscription = await activateSubscription(subscriptionId)
+
+  // First-ever subscription for this customer (renewals create a new Subscription row too,
+  // so "only one exists" is what distinguishes initial signup from a renewal) — send the
+  // welcome/confirmation email. Never let an email failure fail a paid checkout's response.
+  const subscriptionCount = await prisma.subscription.count({ where: { customerId: subscription.customerId } })
+  if (subscriptionCount === 1 && subscription.customer.email) {
+    try {
+      const total = await subscriptionTotal(subscriptionId)
+      const { subject, text, html } = subscriptionConfirmationEmail({
+        name: subscription.customer.fullName,
+        goalLabel: GOAL_LABELS[subscription.customer.goal as Goal],
+        planDuration: subscription.planDuration,
+        startDate: subscription.startDate.toISOString().slice(0, 10),
+        mealsPerDay: subscription.mealsPerDay,
+        deliveryTimeSlot: subscription.deliveryTimeSlot,
+        total,
+        dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
+      })
+      await sendEmail(subscription.customer.email, subject, text, html)
+    } catch (err) {
+      console.error("subscription confirmation email failed", subscriptionId, err)
+    }
+  } else if (subscription.customer.email) {
+    try {
+      const total = await subscriptionTotal(subscriptionId)
+      const { subject, text, html } = renewalConfirmationEmail({
+        name: subscription.customer.fullName,
+        planDuration: subscription.planDuration,
+        startDate: subscription.startDate.toISOString().slice(0, 10),
+        mealsPerDay: subscription.mealsPerDay,
+        total,
+        dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
+      })
+      await sendEmail(subscription.customer.email, subject, text, html)
+    } catch (err) {
+      console.error("renewal confirmation email failed", subscriptionId, err)
+    }
+  }
+
+  return { ok: true, customerId: subscription.customerId, status: subscription.status }
+}
+
+export { confirmPayment }
+
 paymentsRouter.post(
   "/confirm",
   validateBody(z.object({ subscriptionId: z.string() })),
   async (req, res) => {
     const { subscriptionId } = req.body as { subscriptionId: string }
-
-    // Idempotency: a browser retry, a duplicate confirm call after the customer already
-    // landed on the success page, or a second tab hitting confirm should never re-query
-    // Worldpay, re-run activation side effects, or send a second confirmation email.
-    const existing = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
-    if (existing.status === "ACTIVE") {
-      return res.json({ customerId: existing.customerId, status: existing.status })
-    }
-    // A replayed/late confirm call must never move a subscription the admin has since
-    // cancelled (or one that's already expired) back to ACTIVE — PENDING_PAYMENT is the
-    // only state confirmation is meaningful from.
-    if (existing.status !== "PENDING_PAYMENT") {
-      return res.status(409).json({ error: `This subscription is ${existing.status.toLowerCase()} and can't be confirmed` })
-    }
-
-    if (worldpayConfig) {
-      const pending = await prisma.payment.findFirst({
-        where: { subscriptionId, status: "pending" },
-        orderBy: { createdAt: "desc" },
-      })
-      if (!pending?.providerRef) {
-        return res.status(402).json({ error: "No pending payment found for this subscription" })
-      }
-      const { succeeded } = await queryPaymentStatus(pending.providerRef)
-      if (!succeeded) {
-        await prisma.payment.update({ where: { id: pending.id }, data: { status: "failed" } })
-        return res.status(402).json({ error: "Payment has not succeeded" })
-      }
-      await prisma.payment.update({ where: { id: pending.id }, data: { status: "succeeded", paidAt: new Date() } })
-    } else {
-      const total = await subscriptionTotal(subscriptionId)
-      const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
-      await prisma.payment.create({
-        data: { customerId: subscription.customerId, subscriptionId, amount: total, status: "succeeded", paidAt: new Date() },
-      })
-    }
-
-    const subscription = await activateSubscription(subscriptionId)
-
-    // First-ever subscription for this customer (renewals create a new Subscription row too,
-    // so "only one exists" is what distinguishes initial signup from a renewal) — send the
-    // welcome/confirmation email. Never let an email failure fail a paid checkout's response.
-    const subscriptionCount = await prisma.subscription.count({ where: { customerId: subscription.customerId } })
-    if (subscriptionCount === 1 && subscription.customer.email) {
-      try {
-        const total = await subscriptionTotal(subscriptionId)
-        const { subject, text, html } = subscriptionConfirmationEmail({
-          name: subscription.customer.fullName,
-          goalLabel: GOAL_LABELS[subscription.customer.goal as Goal],
-          planDuration: subscription.planDuration,
-          startDate: subscription.startDate.toISOString().slice(0, 10),
-          mealsPerDay: subscription.mealsPerDay,
-          deliveryTimeSlot: subscription.deliveryTimeSlot,
-          total,
-          dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
-        })
-        await sendEmail(subscription.customer.email, subject, text, html)
-      } catch (err) {
-        console.error("subscription confirmation email failed", subscriptionId, err)
-      }
-    } else if (subscription.customer.email) {
-      try {
-        const total = await subscriptionTotal(subscriptionId)
-        const { subject, text, html } = renewalConfirmationEmail({
-          name: subscription.customer.fullName,
-          planDuration: subscription.planDuration,
-          startDate: subscription.startDate.toISOString().slice(0, 10),
-          mealsPerDay: subscription.mealsPerDay,
-          total,
-          dashboardUrl: `${process.env.APP_URL ?? "http://localhost:5173"}/dashboard/subscription`,
-        })
-        await sendEmail(subscription.customer.email, subject, text, html)
-      } catch (err) {
-        console.error("renewal confirmation email failed", subscriptionId, err)
-      }
-    }
-
-    res.json({ customerId: subscription.customerId, status: subscription.status })
+    const result = await confirmPayment(subscriptionId)
+    if (!result.ok) return res.status(result.httpStatus).json({ error: result.error })
+    res.json({ customerId: result.customerId, status: result.status })
   }
 )
 

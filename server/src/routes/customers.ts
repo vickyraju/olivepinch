@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
 import { calculateAge } from "../lib/age.js"
 import { requireAuth, requireSignupToken, verifyFirebaseUser } from "../middleware/auth.js"
+import { checkPhoneLimiter } from "../middleware/rate-limit.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
@@ -49,6 +50,7 @@ export const PHONE_REGEX = /^\+[1-9]\d{6,14}$/
 // still deserve OTP login if they paid at some point.
 customersRouter.post(
   "/check-phone",
+  checkPhoneLimiter,
   validateBody(z.object({ phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number") })),
   async (req, res) => {
     const { phone } = req.body as { phone: string }

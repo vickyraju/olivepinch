@@ -5,6 +5,7 @@ import { sendEmail } from "../lib/email.js"
 import { renewalReminderEmail, lapsedRetentionEmail, accountRecoveryEmail, weeklyMenuSelectionEmail } from "../lib/email-templates.js"
 import { computeEndDate, addDays, londonToday } from "../lib/subscription.js"
 import { weekDates } from "../lib/menu-week.js"
+import { confirmPayment } from "./payments.js"
 
 export const internalRouter = Router()
 
@@ -99,6 +100,35 @@ export async function runExpirySweep() {
   }
 
   return { expired }
+}
+
+// Safety net for a payment that actually succeeded at Worldpay but whose browser never made
+// it back to call /confirm (closed tab, lost network mid-redirect) — without this, that
+// subscription sits PENDING_PAYMENT forever even though the customer was charged. 15 minutes
+// is generous for a normal checkout, so anything still pending past that is worth re-checking.
+const STUCK_PAYMENT_AFTER_MS = 15 * 60 * 1000
+
+export async function runStuckPaymentSweep() {
+  const cutoff = new Date(Date.now() - STUCK_PAYMENT_AFTER_MS)
+  const stuck = await prisma.payment.findMany({
+    where: { status: "pending", createdAt: { lte: cutoff } },
+    select: { subscriptionId: true },
+  })
+
+  let resolved = 0
+  for (const { subscriptionId } of stuck) {
+    if (!subscriptionId) continue
+    try {
+      // confirmPayment is the same idempotent status-check /confirm uses — re-checking
+      // something already resolved (by the customer's own browser in the meantime) is a no-op.
+      const result = await confirmPayment(subscriptionId)
+      if (result.ok) resolved++
+    } catch (err) {
+      console.error("stuck payment sweep failed for subscription", subscriptionId, err)
+    }
+  }
+
+  return { checked: stuck.length, resolved }
 }
 
 // GDPR storage-limitation check: a customer whose most recent plan lapsed 12+ months ago with
@@ -236,12 +266,13 @@ internalRouter.post("/recovery-sweep", async (req, res) => {
 internalRouter.post("/daily-sweep", async (req, res) => {
   const unauthorized = checkCronSecret(req)
   if (unauthorized) return res.status(unauthorized[0]).json({ error: unauthorized[1] })
-  const [recovery, renewalReminders, expiry, lapsedRetention, menuSelection] = await Promise.all([
+  const [recovery, renewalReminders, expiry, lapsedRetention, menuSelection, stuckPayments] = await Promise.all([
     runRecoverySweep(),
     runRenewalReminderSweep(),
     runExpirySweep(),
     runLapsedRetentionSweep(),
     runMenuSelectionSweep(),
+    runStuckPaymentSweep(),
   ])
-  res.json({ recovery, renewalReminders, expiry, lapsedRetention, menuSelection })
+  res.json({ recovery, renewalReminders, expiry, lapsedRetention, menuSelection, stuckPayments })
 })
