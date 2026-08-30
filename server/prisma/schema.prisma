@@ -298,6 +298,19 @@ model DeliveryTimeSlot {
   updatedAt DateTime @updatedAt
 }
 
+// Admin-managed list of allergen names offered at signup/renewal and tagged onto menu
+// items. Customer.allergens and MenuItem.allergenTags store the name directly (matching
+// the existing String[] columns) rather than an id, so adding/renaming here doesn't
+// require migrating those arrays.
+model Allergen {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Lead {
   id        String   @id @default(cuid())
   email     String
