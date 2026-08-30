@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
 import { TrendBarChart } from "@/components/trend-bar-chart"
+import { PartToWholeBar } from "@/components/part-to-whole-bar"
 import { api } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 
@@ -25,7 +26,16 @@ interface ReportsSummary {
   revenueByTier: RevenueRow[]
   revenueByDuration: RevenueRow[]
   revenueByMealsPerDay: RevenueRow[]
+  customersByGoal: { label: string; count: number }[]
   menuItemPopularity: { name: string; count: number }[]
+}
+
+const GOAL_LABELS: Record<string, string> = {
+  WEIGHT_LOSS: "Weight Loss",
+  MUSCLE_BUILDING: "Muscle Gain",
+  WEIGHT_MAINTENANCE: "Maintenance",
+  WEIGHT_GAIN: "Weight Gain",
+  Unknown: "Unknown",
 }
 
 const RANGE_OPTIONS = [
@@ -164,6 +174,23 @@ function Reports() {
             formatValue={formatPercent}
             emptyText="No orders in this range yet"
           />
+        </div>
+
+        <div className="bg-white p-[24px] border border-gray-200 rounded-[12px]">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-[16px] font-bold text-gray-900">Customer Goal Split</h2>
+            <span className="text-xs text-gray-500">{rangeLabel}</span>
+          </div>
+          {isLoading ? (
+            <Skeleton className="h-6 w-full" />
+          ) : (data?.customersByGoal ?? []).length > 0 ? (
+            <PartToWholeBar
+              data={(data?.customersByGoal ?? []).map((r) => ({ label: GOAL_LABELS[r.label] ?? r.label, value: r.count }))}
+              formatValue={(v) => `${v} customer${v === 1 ? "" : "s"}`}
+            />
+          ) : (
+            <p className="text-sm text-gray-400">No paying customers in this range yet</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px]">
