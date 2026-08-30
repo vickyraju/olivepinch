@@ -56,6 +56,14 @@ paymentsRouter.post(
       narrativeLine1: "OlivePinch",
       resultUrl,
     })
+    // A retried/duplicated /intent call (double-click, network retry, browser back-then-forward)
+    // would otherwise leave two "pending" rows for the same subscription — /confirm's lookup
+    // picks the most recent one, which is correct only if older ones are no longer pending.
+    // Superseding here (rather than deleting) keeps the abandoned hosted-page attempt on record.
+    await prisma.payment.updateMany({
+      where: { subscriptionId, status: "pending" },
+      data: { status: "superseded" },
+    })
     await prisma.payment.create({
       data: {
         customerId: subscription.customerId,
@@ -98,6 +106,20 @@ paymentsRouter.post(
   validateBody(z.object({ subscriptionId: z.string() })),
   async (req, res) => {
     const { subscriptionId } = req.body as { subscriptionId: string }
+
+    // Idempotency: a browser retry, a duplicate confirm call after the customer already
+    // landed on the success page, or a second tab hitting confirm should never re-query
+    // Worldpay, re-run activation side effects, or send a second confirmation email.
+    const existing = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
+    if (existing.status === "ACTIVE") {
+      return res.json({ customerId: existing.customerId, status: existing.status })
+    }
+    // A replayed/late confirm call must never move a subscription the admin has since
+    // cancelled (or one that's already expired) back to ACTIVE — PENDING_PAYMENT is the
+    // only state confirmation is meaningful from.
+    if (existing.status !== "PENDING_PAYMENT") {
+      return res.status(409).json({ error: `This subscription is ${existing.status.toLowerCase()} and can't be confirmed` })
+    }
 
     if (worldpayConfig) {
       const pending = await prisma.payment.findFirst({

@@ -1,9 +1,23 @@
 import { prisma } from "./prisma.js"
 import type { DiscountType, Goal, PlanTier, PromoCode } from "@prisma/client"
 
+// Works in integer pence throughout rather than floating-point pounds — `base * (1 - value/100)`
+// can be off by a penny at exact half-penny boundaries (e.g. £10.10 at 15% off computes as
+// £8.584999999999999 in IEEE754, which Math.round(...*100) rounds down to £8.58 instead of the
+// mathematically correct £8.59). BigInt division on exact pence avoids that failure mode.
 export function applyDiscount(base: number, type: DiscountType, value: number): number {
-  if (type === "PERCENT") return Math.max(0, base * (1 - value / 100))
-  return Math.max(0, base - value)
+  const basePence = Math.round(base * 100)
+  if (type === "PERCENT") {
+    const basisPoints = Math.round(value * 100) // 15% -> 1500, 33.33% -> 3333
+    const numerator = BigInt(basePence) * BigInt(10000 - basisPoints)
+    const denominator = 10000n
+    const quotient = numerator / denominator
+    const remainder = numerator % denominator
+    const resultPence = Number(remainder * 2n >= denominator ? quotient + 1n : quotient) // round-half-up
+    return Math.max(0, resultPence) / 100
+  }
+  const valuePence = Math.round(value * 100)
+  return Math.max(0, basePence - valuePence) / 100
 }
 
 type ValidateContext = {
