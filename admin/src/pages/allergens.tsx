@@ -20,7 +20,7 @@ function Allergens() {
   const [sortOrder, setSortOrder] = useState("0")
   const [error, setError] = useState("")
 
-  const allergensQuery = useQuery({ queryKey: ["allergens"], queryFn: () => api.get<Allergen[]>("/admin/allergens") })
+  const allergensQuery = useQuery({ queryKey: ["allergens"], queryFn: () => api.get<Allergen[]>("/allergens") })
 
   function openAddModal() {
     setEditingId(null)
@@ -48,9 +48,9 @@ function Allergens() {
     try {
       const data = { name: name.trim(), sortOrder: Number(sortOrder) || 0 }
       if (editingId) {
-        await api.patch(`/admin/allergens/${editingId}`, data)
+        await api.patch(`/allergens/${editingId}`, data)
       } else {
-        await api.post("/admin/allergens", { ...data, active: true })
+        await api.post("/allergens", { ...data, active: true })
       }
       setShowModal(false)
       await queryClient.invalidateQueries({ queryKey: ["allergens"] })
@@ -60,7 +60,7 @@ function Allergens() {
   }
 
   async function toggleActive(allergen: Allergen) {
-    await api.patch(`/admin/allergens/${allergen.id}`, { active: !allergen.active })
+    await api.patch(`/allergens/${allergen.id}`, { active: !allergen.active })
     await queryClient.invalidateQueries({ queryKey: ["allergens"] })
   }
 

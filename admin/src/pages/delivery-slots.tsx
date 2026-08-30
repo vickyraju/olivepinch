@@ -20,7 +20,7 @@ function DeliverySlots() {
   const [sortOrder, setSortOrder] = useState("0")
   const [error, setError] = useState("")
 
-  const slotsQuery = useQuery({ queryKey: ["delivery-time-slots"], queryFn: () => api.get<DeliveryTimeSlot[]>("/admin/delivery-time-slots") })
+  const slotsQuery = useQuery({ queryKey: ["delivery-time-slots"], queryFn: () => api.get<DeliveryTimeSlot[]>("/delivery-time-slots") })
 
   function openAddModal() {
     setEditingId(null)
@@ -48,9 +48,9 @@ function DeliverySlots() {
     try {
       const data = { label: label.trim(), sortOrder: Number(sortOrder) || 0 }
       if (editingId) {
-        await api.patch(`/admin/delivery-time-slots/${editingId}`, data)
+        await api.patch(`/delivery-time-slots/${editingId}`, data)
       } else {
-        await api.post("/admin/delivery-time-slots", { ...data, active: true })
+        await api.post("/delivery-time-slots", { ...data, active: true })
       }
       setShowModal(false)
       await queryClient.invalidateQueries({ queryKey: ["delivery-time-slots"] })
@@ -60,7 +60,7 @@ function DeliverySlots() {
   }
 
   async function toggleActive(slot: DeliveryTimeSlot) {
-    await api.patch(`/admin/delivery-time-slots/${slot.id}`, { active: !slot.active })
+    await api.patch(`/delivery-time-slots/${slot.id}`, { active: !slot.active })
     await queryClient.invalidateQueries({ queryKey: ["delivery-time-slots"] })
   }
 
