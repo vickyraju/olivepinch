@@ -38,6 +38,16 @@ const GOAL_LABELS: Record<string, string> = {
   Unknown: "Unknown",
 }
 
+// Fixed per-goal color (dataviz categorical palette) — a goal keeps its color even when a
+// sibling goal has zero customers in the selected range and drops out of the bar entirely.
+const GOAL_COLORS: Record<string, string> = {
+  WEIGHT_LOSS: "#2a78d6",
+  MUSCLE_BUILDING: "#eb6834",
+  WEIGHT_MAINTENANCE: "#1baf7a",
+  WEIGHT_GAIN: "#eda100",
+  Unknown: "#898781",
+}
+
 const RANGE_OPTIONS = [
   { value: "7", label: "7 Days" },
   { value: "30", label: "30 Days" },
@@ -185,7 +195,11 @@ function Reports() {
             <Skeleton className="h-6 w-full" />
           ) : (data?.customersByGoal ?? []).length > 0 ? (
             <PartToWholeBar
-              data={(data?.customersByGoal ?? []).map((r) => ({ label: GOAL_LABELS[r.label] ?? r.label, value: r.count }))}
+              data={(data?.customersByGoal ?? []).map((r) => ({
+                label: GOAL_LABELS[r.label] ?? r.label,
+                value: r.count,
+                color: GOAL_COLORS[r.label] ?? GOAL_COLORS.Unknown!,
+              }))}
               formatValue={(v) => `${v} customer${v === 1 ? "" : "s"}`}
             />
           ) : (
