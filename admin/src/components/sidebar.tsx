@@ -11,6 +11,7 @@ const navItems = [
   { path: "/customers", label: "Customers", icon: "group" },
   { path: "/zones", label: "Postcode Coverage", icon: "location_on" },
   { path: "/delivery-slots", label: "Delivery Time Slots", icon: "schedule" },
+  { path: "/allergens", label: "Allergens", icon: "warning" },
   { path: "/promo-codes", label: "Promo Codes", icon: "confirmation_number" },
 ]
 

@@ -10,6 +10,7 @@ import MenuWeeks from '@/pages/menu-weeks'
 import Plans from '@/pages/plans'
 import Zones from '@/pages/zones'
 import DeliverySlots from '@/pages/delivery-slots'
+import Allergens from '@/pages/allergens'
 import PromoCodes from '@/pages/promo-codes'
 import Customers from '@/pages/customers'
 import CustomerDetail from '@/pages/customer-detail'
@@ -40,6 +41,7 @@ function App() {
             <Route path="/customers/:id" element={<CustomerDetail />} />
             <Route path="/zones" element={<Zones />} />
             <Route path="/delivery-slots" element={<DeliverySlots />} />
+            <Route path="/allergens" element={<Allergens />} />
             <Route path="/promo-codes" element={<PromoCodes />} />
             <Route path="/admins" element={<Admins />} />
           </Route>

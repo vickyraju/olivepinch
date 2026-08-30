@@ -25,7 +25,6 @@ const SLOTS = ["BREAKFAST", "LUNCH", "DINNER"]
 const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
 const DIETS = ["MEAT", "FISH", "VEGAN", "VEGETARIAN", "EGG"]
 const GOALS = ["WEIGHT_LOSS", "WEIGHT_GAIN", "WEIGHT_MAINTENANCE", "MUSCLE_BUILDING"]
-const ALLERGENS = ["Gluten", "Dairy", "Tree Nuts", "Peanuts", "Shellfish", "Soy", "Eggs", "Sesame"]
 const GOAL_LABELS: Record<string, string> = {
   WEIGHT_LOSS: "Weight Loss",
   WEIGHT_GAIN: "Weight Gain",
@@ -160,6 +159,13 @@ function MenuControl() {
   const [photoError, setPhotoError] = useState<string | undefined>()
 
   const menuQuery = useQuery({ queryKey: ["menu-items"], queryFn: () => api.get<MenuItem[]>("/menu-items") })
+  // Admin-managed via the Allergens page, rather than a fixed list — keeps this in step
+  // with whatever admin has added/removed there.
+  const allergensQuery = useQuery({
+    queryKey: ["allergens"],
+    queryFn: () => api.get<{ name: string; active: boolean }[]>("/allergens"),
+  })
+  const ALLERGENS = (allergensQuery.data ?? []).filter((a) => a.active).map((a) => a.name)
 
   const items = useMemo(() => {
     let rows = menuQuery.data ?? []
