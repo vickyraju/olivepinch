@@ -58,18 +58,15 @@ interface RefundActions {
   partialRefundHref?: string
 }
 
-// Worldpay's refund docs say the payments:refund / payments:partialRefund action links come
-// from the settle/sale response — this app doesn't store that response, only the status-query
-// URL from checkout. Querying that same Payment Queries resource is documented as the
-// recommended way to inspect a payment after a refund, so the current actions available on it
-// are expected to appear the same way; the exact nesting for THIS resource wasn't shown in the
-// docs we had, so both plausible locations (per-payment and top-level) are checked.
-function extractRefundActions(raw: { _links?: HalLinks; _embedded?: { payments?: { _links?: HalLinks }[] } }): RefundActions {
-  const embeddedLinks = raw._embedded?.payments?.[0]?._links ?? {}
-  const topLinks = raw._links ?? {}
+// Confirmed against a live sandbox transaction: the transactionReference-query response
+// (statusQueryUrl) only carries a per-payment "self" link — the refund action links
+// (cardPayments:refund / cardPayments:partialRefund) live on that per-payment detail resource,
+// one hop further, not on the index response itself.
+function extractRefundActions(raw: { _links?: HalLinks }): RefundActions {
+  const links = raw._links ?? {}
   return {
-    refundHref: embeddedLinks["payments:refund"]?.href ?? topLinks["payments:refund"]?.href,
-    partialRefundHref: embeddedLinks["payments:partialRefund"]?.href ?? topLinks["payments:partialRefund"]?.href,
+    refundHref: links["cardPayments:refund"]?.href,
+    partialRefundHref: links["cardPayments:partialRefund"]?.href,
   }
 }
 
@@ -81,8 +78,15 @@ async function fetchPaymentStatus(statusQueryUrl: string): Promise<{ lastEvent: 
   const res = await fetch(statusQueryUrl, { headers: { Authorization: authHeader(), Accept: mediaType } })
   if (!res.ok) throw new Error(`Worldpay status query failed: ${res.status} ${await res.text()}`)
   const raw = (await res.json()) as { _embedded?: { payments?: { lastEvent?: string; _links?: HalLinks }[] }; _links?: HalLinks }
-  const lastEvent = (raw._embedded?.payments?.[0]?.lastEvent ?? "").toLowerCase()
-  return { lastEvent, raw, actions: extractRefundActions(raw) }
+  const payment = raw._embedded?.payments?.[0]
+  const lastEvent = (payment?.lastEvent ?? "").toLowerCase()
+  const detailHref = payment?._links?.self?.href
+  if (!detailHref) return { lastEvent, raw, actions: {} }
+  const detailUrl = detailHref.startsWith("http") ? detailHref : `${worldpayConfig!.apiUrl}${detailHref}`
+  const detailRes = await fetch(detailUrl, { headers: { Authorization: authHeader(), Accept: mediaType } })
+  if (!detailRes.ok) return { lastEvent, raw, actions: {} }
+  const detail = (await detailRes.json()) as { _links?: HalLinks }
+  return { lastEvent, raw, actions: extractRefundActions(detail) }
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -109,21 +113,24 @@ export async function getRefundActions(statusQueryUrl: string): Promise<RefundAc
   return actions
 }
 
+// Confirmed against a live sandbox transaction: cardPayments:refund / cardPayments:partialRefund
+// both require this exact vendor media type (non-HAL, despite every other Worldpay endpoint used
+// here being +hal+json) — anything else, including the .hal+json variant, gets a 415.
+const PAYMENTS_MEDIA_TYPE = "application/vnd.worldpay.payments-v6+json"
+
 // https://docs.worldpay.com/access/products/card-payments/v5/refund-a-payment — full refund:
-// POST the payments:refund action link with no request body.
+// POST the cardPayments:refund action link with no request body.
 export async function refundFull(href: string): Promise<void> {
-  const res = await fetch(href, { method: "POST", headers: { Authorization: authHeader() } })
+  const res = await fetch(href, { method: "POST", headers: { Authorization: authHeader(), Accept: PAYMENTS_MEDIA_TYPE } })
   if (!res.ok) throw new Error(`Worldpay full refund failed: ${res.status} ${await res.text()}`)
 }
 
-// Partial refund: POST the payments:partialRefund action link with { value: { amount,
-// currency }, reference }. The docs didn't specify a Content-Type/Accept media type for this
-// endpoint (unlike payment_pages/payment-queries, which each need their own vendor type) — if
-// Worldpay rejects this with 406/415 in sandbox testing, that's the first thing to adjust.
+// Partial refund: POST the cardPayments:partialRefund action link with { value: { amount,
+// currency }, reference }.
 export async function refundPartial(href: string, amountMinorUnits: number, currency: string, reference: string): Promise<void> {
   const res = await fetch(href, {
     method: "POST",
-    headers: { Authorization: authHeader(), "Content-Type": "application/json" },
+    headers: { Authorization: authHeader(), "Content-Type": PAYMENTS_MEDIA_TYPE, Accept: PAYMENTS_MEDIA_TYPE },
     body: JSON.stringify({ value: { amount: amountMinorUnits, currency }, reference }),
   })
   if (!res.ok) throw new Error(`Worldpay partial refund failed: ${res.status} ${await res.text()}`)
