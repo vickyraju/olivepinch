@@ -121,6 +121,7 @@ function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
         onBlur={() => setFocused(false)}
         placeholder={focused ? "" : "7911 123456"}
         inputMode="tel"
+        limitMaxLength
         className="h-full flex-1 min-w-0 border-0 bg-transparent px-4 text-base text-ink placeholder:text-ink-muted focus:outline-none"
       />
     </div>

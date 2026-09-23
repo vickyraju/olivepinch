@@ -22,7 +22,7 @@ const MONTHS = [
 ]
 
 // Runs from this year back, rather than starting at the youngest allowed birth year — a list
-// that opens at 2010 reads like a bug. The 16-100 check below still rejects a too-recent pick.
+// that opens at 2019 reads like a bug. The 7-100 check below still rejects a too-recent pick.
 const CURRENT_YEAR = new Date().getFullYear()
 const DOB_YEARS = Array.from({ length: 101 }, (_, i) => CURRENT_YEAR - i)
 
@@ -55,7 +55,7 @@ function Profile() {
   const category = bmi ? bmiCategory(bmi) : null
 
   const age = p.dateOfBirth ? calculateAge(p.dateOfBirth) : null
-  const dobValid = age !== null && age >= 16 && age <= 100
+  const dobValid = age !== null && age >= 7 && age <= 100
 
   const canContinue =
     firstName.trim().length > 0 &&
@@ -147,7 +147,7 @@ function Profile() {
             </Select>
           </div>
           {p.dateOfBirth !== "" && !dobValid && (
-            <p className="mt-1.5 text-sm text-coral-600">You must be between 16 and 100 years old.</p>
+            <p className="mt-1.5 text-sm text-coral-600">You must be between 7 and 100 years old.</p>
           )}
         </div>
 
