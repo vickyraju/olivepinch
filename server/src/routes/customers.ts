@@ -72,8 +72,8 @@ const provisionalSchema = z.object({
     .refine((v) => !isNaN(new Date(v).getTime()), "Invalid date of birth")
     .refine((v) => {
       const age = calculateAge(new Date(v))
-      return age >= 16 && age <= 100
-    }, "You must be between 16 and 100 years old"),
+      return age >= 7 && age <= 100
+    }, "You must be between 7 and 100 years old"),
   heightCm: z.number().positive(),
   weightKg: z.number().positive(),
   healthConsent: z.literal(true),

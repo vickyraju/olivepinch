@@ -1,4 +1,4 @@
-// Server-side age check for signup validation (16-100 bound) only — API responses return the
+// Server-side age check for signup validation (7-100 bound) only — API responses return the
 // raw dateOfBirth and both frontends compute age client-side for display, so there's never a
 // stale computed age reconciled against a different clock.
 export function calculateAge(dateOfBirth: Date): number {
