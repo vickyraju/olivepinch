@@ -97,13 +97,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setAuthError(null)
       setAccountNotFound(false)
-      const isPendingSubscribeSignup = sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) === "1"
-      sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
       try {
         if (event === "SIGNED_IN") {
           try {
             await api.post("/customers/link-account")
           } catch (err) {
+            // Read fresh (don't clear until used) — onAuthStateChange can fire more than once
+            // for the same sign-in, and clearing this eagerly on the first firing meant a
+            // second firing would see it already gone and treat a genuine new signup as a
+            // plain "no account" error instead of completing it.
+            const isPendingSubscribeSignup = sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) === "1"
             if (err instanceof ApiError && err.status === 404 && isPendingSubscribeSignup && session.user.email) {
               await completePendingSubscribeSignup(session.user.email)
               await api.post("/customers/link-account")
@@ -112,6 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         }
+        sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
         setCustomer(await api.get<CustomerActor>("/customers/me"))
       } catch (err) {
         setCustomer(null)
