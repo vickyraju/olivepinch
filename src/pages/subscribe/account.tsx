@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { CheckCircle2, Phone, Lock } from "lucide-react"
+import { CheckCircle2, Mail, Lock } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { useAuth } from "@/lib/auth"
 import { Input } from "@/components/ui/input"
@@ -12,9 +12,12 @@ function Account() {
   const { state, reset } = useSubscribe()
   const { isAuthenticated, authError, sendOtp, verifyOtp } = useAuth()
   const navigate = useNavigate()
-  const phone = state.profile.phone
+  const email = state.profile.email || "your email"
 
-  const [stage, setStage] = useState<"sending" | "otp" | "verifying" | "done">("sending")
+  // A customer who signed up via Google in the account-setup step is already authenticated
+  // by the time they land here (post-payment) — skip straight to "done" instead of sending
+  // a redundant email OTP.
+  const [stage, setStage] = useState<"sending" | "otp" | "verifying" | "done">(isAuthenticated ? "done" : "sending")
   const [otp, setOtp] = useState("")
   const [error, setError] = useState("")
   const [resendCooldown, setResendCooldown] = useState(0)
@@ -26,7 +29,11 @@ function Account() {
   }, [resendCooldown])
 
   useEffect(() => {
-    sendOtp(phone)
+    if (isAuthenticated) {
+      setStage("done")
+      return
+    }
+    sendOtp(email)
       .then(() => { setStage("otp"); setResendCooldown(30) })
       .catch(() => {
         setError("Couldn't send your verification code — try again.")
@@ -40,7 +47,7 @@ function Account() {
     setError("")
     setOtp("")
     try {
-      await sendOtp(phone)
+      await sendOtp(email)
       setResendCooldown(30)
     } catch {
       setError("Couldn't resend the code — try again in a moment.")
@@ -62,10 +69,10 @@ function Account() {
     setError("")
     setStage("verifying")
     try {
-      await verifyOtp(otp)
+      await verifyOtp(email, otp)
       // isAuthenticated flips once link-account + profile load resolve — the effect above advances to "done".
     } catch {
-      setError("That code isn't right — check your phone and try again.")
+      setError("That code isn't right — check your email and try again.")
       setStage("otp")
     }
   }
@@ -84,17 +91,17 @@ function Account() {
     <div className="max-w-md mx-auto">
       <div className="text-center mb-8">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-olive-50">
-          {(stage === "sending" || stage === "otp" || stage === "verifying") && <Phone className="h-6 w-6 text-olive-600" />}
+          {(stage === "sending" || stage === "otp" || stage === "verifying") && <Mail className="h-6 w-6 text-olive-600" />}
           {stage === "done" && <CheckCircle2 className="h-6 w-6 text-olive-600" />}
         </div>
         <h1 className="text-3xl text-ink">
           {stage === "sending" && "Sending your code…"}
-          {(stage === "otp" || stage === "verifying") && "Verify your phone"}
+          {(stage === "otp" || stage === "verifying") && "Verify your email"}
           {stage === "done" && "You're all set"}
         </h1>
         <p className="mt-3 text-ink-muted">
           {stage === "sending" && "Payment successful — just a moment."}
-          {(stage === "otp" || stage === "verifying") && <>We've sent a 6-digit code to <strong className="text-ink">{phone}</strong>.</>}
+          {(stage === "otp" || stage === "verifying") && <>We've sent a 6-digit code to <strong className="text-ink">{email}</strong>.</>}
           {stage === "done" && "Your OlivePinch account and subscription are ready."}
         </p>
       </div>
@@ -134,7 +141,7 @@ function Account() {
       {stage === "done" && (
         <div className="rounded-2xl bg-surface border border-border p-8 shadow-soft text-center">
           <p className="text-sm text-ink-muted mb-6">
-            Log in any time with <strong className="text-ink">{phone}</strong> — we'll text you a fresh code, no password needed.
+            Log in any time with <strong className="text-ink">{email}</strong> — we'll email you a fresh code, no password needed.
           </p>
           <Button
             variant="accent"
@@ -149,8 +156,6 @@ function Account() {
           </Button>
         </div>
       )}
-
-      <div id="recaptcha-container" />
     </div>
   )
 }

@@ -57,7 +57,7 @@ export interface SubscribeState {
   paymentAttempted: boolean
   customerId: string | null
   // Issued alongside customerId by POST /customers/provisional — proves to the backend
-  // that this session is allowed to act on that customerId before any Firebase login
+  // that this session is allowed to act on that customerId before any Supabase login
   // exists. Required on the preferences PATCH and the subscription POST that follow.
   signupToken: string | null
   subscriptionId: string | null

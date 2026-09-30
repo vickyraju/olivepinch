@@ -1,23 +1,22 @@
 import { useEffect, useRef, useState } from "react"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
-import { Lock, Phone, Sparkles } from "lucide-react"
-import { formatPhoneNumberIntl } from "react-phone-number-input"
+import { Lock, Mail, Sparkles } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PhoneInput } from "@/components/ui/phone-input"
 import { FieldError } from "@/components/ui/field-error"
 import { Logo } from "@/components/ui/logo"
 import { FoodPhoto } from "@/components/ui/food-photo"
+import { GoogleIcon } from "@/components/ui/social-icons"
 
 function Login() {
-  const { isAuthenticated, authError, accountNotFound, checkPhoneHasAccount, sendOtp, verifyOtp, clearAuthError } = useAuth()
+  const { isAuthenticated, authError, accountNotFound, checkEmailHasAccount, sendOtp, verifyOtp, signInWithGoogle, clearAuthError } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const [stage, setStage] = useState<"phone" | "otp">("phone")
-  const [phone, setPhone] = useState(searchParams.get("phone") ?? "")
+  const [stage, setStage] = useState<"email" | "otp">("email")
+  const [email, setEmail] = useState(searchParams.get("email") ?? "")
   const [code, setCode] = useState("")
   const [error, setError] = useState("")
   const [sending, setSending] = useState(false)
@@ -60,16 +59,16 @@ function Login() {
     setNoAccount(false)
     setSending(true)
     try {
-      if (!(await checkPhoneHasAccount(phone))) {
+      if (!(await checkEmailHasAccount(email))) {
         setNoAccount(true)
         setTimeout(() => navigate("/subscribe"), 2500)
         return
       }
-      await sendOtp(phone)
+      await sendOtp(email)
       setStage("otp")
       setResendCooldown(30)
     } catch {
-      setError("Couldn't send a code to that number — check it and try again.")
+      setError("Couldn't send a code to that address — check it and try again.")
     } finally {
       setSending(false)
     }
@@ -80,7 +79,7 @@ function Login() {
     setCode("")
     setSending(true)
     try {
-      await sendOtp(phone)
+      await sendOtp(email)
       setResendCooldown(30)
     } catch {
       setError("Couldn't resend the code — try again in a moment.")
@@ -93,10 +92,10 @@ function Login() {
     setError("")
     setVerifying(true)
     try {
-      await verifyOtp(code)
+      await verifyOtp(email, code)
       // isAuthenticated flips once link-account + profile load resolve — the effect above navigates.
     } catch {
-      setError("That code isn't right — check your phone and try again.")
+      setError("That code isn't right — check your email and try again.")
       setVerifying(false)
     }
   }
@@ -111,6 +110,15 @@ function Login() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code])
 
+  async function handleGoogle() {
+    setError("")
+    try {
+      await signInWithGoogle("/dashboard")
+    } catch {
+      setError("Couldn't start Google sign-in — try again.")
+    }
+  }
+
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-2">
       <div className="flex min-h-dvh lg:min-h-0 items-center justify-center bg-cream px-5 py-16 sm:px-8">
@@ -121,15 +129,15 @@ function Login() {
 
           <h1 className="text-3xl sm:text-4xl text-ink mb-2">Welcome back</h1>
           <p className="text-ink-muted mb-8">
-            {stage === "phone" && "Log in to manage your deliveries, pause a week, or renew your plan."}
-            {stage === "otp" && <>We've sent a 6-digit code to <strong className="text-ink">{formatPhoneNumberIntl(phone) || phone}</strong>.</>}
+            {stage === "email" && "Log in to manage your deliveries, pause a week, or renew your plan."}
+            {stage === "otp" && <>We've sent a 6-digit code to <strong className="text-ink">{email}</strong>.</>}
           </p>
 
-          {stage === "phone" && (
+          {stage === "email" && (
             <form onSubmit={handleSendCode} className="space-y-4">
               <div>
-                <Label htmlFor="phone">Phone number</Label>
-                <PhoneInput id="phone" value={phone} onChange={setPhone} />
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <FieldError>{error}</FieldError>
 
@@ -139,14 +147,14 @@ function Login() {
                   <div>
                     <p className="font-semibold text-olive-700">Looks like you're new here</p>
                     <p className="text-sm text-olive-700/80 mt-0.5">
-                      We don't have a plan set up for this number yet — taking you to get started…
+                      We don't have a plan set up for this email yet — taking you to get started…
                     </p>
                   </div>
                 </div>
               )}
 
-              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending || noAccount || !phone.trim()}>
-                <Phone className="h-4 w-4" />
+              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending || noAccount || !email.trim()}>
+                <Mail className="h-4 w-4" />
                 {noAccount ? "Taking you to get started…" : sending ? "Sending code…" : "Send code"}
               </Button>
             </form>
@@ -187,10 +195,10 @@ function Login() {
               </div>
               <button
                 type="button"
-                onClick={() => { setStage("phone"); setCode(""); setError(""); setResendCooldown(0) }}
+                onClick={() => { setStage("email"); setCode(""); setError(""); setResendCooldown(0) }}
                 className="w-full text-center text-sm text-ink-muted hover:text-ink cursor-pointer"
               >
-                Use a different number
+                Use a different email
               </button>
             </form>
           )}
@@ -199,7 +207,23 @@ function Login() {
             New to OlivePinch? <Link to="/subscribe" className="text-olive-600 font-medium underline">Check your postcode</Link>
           </p>
 
-          <div id="recaptcha-container" />
+          <div className="mt-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium text-ink-muted">OR</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <div className="mt-6">
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="w-full border border-border text-ink hover:bg-cream-100"
+              onClick={handleGoogle}
+            >
+              <GoogleIcon /> Continue with Google
+            </Button>
+          </div>
         </div>
       </div>
 

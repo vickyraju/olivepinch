@@ -8,7 +8,7 @@ import { FieldError } from "@/components/ui/field-error"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { useDeliveryTimeSlots } from "@/lib/delivery-time-slots"
 import { api, ApiError } from "@/lib/api"
-import { DELIVERY_SLOT_TO_ENUM, TIER_TO_ENUM, GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
+import { DELIVERY_SLOT_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
 import { OrderSummary } from "./order-summary"
 import { StepNav } from "./step-nav"
 import { splitFullName, joinFullName, cn } from "@/lib/utils"
@@ -48,7 +48,6 @@ function Delivery() {
     firstName.trim() &&
     lastName.trim() &&
     p.phone.trim() &&
-    /\S+@\S+\.\S+/.test(p.email) &&
     doorNumber.trim() &&
     street.trim() &&
     area.trim() &&
@@ -78,39 +77,17 @@ function Delivery() {
       }
       update({ deliveryAddress })
 
-      setStatus("processing")
-      let customerId = state.customerId
-      let signupToken = state.signupToken
-      if (!customerId) {
-        if (!state.goal || state.dietTypes.length === 0) throw new Error("Missing your goal and diet preferences — go back and complete the earlier steps.")
-        const provisional = await api.post<{ customerId: string; signupToken: string }>("/customers/provisional", {
-          fullName: p.fullName.trim(),
-          phone: p.phone.trim(),
-          gender: p.gender || undefined,
-          dateOfBirth: p.dateOfBirth,
-          heightCm: Number(p.heightCm),
-          weightKg: Number(p.weightKg),
-          healthConsent: true,
-          marketingOptIn: false,
-        })
-        // signupToken proves this session is allowed to act on this customerId before any
-        // Firebase login exists — required on both this PATCH and the POST /subscriptions below.
-        signupToken = provisional.signupToken
-        // Goal/diet/allergens were picked several steps ago in "Choose" but couldn't be saved
-        // until now — that PATCH is customer-scoped, and this is the first point a customerId exists.
-        await api.patch(
-          `/customers/${provisional.customerId}/preferences`,
-          {
-            goal: GOAL_TO_ENUM[state.goal],
-            dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
-            allergens: state.allergens,
-            postcode: state.postcode,
-          },
-          { Authorization: `Bearer ${signupToken}` }
-        )
-        customerId = provisional.customerId
-        update({ customerId, signupToken })
+      // customerId/signupToken are created in the account-setup step (email or Google
+      // sign-in) that runs before this one — if either is missing, the funnel was entered
+      // out of order (e.g. a stale back-button visit) and needs to restart from there.
+      const customerId = state.customerId
+      const signupToken = state.signupToken
+      if (!customerId || !signupToken) {
+        navigate("/subscribe/account-setup")
+        return
       }
+
+      setStatus("processing")
 
       const subscription = await api.post<{ subscriptionId: string }>(
         "/subscriptions",
@@ -187,26 +164,13 @@ function Delivery() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="phone">Phone number</Label>
-                <PhoneInput
-                  id="phone"
-                  value={p.phone}
-                  onChange={(v) => update({ profile: { ...p, phone: v } })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@example.com"
-                  value={p.email}
-                  onChange={(e) => update({ profile: { ...p, email: e.target.value } })}
-                />
-              </div>
+            <div>
+              <Label htmlFor="phone">Phone number</Label>
+              <PhoneInput
+                id="phone"
+                value={p.phone}
+                onChange={(v) => update({ profile: { ...p, phone: v } })}
+              />
             </div>
           </section>
 

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 
 // This step runs a two-column form-plus-summary layout — the shared
 // single-column max-width leaves both columns cramped, so it gets more room.
-const WIDE_STEPS = new Set(["/subscribe/delivery"])
+const WIDE_STEPS = new Set(["/subscribe/account-setup", "/subscribe/delivery"])
 
 function SubscribeLayoutInner() {
   const location = useLocation()

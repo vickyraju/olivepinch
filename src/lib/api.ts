@@ -1,4 +1,4 @@
-import { auth } from "./firebase"
+import { supabase } from "./supabase"
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api"
 
@@ -12,8 +12,8 @@ export class ApiError extends Error {
 }
 
 async function authHeader(): Promise<Record<string, string>> {
-  const token = await auth.currentUser?.getIdToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  const { data: { session } } = await supabase.auth.getSession()
+  return session ? { Authorization: `Bearer ${session.access_token}` } : {}
 }
 
 interface RequestOptions {
@@ -23,8 +23,8 @@ interface RequestOptions {
 }
 
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  // Explicit headers (e.g. the pre-auth signup token) win over the Firebase auth header —
-  // in practice these never overlap, since a Firebase session doesn't exist yet at the
+  // Explicit headers (e.g. the pre-auth signup token) win over the Supabase auth header —
+  // in practice these never overlap, since a Supabase session doesn't exist yet at the
   // point anything needs the signup token.
   const headers: Record<string, string> = { "Content-Type": "application/json", ...(await authHeader()), ...opts.headers }
 
