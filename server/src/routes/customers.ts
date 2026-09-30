@@ -3,8 +3,8 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
 import { calculateAge } from "../lib/age.js"
-import { requireAuth, requireSignupToken, verifyFirebaseUser } from "../middleware/auth.js"
-import { checkPhoneLimiter } from "../middleware/rate-limit.js"
+import { requireAuth, requireSignupToken, verifySupabaseUser } from "../middleware/auth.js"
+import { checkEmailLimiter } from "../middleware/rate-limit.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
@@ -12,27 +12,27 @@ import { signSignupToken } from "../lib/auth.js"
 
 export const customersRouter = Router()
 
-// Called right after a Firebase phone sign-in succeeds, whether that's finishing signup or
-// a returning login — both cases just need "find the Customer for this verified phone number
-// and attach this Firebase uid to it". Doesn't use requireAuth: there's no linked Customer to
-// resolve to yet, that's exactly what this endpoint creates.
+// Called right after a Supabase sign-in (OTP or Google OAuth) succeeds, whether that's
+// finishing signup or a returning login — both cases just need "find the Customer for this
+// verified email and attach this Supabase user id to it". Doesn't use requireAuth: there's
+// no linked Customer to resolve to yet, that's exactly what this endpoint creates.
 customersRouter.post("/link-account", async (req, res) => {
-  const firebaseUser = await verifyFirebaseUser(req.headers.authorization)
-  const customer = await prisma.customer.findUnique({ where: { phone: firebaseUser.phone } })
+  const supaUser = await verifySupabaseUser(req.headers.authorization)
+  const customer = await prisma.customer.findUnique({ where: { email: supaUser.email } })
   if (!customer) {
-    return res.status(404).json({ error: "No OlivePinch account found for this phone number — start your plan first." })
+    return res.status(404).json({ error: "No OlivePinch account found for this email — start your plan first." })
   }
-  // Already linked to a *different* Firebase user than the one making this call — never
-  // fall through and hand back someone else's profile just because the phone numbers happen
-  // to match right now. Refuse instead of guessing.
-  if (customer.firebaseUid && customer.firebaseUid !== firebaseUser.uid) {
-    return res.status(409).json({ error: "This phone number is already linked to a different account." })
+  // Already linked to a *different* Supabase user than the one making this call — never
+  // fall through and hand back someone else's profile just because the emails happen to
+  // match right now (e.g. after an email change on either side). Refuse instead of guessing.
+  if (customer.supabaseUserId && customer.supabaseUserId !== supaUser.id) {
+    return res.status(409).json({ error: "This email is already linked to a different account." })
   }
-  if (!customer.firebaseUid) {
+  if (!customer.supabaseUserId) {
     await prisma.customer.update({
       where: { id: customer.id },
       data: {
-        firebaseUid: firebaseUser.uid,
+        supabaseUserId: supaUser.id,
         ...(customer.accountStatus === "PROVISIONAL" ? { accountStatus: "ACTIVE" as const } : {}),
       },
     })
@@ -44,18 +44,18 @@ customersRouter.post("/link-account", async (req, res) => {
 
 export const PHONE_REGEX = /^\+[1-9]\d{6,14}$/
 
-// Lets the login page skip sending an OTP for a phone that was never going to have an
+// Lets the login page skip sending an OTP for an email that was never going to have an
 // account to log into. "Has an account" means "has a succeeded payment" (same signal
 // runRecoverySweep uses), not accountStatus — a customer can be PROVISIONAL/EXPIRED and
 // still deserve OTP login if they paid at some point.
 customersRouter.post(
-  "/check-phone",
-  checkPhoneLimiter,
-  validateBody(z.object({ phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number") })),
+  "/check-email",
+  checkEmailLimiter,
+  validateBody(z.object({ email: z.string().email() })),
   async (req, res) => {
-    const { phone } = req.body as { phone: string }
+    const { email } = req.body as { email: string }
     const paidBefore = await prisma.customer.findFirst({
-      where: { phone, payments: { some: { status: "succeeded" } } },
+      where: { email, payments: { some: { status: "succeeded" } } },
       select: { id: true },
     })
     res.json({ hasAccount: !!paidBefore })
@@ -64,8 +64,8 @@ customersRouter.post(
 
 const provisionalSchema = z.object({
   fullName: z.string().min(1),
-  email: z.string().email().optional(),
-  phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number"),
+  email: z.string().email(),
+  phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number").optional(),
   gender: z.string().optional(),
   dateOfBirth: z
     .string()
@@ -85,18 +85,18 @@ const provisionalSchema = z.object({
 customersRouter.post("/provisional", validateBody(provisionalSchema), async (req, res) => {
   const body = req.body as z.infer<typeof provisionalSchema>
 
-  const existing = await prisma.customer.findUnique({ where: { phone: body.phone }, select: { accountStatus: true } })
-  // ACTIVE and READ_ONLY both mean this phone number is already a real account — only
+  const existing = await prisma.customer.findUnique({ where: { email: body.email }, select: { accountStatus: true } })
+  // ACTIVE and READ_ONLY both mean this email is already a real account — only
   // PROVISIONAL (mid-signup) and DELETED (scrubbed) are safe to upsert over.
   if (existing && (existing.accountStatus === "ACTIVE" || existing.accountStatus === "READ_ONLY")) {
-    return res.status(409).json({ error: "An account with this phone number already exists — log in instead." })
+    return res.status(409).json({ error: "An account with this email already exists — log in instead." })
   }
 
   const customer = await prisma.customer.upsert({
-    where: { phone: body.phone },
+    where: { email: body.email },
     update: {
       fullName: body.fullName,
-      email: body.email,
+      phone: body.phone,
       gender: body.gender,
       dateOfBirth: new Date(body.dateOfBirth),
       heightCm: body.heightCm,
@@ -229,9 +229,9 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
       where: { id: customerId },
       data: {
         fullName: "Deleted customer",
-        email: null,
-        phone: `deleted-${customerId}`,
-        firebaseUid: null,
+        email: `deleted-${customerId}@olivepinch.invalid`,
+        phone: null,
+        supabaseUserId: null,
         passwordHash: null,
         gender: null,
         dateOfBirth: null,

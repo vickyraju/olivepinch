@@ -78,8 +78,8 @@ paymentsRouter.post(
 )
 
 async function activateSubscription(subscriptionId: string) {
-  // Identity verification (phone OTP via Firebase) is a separate step the frontend drives
-  // directly against Firebase — payment succeeding doesn't trigger it here.
+  // Identity verification (email OTP or Google sign-in via Supabase) is a separate step the
+  // frontend drives directly against Supabase — payment succeeding doesn't trigger it here.
   // Redemption is recorded here (post-payment), not at checkout start, so abandoned
   // checkouts never count against a promo code's redemption caps.
   const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })

@@ -9,7 +9,7 @@ const rawSecret = process.env.JWT_SECRET ?? (process.env.NODE_ENV === "productio
 if (!rawSecret) throw new Error("JWT_SECRET must be set in production")
 const JWT_SECRET: string = rawSecret
 
-// Admin auth only — customer auth is handled by Firebase (see middleware/auth.ts).
+// Admin auth only — customer auth is handled by Supabase (see middleware/auth.ts).
 export function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12)
 }
@@ -31,7 +31,7 @@ export function verifyAdminToken(token: string): { sub: string; role: string } {
 // Binds the rest of the pre-authentication signup funnel to one specific customerId, so
 // POST /subscriptions and PATCH /customers/:id/preferences can't be called against a
 // customer other than the one this token was issued for. Issued once, by
-// POST /customers/provisional, before any Firebase session exists — 2h is generous for a
+// POST /customers/provisional, before any Supabase session exists — 2h is generous for a
 // single checkout session without leaving a long-lived credential lying around.
 export function signSignupToken(customerId: string): string {
   return jwt.sign({ sub: customerId, purpose: "signup" }, JWT_SECRET, { expiresIn: "2h", algorithm: "HS256" })
