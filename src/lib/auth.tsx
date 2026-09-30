@@ -97,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setAuthError(null)
       setAccountNotFound(false)
+      // eslint-disable-next-line no-console
+      console.log("[auth] onAuthStateChange", { event, hasSession: !!session, email: session.user.email, pendingFlag: sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) })
       try {
         if (event === "SIGNED_IN") {
           try {
@@ -107,6 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // second firing would see it already gone and treat a genuine new signup as a
             // plain "no account" error instead of completing it.
             const isPendingSubscribeSignup = sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) === "1"
+            // eslint-disable-next-line no-console
+            console.log("[auth] link-account failed", { status: err instanceof ApiError ? err.status : null, message: err instanceof Error ? err.message : err, isPendingSubscribeSignup })
             if (err instanceof ApiError && err.status === 404 && isPendingSubscribeSignup && session.user.email) {
               await completePendingSubscribeSignup(session.user.email)
               await api.post("/customers/link-account")
