@@ -97,8 +97,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setAuthError(null)
       setAccountNotFound(false)
-      // eslint-disable-next-line no-console
-      console.log(`[auth] onAuthStateChange event=${event} email=${session.user.email} pendingFlag=${sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY)}`)
+      if (event !== "SIGNED_IN" && sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) === "1") {
+        // A Google sign-in mid-subscribe-funnel is in flight — onAuthStateChange can fire a
+        // non-SIGNED_IN event (e.g. INITIAL_SESSION) for this same session before the real
+        // SIGNED_IN event arrives. Calling /customers/me here would 401 (not linked yet) and
+        // trigger a destructive sign-out that races the SIGNED_IN handler doing the real work
+        // below — just wait for that one instead.
+        setIsLoading(false)
+        return
+      }
       try {
         if (event === "SIGNED_IN") {
           try {
@@ -109,8 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // second firing would see it already gone and treat a genuine new signup as a
             // plain "no account" error instead of completing it.
             const isPendingSubscribeSignup = sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) === "1"
-            // eslint-disable-next-line no-console
-            console.log(`[auth] link-account failed status=${err instanceof ApiError ? err.status : "?"} isPendingSubscribeSignup=${isPendingSubscribeSignup} message=${err instanceof Error ? err.message : err}`)
             if (err instanceof ApiError && err.status === 404 && isPendingSubscribeSignup && session.user.email) {
               await completePendingSubscribeSignup(session.user.email)
               await api.post("/customers/link-account")
@@ -118,8 +123,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               throw err
             }
           }
+          // Only clear once the SIGNED_IN branch itself has actually used it — onAuthStateChange
+          // also fires with other event types (e.g. INITIAL_SESSION) for the same sign-in, and
+          // clearing this unconditionally meant that firing wiped the flag before the real
+          // SIGNED_IN firing ever got to read it.
+          sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
         }
-        sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
         setCustomer(await api.get<CustomerActor>("/customers/me"))
       } catch (err) {
         setCustomer(null)
