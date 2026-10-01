@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import type { DietType, Goal } from "@/data/menu"
 import { SUBSCRIBE_STORAGE_KEY as STORAGE_KEY } from "@/lib/subscribe-storage"
+import { useAuth } from "@/lib/auth"
 
 export type PlanDuration = 7 | 14 | 28
 export type MealsPerDay = 1 | 2 | 3
@@ -126,6 +127,28 @@ function loadInitial(): SubscribeState {
 
 export function SubscribeProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<SubscribeState>(loadInitial)
+  const { customer } = useAuth()
+
+  // A Google redirect reloads the page, so this provider mounts before auth.tsx's listener has
+  // created the customer. The listener writes customerId/signupToken straight to sessionStorage;
+  // pull them into state once the linked customer resolves so later steps (delivery) see them.
+  useEffect(() => {
+    if (!customer) return
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY)
+      if (!raw) return
+      const stored = JSON.parse(raw) as Partial<SubscribeState>
+      if (stored.customerId !== customer.id) return
+      setState((s) => ({
+        ...s,
+        customerId: stored.customerId ?? s.customerId,
+        signupToken: stored.signupToken ?? s.signupToken,
+        profile: { ...s.profile, email: stored.profile?.email ?? s.profile.email },
+      }))
+    } catch {
+      // storage unreadable — nothing to sync
+    }
+  }, [customer])
 
   useEffect(() => {
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))

@@ -47,6 +47,7 @@ interface PendingSubscribeState {
   dietTypes: string[]
   allergens: string[]
   customerId: string | null
+  signupToken: string | null
 }
 
 // Mirrors what account-setup.tsx's email path already does (POST /customers/provisional then
@@ -61,7 +62,7 @@ async function completePendingSubscribeSignup(email: string): Promise<void> {
     throw new Error("Your plan details aren't ready yet — go back and finish the earlier steps.")
   }
 
-  const { customerId } = await api.post<{ customerId: string }>("/customers/provisional", {
+  const { customerId, signupToken } = await api.post<{ customerId: string; signupToken: string }>("/customers/provisional", {
     fullName: p.fullName.trim(),
     email,
     phone: p.phone?.trim() || undefined,
@@ -72,14 +73,18 @@ async function completePendingSubscribeSignup(email: string): Promise<void> {
     healthConsent: true,
     marketingOptIn: false,
   })
-  await api.patch(`/customers/${customerId}/preferences`, {
-    goal: GOAL_TO_ENUM[state.goal as keyof typeof GOAL_TO_ENUM],
-    dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d as keyof typeof DIET_TO_ENUM]),
-    allergens: state.allergens ?? [],
-    postcode: state.postcode,
-  })
+  await api.patch(
+    `/customers/${customerId}/preferences`,
+    {
+      goal: GOAL_TO_ENUM[state.goal as keyof typeof GOAL_TO_ENUM],
+      dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d as keyof typeof DIET_TO_ENUM]),
+      allergens: state.allergens ?? [],
+      postcode: state.postcode,
+    },
+    { Authorization: `Bearer ${signupToken}` }
+  )
 
-  sessionStorage.setItem(SUBSCRIBE_STORAGE_KEY, JSON.stringify({ ...state, profile: { ...p, email }, customerId }))
+  sessionStorage.setItem(SUBSCRIBE_STORAGE_KEY, JSON.stringify({ ...state, profile: { ...p, email }, customerId, signupToken }))
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
