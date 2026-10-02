@@ -14,6 +14,12 @@ import { splitFullName, joinFullName } from "@/lib/utils"
 import { StepNav } from "./step-nav"
 import { useState } from "react"
 
+// A type="number" input still lets "e", "E", "+" and "-" through (exponent/sign notation) —
+// neither height nor weight can use them.
+function blockNonNumericKeys(e: React.KeyboardEvent<HTMLInputElement>) {
+  if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault()
+}
+
 const GENDERS: Gender[] = ["Female", "Male", "Non-binary", "Prefer not to say"]
 
 const MONTHS = [
@@ -158,6 +164,7 @@ function Profile() {
               id="height"
               type="number"
               inputMode="decimal"
+              onKeyDown={blockNonNumericKeys}
               value={p.heightCm}
               onChange={(e) => update({ profile: { ...p, heightCm: e.target.value } })}
             />
@@ -168,6 +175,7 @@ function Profile() {
               id="weight"
               type="number"
               inputMode="decimal"
+              onKeyDown={blockNonNumericKeys}
               value={p.weightKg}
               onChange={(e) => update({ profile: { ...p, weightKg: e.target.value } })}
             />
