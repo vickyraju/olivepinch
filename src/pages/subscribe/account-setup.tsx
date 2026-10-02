@@ -34,14 +34,53 @@ function AccountSetup() {
   // listener writes the resulting customerId straight to storage before setting `customer`, so
   // by the time `customer` is truthy the storage write has already happened; the React state
   // hasn't necessarily caught up yet. If the linked customer matches what this funnel session
-  // just created, keep going; if it's a *different*, pre-existing account, don't silently
-  // continue the funnel as someone else.
+  // just created, keep going. Otherwise it's a pre-existing account: if it already has a
+  // subscription send it to the dashboard, but if it never subscribed (e.g. abandoned an earlier
+  // checkout) resume the funnel for it rather than stranding it on an empty dashboard.
   useEffect(() => {
     if (!customer) return
     const raw = sessionStorage.getItem(SUBSCRIBE_STORAGE_KEY)
     const storedCustomerId = raw ? (JSON.parse(raw).customerId as string | null) : null
-    navigate(storedCustomerId === customer.id ? "/subscribe/delivery" : "/dashboard")
-  }, [customer, navigate])
+    if (storedCustomerId === customer.id) {
+      navigate("/subscribe/delivery")
+      return
+    }
+    ;(async () => {
+      try {
+        await api.get("/subscriptions/current")
+        navigate("/dashboard")
+        return
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 404)) {
+          navigate("/dashboard")
+          return
+        }
+      }
+      if (!state.goal || state.dietTypes.length === 0) {
+        navigate("/subscribe")
+        return
+      }
+      try {
+        const { signupToken } = await api.post<{ signupToken: string }>("/customers/me/signup-session")
+        await api.patch(
+          `/customers/${customer.id}/preferences`,
+          {
+            goal: GOAL_TO_ENUM[state.goal],
+            dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
+            allergens: state.allergens,
+            postcode: state.postcode,
+          },
+          { Authorization: `Bearer ${signupToken}` }
+        )
+        update({ customerId: customer.id, signupToken, profile: { ...state.profile, email: customer.email } })
+        navigate("/subscribe/delivery")
+      } catch (err) {
+        setError(err instanceof ApiError ? err.message : "Couldn't resume your signup — try again.")
+      }
+    })()
+    // Runs once per sign-in; the funnel state it reads is stable by the time `customer` resolves.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [customer])
 
   useEffect(() => {
     if (authError) setError(authError)
