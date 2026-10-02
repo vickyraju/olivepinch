@@ -141,7 +141,7 @@ function Account() {
       {stage === "done" && (
         <div className="rounded-2xl bg-surface border border-border p-8 shadow-soft text-center">
           <p className="text-sm text-ink-muted mb-6">
-            Log in any time with <strong className="text-ink">{email}</strong> — we'll email you a fresh code, no password needed.
+            Manage your subscription, pause a week, or renew any time from your dashboard.
           </p>
           <Button
             variant="accent"
