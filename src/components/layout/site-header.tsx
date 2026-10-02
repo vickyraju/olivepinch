@@ -13,6 +13,8 @@ const BASE_LINKS = [
   { label: "Contact Us", to: "/contact" },
 ]
 
+const ORDER_NOW_URL = "https://orbitonline.co.uk/olivepinch/"
+
 function SiteHeader() {
   const [open, setOpen] = useState(false)
   const { isAuthenticated, customer } = useAuth()
@@ -55,9 +57,14 @@ function SiteHeader() {
               </Link>
             </Button>
           ) : (
-            <Button asChild variant="primary" size="sm">
-              <Link to="/subscribe">Subscribe Now</Link>
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button asChild variant="outline" size="sm">
+                <a href={ORDER_NOW_URL} target="_blank" rel="noopener noreferrer">Order Now</a>
+              </Button>
+              <Button asChild variant="primary" size="sm">
+                <Link to="/subscribe">Subscribe Now</Link>
+              </Button>
+            </div>
           )}
         </div>
 
@@ -92,9 +99,14 @@ function SiteHeader() {
               </Link>
             </Button>
           ) : (
-            <Button asChild variant="primary" size="md" className="w-full" onClick={() => setOpen(false)}>
-              <Link to="/subscribe">Subscribe Now</Link>
-            </Button>
+            <div className="flex gap-3">
+              <Button asChild variant="outline" size="md" className="flex-1" onClick={() => setOpen(false)}>
+                <a href={ORDER_NOW_URL} target="_blank" rel="noopener noreferrer">Order Now</a>
+              </Button>
+              <Button asChild variant="primary" size="md" className="flex-1" onClick={() => setOpen(false)}>
+                <Link to="/subscribe">Subscribe Now</Link>
+              </Button>
+            </div>
           )}
         </nav>
       )}
