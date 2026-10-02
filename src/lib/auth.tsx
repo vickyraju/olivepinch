@@ -128,14 +128,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               throw err
             }
           }
-          // Only clear once the SIGNED_IN branch itself has actually used it — onAuthStateChange
-          // also fires with other event types (e.g. INITIAL_SESSION) for the same sign-in, and
-          // clearing this unconditionally meant that firing wiped the flag before the real
-          // SIGNED_IN firing ever got to read it.
-          sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
         }
         setCustomer(await api.get<CustomerActor>("/customers/me"))
+        // Cleared only now that the customer is set (not when the SIGNED_IN branch finishes):
+        // account-setup uses this flag to keep showing "Signing you in…" until then, and
+        // clearing it earlier lets the sign-in form flash back during the /customers/me fetch.
+        sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
       } catch (err) {
+        sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
         setCustomer(null)
         if (err instanceof ApiError && err.status === 404) {
           setAccountNotFound(true)

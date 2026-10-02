@@ -27,6 +27,18 @@ function AccountSetup() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
 
+  // True only while landing back from Google's redirect (flag set + OAuth params in the URL, read
+  // at first render before the Supabase client strips them). Auth reports "not loading" for a
+  // moment before the session is exchanged, which used to flash this sign-in form; this keeps
+  // the "Signing you in…" state up until we navigate away or an error comes back. A flag left
+  // over from backing out of Google's screen has no URL params, so it's cleared, not trusted.
+  const [returningFromGoogle] = useState(() => {
+    if (sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) !== "1") return false
+    const fromOAuth = /access_token=|[?&]code=/.test(window.location.hash + window.location.search)
+    if (!fromOAuth) sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
+    return fromOAuth
+  })
+
   const canContinue = /\S+@\S+\.\S+/.test(email)
 
   // Landed back here after a Google OAuth redirect. Reads sessionStorage directly rather than
@@ -136,7 +148,7 @@ function AccountSetup() {
     }
   }
 
-  if (authLoading) {
+  if (authLoading || (returningFromGoogle && !authError)) {
     return <p className="text-center text-ink-muted py-24">Signing you in…</p>
   }
 
