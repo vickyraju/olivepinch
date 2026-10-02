@@ -156,6 +156,14 @@ customersRouter.patch(
   }
 )
 
+// Lets an already-signed-in customer who hasn't subscribed yet (e.g. they signed up via
+// Google, then abandoned checkout) resume the funnel: /provisional refuses ACTIVE accounts,
+// so without this they'd have no signup token to create a subscription with. Scoped to the
+// caller's own customerId, same power they already have as the authenticated owner.
+customersRouter.post("/me/signup-session", requireAuth, (req, res) => {
+  res.json({ customerId: req.customerId, signupToken: signSignupToken(req.customerId!) })
+})
+
 customersRouter.get("/me", requireAuth, async (req, res) => {
   const customer = await prisma.customer.findUniqueOrThrow({ where: { id: req.customerId } })
   const { passwordHash: _passwordHash, ...safe } = customer
