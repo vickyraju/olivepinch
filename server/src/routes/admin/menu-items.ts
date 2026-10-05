@@ -11,11 +11,6 @@ import { getImageDimensions } from "../../lib/image-dimensions.js"
 export const adminMenuItemsRouter = Router()
 adminMenuItemsRouter.use(requireAdminAuth)
 
-// Menu photos are uploaded as a data: URL and must be exactly this size — keeps every
-// card in the admin grid and the customer menu uniformly cropped with no client resizing.
-export const REQUIRED_PHOTO_WIDTH = 1200
-export const REQUIRED_PHOTO_HEIGHT = 800
-
 adminMenuItemsRouter.get("/", async (_req, res) => {
   res.json(await prisma.menuItem.findMany({ orderBy: [{ slot: "asc" }, { name: "asc" }] }))
 })
@@ -39,9 +34,9 @@ function photoError(res: Response, photoUrl: string | undefined) {
   if (!photoUrl) return null
   const match = /^data:image\/(png|jpeg);base64,(.+)$/.exec(photoUrl)
   if (!match) return res.status(400).json({ error: "Photo must be a PNG or JPEG upload" })
-  const dims = getImageDimensions(Buffer.from(match[2] as string, "base64"))
-  if (!dims || dims.width !== REQUIRED_PHOTO_WIDTH || dims.height !== REQUIRED_PHOTO_HEIGHT) {
-    return res.status(400).json({ error: `Photo must be exactly ${REQUIRED_PHOTO_WIDTH}x${REQUIRED_PHOTO_HEIGHT}px` })
+  const dimensions = getImageDimensions(Buffer.from(match[2] as string, "base64"))
+  if (!dimensions) {
+    return res.status(400).json({ error: "Photo must be a valid PNG or JPEG image" })
   }
   return null
 }
