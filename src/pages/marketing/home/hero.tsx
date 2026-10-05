@@ -22,11 +22,6 @@ function Hero() {
             <Button asChild variant="outline" size="lg">
               <a href="#how-it-works">See how it works</a>
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <a href="https://orbitonline.co.uk/olivepinch/" target="_blank" rel="noopener noreferrer">
-                Order Now
-              </a>
-            </Button>
           </div>
         </div>
 
