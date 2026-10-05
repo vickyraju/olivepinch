@@ -11,7 +11,7 @@ const STEPS = [
   },
   {
     number: "03",
-    title: "Fresh, at your doorstep",
+    title: "Fresh, Tasty, At your Doorstep",
     description: "Each meal is freshly cooked and delivered within the window you choose.",
   },
 ]

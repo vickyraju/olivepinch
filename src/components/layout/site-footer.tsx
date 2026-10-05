@@ -8,7 +8,7 @@ function SiteFooter() {
         <div className="col-span-2 md:col-span-1">
           <Logo className="text-xl" />
           <p className="mt-3 text-sm text-ink-muted max-w-xs">
-            Fresh, Tasty, Delivered at your doorstep.
+            Fresh, Tasty, At your Doorstep.
           </p>
         </div>
 
