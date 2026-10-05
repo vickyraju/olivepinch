@@ -142,7 +142,7 @@ function SlotPicker({
 
   const selectedItems = items.filter((i) => dayItemIds.includes(i.id))
   const q = query.trim().toLowerCase()
-  const matches = items.filter((i) => !dayItemIds.includes(i.id) && (!q || i.name.toLowerCase().includes(q)))
+  const matches = items.filter((i) => (!q || i.name.toLowerCase().includes(q)))
 
   if (readOnly) {
     return (
@@ -445,7 +445,7 @@ function MenuWeeks() {
       <Header title="Weekly Menu" />
       <div className="flex-1 overflow-y-auto p-8">
         <p className="mb-6 text-sm text-gray-500">
-          Set a different lineup for each day of the week — no dish repeats — then publish by Tuesday night so
+          Set a different lineup for each day of the week — you can reuse items across days; each day shows where else a dish appears — then publish by Tuesday night so
           customers can choose Wednesday through Friday. Anyone who hasn't chosen by Friday end of day needs to be
           assigned manually below.
         </p>
