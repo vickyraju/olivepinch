@@ -5,10 +5,10 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import { GOALS, GOAL_PHOTOS } from "@/data/menu"
 
 const TEASER_META: Record<string, { kcal: string; protein: string }> = {
-  "Weight Loss": { kcal: "450 kcal", protein: "35g P" },
-  "Weight Gain": { kcal: "750 kcal", protein: "40g P" },
-  "Weight Maintenance": { kcal: "600 kcal", protein: "38g P" },
-  "Muscle Building": { kcal: "700 kcal", protein: "50g P" },
+  Little: { kcal: "450 kcal", protein: "35g P" },
+  Hearty: { kcal: "750 kcal", protein: "40g P" },
+  Classic: { kcal: "600 kcal", protein: "38g P" },
+  Charged: { kcal: "700 kcal", protein: "50g P" },
 }
 
 function DietPlansTeaser() {
@@ -17,7 +17,7 @@ function DietPlansTeaser() {
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="flex items-end justify-between flex-wrap gap-4 mb-14">
           <div className="max-w-xl">
-            <p className="eyebrow mb-3">Pick your goal</p>
+            <p className="eyebrow mb-3">Pick your style</p>
             <h2 className="text-3xl sm:text-4xl text-ink">One menu, four ways to eat</h2>
           </div>
           <Button asChild variant="outline" size="md" className="hidden sm:inline-flex">
@@ -31,7 +31,7 @@ function DietPlansTeaser() {
               <FoodPhoto seed={i} src={GOAL_PHOTOS[goal.id]} alt={goal.id} className="aspect-[4/3] rounded-none" />
               <div className="p-5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="eyebrow">Goal</span>
+                  <span className="eyebrow">Style</span>
                   <span className="text-xs text-ink-muted">{TEASER_META[goal.id].kcal} · {TEASER_META[goal.id].protein}</span>
                 </div>
                 <h3 className="text-xl text-ink mb-1.5">{goal.id}</h3>

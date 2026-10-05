@@ -75,7 +75,7 @@ function OrderSummary({
       <dl className="space-y-2.5 border-t border-border pt-4">
         <Row label="Plan length" value={state.planDuration ? `${state.planDuration} days` : "—"} />
         <Row label="Meals/day" value={state.mealsPerDay ? String(state.mealsPerDay) : "—"} />
-        <Row label="Goal" value={state.goal ?? "—"} />
+        <Row label="Style" value={state.goal ?? "—"} />
         <Row label="Tier" value={state.tier ?? "—"} />
         <Row label="Preferred food" value={state.dietTypes.join(", ") || "—"} />
         <Row label="Allergens" value={state.allergens.length ? state.allergens.join(", ") : "None"} />

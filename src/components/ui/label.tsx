@@ -10,4 +10,10 @@ function Label({ className, ...props }: React.ComponentProps<typeof LabelPrimiti
   )
 }
 
-export { Label }
+// Marks a field the form won't submit without. Screen readers get the word, sighted
+// users get the asterisk.
+function Required() {
+  return <span aria-hidden="true" className="text-coral-600 ml-0.5">*</span>
+}
+
+export { Label, Required }

@@ -8,16 +8,16 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { GOALS, GOAL_PHOTOS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal } from "@/data/menu"
+import { GOALS, GOAL_PHOTOS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Style } from "@/data/menu"
 import type { PlanTier } from "@/lib/subscribe-context"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { cn } from "@/lib/utils"
 
-const TEASER_META: Record<Goal, { kcal: string; protein: string; from: string }> = {
-  "Weight Loss": { kcal: "~450 kcal", protein: "35g protein", from: "5.20" },
-  "Weight Gain": { kcal: "~750 kcal", protein: "40g protein", from: "5.80" },
-  "Weight Maintenance": { kcal: "~600 kcal", protein: "38g protein", from: "5.20" },
-  "Muscle Building": { kcal: "~700 kcal", protein: "50g protein", from: "5.95" },
+const TEASER_META: Record<Style, { kcal: string; protein: string; from: string }> = {
+  "Little": { kcal: "~450 kcal", protein: "35g protein", from: "5.20" },
+  "Hearty": { kcal: "~750 kcal", protein: "40g protein", from: "5.80" },
+  "Classic": { kcal: "~600 kcal", protein: "38g protein", from: "5.20" },
+  "Charged": { kcal: "~700 kcal", protein: "50g protein", from: "5.95" },
 }
 
 const DURATIONS: (7 | 14 | 28)[] = [7, 14, 28]
@@ -63,7 +63,7 @@ function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }
         )}
 
         <Button asChild variant="primary" size="md" className="mt-auto">
-          <Link to="/subscribe">Choose this goal</Link>
+          <Link to="/subscribe">Choose this style</Link>
         </Button>
       </div>
     </Card>
@@ -71,7 +71,7 @@ function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }
 }
 
 function PriceEstimator() {
-  const [goal, setGoal] = useState<Goal>("Muscle Building")
+  const [goal, setGoal] = useState<Style>("Charged")
   const [tier, setTier] = useState<PlanTier>("Basic")
   const [planDuration, setPlanDuration] = useState<7 | 14 | 28>(14)
   const [mealsPerDay, setMealsPerDay] = useState<1 | 2 | 3>(2)
@@ -81,11 +81,11 @@ function PriceEstimator() {
   return (
     <Card className="p-6 sm:p-8">
       <h2 className="text-xl text-ink mb-1">See your price</h2>
-      <p className="text-sm text-ink-muted mb-6">Pricing is set by your goal and plan length — pick both to see the exact total.</p>
+      <p className="text-sm text-ink-muted mb-6">Pricing is set by your style and plan length — pick both to see the exact total.</p>
 
       <div>
-        <label className="text-sm font-medium text-ink block mb-1.5">Goal</label>
-        <Select value={goal} onValueChange={(v) => setGoal(v as Goal)}>
+        <label className="text-sm font-medium text-ink block mb-1.5">Style</label>
+        <Select value={goal} onValueChange={(v) => setGoal(v as Style)}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             {GOALS.map((g) => <SelectItem key={g.id} value={g.id}>{g.id}</SelectItem>)}
@@ -170,10 +170,10 @@ function DietPlans() {
     <div>
       <section className="pt-14 pb-16 sm:pt-20 sm:pb-20">
         <div className="mx-auto max-w-3xl px-5 sm:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl text-ink">A plan for whatever your goal is</h1>
+          <h1 className="text-4xl sm:text-5xl text-ink">A plan built around your style</h1>
           <p className="mt-4 text-lg text-ink-muted">
-            Every plan starts from a menu matched to your goal, filtered to your diet type
-            and allergies — and you can still swap any meal you want.
+            Every plan starts from a menu matched to your style, filtered to your calorie
+            needs and allergies — and you can still swap any meal you want.
           </p>
         </div>
       </section>

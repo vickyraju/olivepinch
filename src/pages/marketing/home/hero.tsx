@@ -7,13 +7,13 @@ function Hero() {
     <section className="pt-14 pb-20 sm:pt-20 sm:pb-28">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <div>
-          <p className="eyebrow mb-4">Fresh, never frozen · cooked in Birmingham</p>
+          <p className="eyebrow mb-4">Tasty, at your doorstep</p>
           <h1 className="text-5xl sm:text-6xl lg:text-7xl text-ink">
-            Meals built around <em>your</em> goal, not the other way round.
+            Fresh meals, built around <em>your</em> choice.
           </h1>
           <p className="mt-5 text-lg text-ink-muted max-w-lg">
-            Set your goal and diet preferences once. Every meal is cooked fresh that
-            morning and delivered to your door — no shopping, no cooking, no guesswork.
+            Tell us your preferences and style, and we'll take care of the meals. Freshly
+            prepared dishes, delivered to your door — simple, convenient and ready to enjoy.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             <Button asChild variant="primary" size="lg">

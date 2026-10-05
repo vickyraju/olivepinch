@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { AlertCircle } from "lucide-react"
-import { Label } from "@/components/ui/label"
+import { Label, Required } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { FieldError } from "@/components/ui/field-error"
@@ -146,7 +146,7 @@ function Delivery() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName">First name</Label>
+                <Label htmlFor="firstName">First name <Required /></Label>
                 <Input
                   id="firstName"
                   autoComplete="given-name"
@@ -155,7 +155,7 @@ function Delivery() {
                 />
               </div>
               <div>
-                <Label htmlFor="lastName">Last name</Label>
+                <Label htmlFor="lastName">Last name <Required /></Label>
                 <Input
                   id="lastName"
                   autoComplete="family-name"
@@ -165,7 +165,7 @@ function Delivery() {
               </div>
             </div>
             <div>
-              <Label htmlFor="phone">Phone number</Label>
+              <Label htmlFor="phone">Phone number <Required /></Label>
               <PhoneInput
                 id="phone"
                 value={p.phone}
@@ -178,7 +178,7 @@ function Delivery() {
             <h2 className="text-lg text-ink">Delivery address</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="doorNumber">Door number</Label>
+                <Label htmlFor="doorNumber">Door number <Required /></Label>
                 <Input id="doorNumber" autoComplete="address-line1" placeholder="e.g. 12" value={doorNumber} onChange={(e) => setDoorNumber(e.target.value)} />
               </div>
               <div>
@@ -187,16 +187,16 @@ function Delivery() {
               </div>
             </div>
             <div>
-              <Label htmlFor="street">Street</Label>
+              <Label htmlFor="street">Street <Required /></Label>
               <Input id="street" autoComplete="address-line1" value={street} onChange={(e) => setStreet(e.target.value)} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="area">Area</Label>
+                <Label htmlFor="area">Area <Required /></Label>
                 <Input id="area" autoComplete="address-level2" value={area} onChange={(e) => setArea(e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="postcode">Postcode</Label>
+                <Label htmlFor="postcode">Postcode <Required /></Label>
                 <Input
                   id="postcode"
                   autoComplete="postal-code"

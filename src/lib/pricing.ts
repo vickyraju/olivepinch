@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { api } from "@/lib/api"
 import { GOAL_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
-import type { Goal } from "@/data/menu"
+import type { Style } from "@/data/menu"
 import type { PlanTier } from "@/lib/subscribe-context"
 
 export interface Plan {
@@ -27,7 +27,7 @@ export function usePlans(): Plan[] {
 
 export function priceFor(
   plans: Plan[],
-  goal: Goal | null,
+  goal: Style | null,
   planDuration: number,
   tier: PlanTier | null = "Basic",
   mealsPerDay: 1 | 2 | 3 | null = 2

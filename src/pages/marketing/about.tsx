@@ -12,7 +12,7 @@ const STATS = [
 
 const VALUES = [
   { icon: ChefHat, title: "Cooked fresh, not batch-frozen", desc: "Every meal is prepared the morning it's delivered — nothing sits in a freezer waiting for an order." },
-  { icon: Leaf, title: "Matched to your goal", desc: "Weight loss, weight gain, maintenance, or muscle building — your default menu is filtered to fit, every day." },
+  { icon: Leaf, title: "Matched to your style", desc: "Little, Hearty, Classic, Charged — your default menu is filtered to your preferred calories and style, every day." },
   { icon: PauseCircle, title: "Flexible by design", desc: "Pause up to four times a month and your plan's end date simply moves — you never lose a meal you've paid for." },
   { icon: ShieldCheck, title: "Your data, your control", desc: "Health data is only ever used for BMI and meal recommendations. Export or delete it any time from your dashboard." },
 ]
@@ -34,7 +34,7 @@ function About() {
             <p className="text-ink-muted leading-relaxed mb-4">
               OlivePinch exists because healthy, structured eating shouldn't mean choosing
               between cooking every meal yourself or settling for generic takeaway. We cook
-              every meal fresh, match it to your goal and diet, and deliver it to your door
+              every meal fresh, match it to your style and diet, and deliver it to your door
               each morning.
             </p>
             <p className="text-ink-muted leading-relaxed mb-8">

@@ -89,7 +89,7 @@ function Postcode() {
             <CheckCircle2 className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-olive-700">Great news — we deliver to {formatPostcode(postcode)}</p>
-              <p className="text-sm text-olive-700/80 mt-0.5">Let's set up your plan.</p>
+              <p className="text-sm text-olive-700/80 mt-0.5">Let's get started!</p>
             </div>
           </div>
         )}

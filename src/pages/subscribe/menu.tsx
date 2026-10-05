@@ -113,8 +113,8 @@ function Menu() {
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Choose your menu</h1>
       <p className="text-ink-muted mb-8">
-        Pick your meals for each day we can already plan for. Days beyond what's published yet will start on
-        recommended defaults — you'll get to choose those closer to the time from your dashboard.
+        Choose your meals for the days available now. For the remaining days, the menu will be updated on
+        your dashboard for you to select.
       </p>
 
       {!weeks ? (
@@ -183,9 +183,8 @@ function Menu() {
 
           {choosableDates.length === 0 && (
             <div className="rounded-2xl border border-border bg-surface p-6 text-sm text-ink-muted">
-              No menu has been published yet for the start of your plan — we'll begin you on recommended meals
-              matched to your goal and diet, and you'll be able to choose exact meals from your dashboard once
-              they're published.
+              Choose your meals for the days available now. For the remaining days, the menu will be updated on
+              your dashboard for you to select.
             </div>
           )}
 

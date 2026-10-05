@@ -6,13 +6,13 @@ const STEPS = [
   },
   {
     number: "02",
-    title: "Set your goal & menu",
-    description: "Tell us your goal, diet type, and allergies. We build your daily menu — or you customize every meal yourself.",
+    title: "Choose your menu",
+    description: "Tell us your style and meal type — we build your daily menu, and you can pick from a wide variety.",
   },
   {
     number: "03",
-    title: "Fresh, delivered daily",
-    description: "Each meal is cooked the morning it's delivered, and arrives within the window you choose.",
+    title: "Fresh, at your doorstep",
+    description: "Each meal is freshly cooked and delivered within the window you choose.",
   },
 ]
 

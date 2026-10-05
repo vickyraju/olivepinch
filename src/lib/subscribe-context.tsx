@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
-import type { DietType, Goal } from "@/data/menu"
+import type { DietType, Style } from "@/data/menu"
 import { SUBSCRIBE_STORAGE_KEY as STORAGE_KEY } from "@/lib/subscribe-storage"
 import { useAuth } from "@/lib/auth"
 
@@ -40,7 +40,7 @@ export interface SubscribeState {
   planDuration: PlanDuration | null
   startDate: string | null
   profile: CustomerProfile
-  goal: Goal | null
+  goal: Style | null
   tier: PlanTier | null
   dietTypes: DietType[]
   allergens: string[]

@@ -1,15 +1,15 @@
 import { useNavigate } from "react-router-dom"
-import { Flame, TrendingDown, TrendingUp, Dumbbell } from "lucide-react"
-import { GOALS, type Goal as GoalId } from "@/data/menu"
+import { TrendingDown, TrendingUp, Flame, Dumbbell } from "lucide-react"
+import { GOALS, type Style } from "@/data/menu"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
-const ICONS: Record<GoalId, typeof Flame> = {
-  "Weight Loss": TrendingDown,
-  "Weight Gain": TrendingUp,
-  "Weight Maintenance": Flame,
-  "Muscle Building": Dumbbell,
+const ICONS: Record<Style, typeof TrendingDown> = {
+  Little: TrendingDown,
+  Hearty: TrendingUp,
+  Classic: Flame,
+  Charged: Dumbbell,
 }
 
 function Goal() {
@@ -18,7 +18,7 @@ function Goal() {
 
   return (
     <div>
-      <h1 className="text-3xl sm:text-4xl text-ink mb-2">What's your goal?</h1>
+      <h1 className="text-3xl sm:text-4xl text-ink mb-2">What's your style?</h1>
       <p className="text-ink-muted mb-8">This drives your default meal recommendations — you can fine-tune the menu later.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

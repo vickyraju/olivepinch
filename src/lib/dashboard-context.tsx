@@ -1,5 +1,5 @@
 import { createContext, useContext, useCallback, useMemo, useState, useEffect, type ReactNode } from "react"
-import type { DietType, Goal } from "@/data/menu"
+import type { DietType, Style } from "@/data/menu"
 import type { DeliverySlot, DeliveryTimeSlot, DeliveryAddress } from "@/lib/subscribe-context"
 import { computeEndDate, pausesUsedTotal, canPauseDate, toDateKey, PAUSE_LIMITS_BY_DURATION, type OrderStatus } from "@/lib/subscription"
 import { api, ApiError } from "@/lib/api"
@@ -32,7 +32,7 @@ export interface Subscription {
   planDuration: 7 | 14 | 28
   startDate: string
   mealsPerDay: 1 | 2 | 3
-  goal: Goal
+  goal: Style
   dietTypes: DietType[]
   allergens: string[]
   pausedDates: string[]
@@ -80,7 +80,7 @@ function displayStatusFor(deliveryDateIso: string, backendStatus: string): Order
   return "Scheduled"
 }
 
-function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[], allergens: string[]): Subscription {
+function mapSubscription(raw: RawSubscription, goal: Style, dietTypes: DietType[], allergens: string[]): Subscription {
   return {
     id: raw.id,
     status: subscriptionStatusFromEnum(raw.status),
@@ -109,7 +109,7 @@ interface DashboardContextValue {
   deleteHealthLog: (id: string) => Promise<void>
   togglePause: (date: string) => Promise<{ ok: boolean; reason?: string }>
   pauseMultiple: (dates: string[]) => Promise<{ ok: boolean; reason?: string }>
-  renew: (planDuration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, deliveryTimeSlot: DeliveryTimeSlot, promoCode?: string) => Promise<void>
+  renew: (planDuration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Style, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, deliveryTimeSlot: DeliveryTimeSlot, promoCode?: string) => Promise<void>
   confirmRenewal: () => Promise<void>
   updateMarketingOptIn: (value: boolean) => Promise<void>
   updateAddress: (address: DeliveryAddress, phone: string) => Promise<{ ok: boolean; reason?: string }>
@@ -194,7 +194,7 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   }, [customer.subscription.id, refetch])
 
   const renew = useCallback(
-    async (planDuration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, deliveryTimeSlot: DeliveryTimeSlot, promoCode?: string) => {
+    async (planDuration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Style, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, deliveryTimeSlot: DeliveryTimeSlot, promoCode?: string) => {
       const { subscriptionId } = await api.post<{ subscriptionId: string }>(`/subscriptions/${customer.subscription.id}/renew`, {
         planDuration,
         mealsPerDay,

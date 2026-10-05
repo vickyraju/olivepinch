@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom"
 import { CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import { useAuth } from "@/lib/auth"
-import { GOALS, DIET_TYPES, type Goal, type DietType } from "@/data/menu"
+import { GOALS, DIET_TYPES, type Style, type DietType } from "@/data/menu"
 import type { DeliveryTimeSlot } from "@/lib/subscribe-context"
 import { useDeliveryTimeSlots } from "@/lib/delivery-time-slots"
 import { useAllergens } from "@/lib/allergens"
@@ -33,7 +33,7 @@ function Subscription() {
   const sub = customer.subscription
   const [duration, setDuration] = useState<7 | 14 | 28>(sub.planDuration)
   const [mealsPerDay, setMealsPerDay] = useState<1 | 2 | 3>(sub.mealsPerDay)
-  const [goal, setGoal] = useState<Goal>(sub.goal)
+  const [goal, setGoal] = useState<Style>(sub.goal)
   const [dietTypes, setDietTypes] = useState<DietType[]>(sub.dietTypes)
   const [allergens, setAllergens] = useState<string[]>(sub.allergens)
   const [noAllergies, setNoAllergies] = useState(sub.allergens.length === 0)
@@ -218,7 +218,7 @@ function Subscription() {
         <Card className="p-6 sm:p-8 space-y-6">
           <div>
             <h2 className="text-lg text-ink mb-1">Renew your subscription</h2>
-            <p className="text-sm text-ink-muted mb-4">Your goal, diet, and allergy preferences carry over — edit them below if anything's changed.</p>
+            <p className="text-sm text-ink-muted mb-4">Your style, diet, and allergy preferences carry over — edit them below if anything's changed.</p>
           </div>
 
           {!editingPreferences ? (
@@ -233,7 +233,7 @@ function Subscription() {
                   <dd className="mt-0.5 text-ink font-medium">{mealsPerDay}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Goal</dt>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Style</dt>
                   <dd className="mt-0.5 text-ink font-medium">{goal}</dd>
                 </div>
                 <div>
@@ -298,7 +298,7 @@ function Subscription() {
               </div>
 
               <div>
-                <Label id="goal-label">Goal</Label>
+                <Label id="goal-label">Style</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="radiogroup" aria-labelledby="goal-label">
                   {GOALS.map((g) => (
                     <button

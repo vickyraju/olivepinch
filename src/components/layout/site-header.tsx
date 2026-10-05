@@ -9,7 +9,7 @@ import { cn, splitFullName } from "@/lib/utils"
 const BASE_LINKS = [
   { label: "Home", to: "/" },
   { label: "About Us", to: "/about" },
-  { label: "Diet Plans", to: "/diet-plans" },
+  { label: "Meal Plans", to: "/diet-plans" },
   { label: "Contact Us", to: "/contact" },
 ]
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom"
-import { Label } from "@/components/ui/label"
+import { Label, Required } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { PhoneInput } from "@/components/ui/phone-input"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -61,26 +61,29 @@ function Profile() {
   const category = bmi ? bmiCategory(bmi) : null
 
   const age = p.dateOfBirth ? calculateAge(p.dateOfBirth) : null
-  const dobValid = age !== null && age >= 7 && age <= 100
+  const dobValid = age !== null && age >= 16 && age <= 100
 
-  const canContinue =
-    firstName.trim().length > 0 &&
-    lastName.trim().length > 0 &&
-    p.phone.trim().length > 0 &&
-    p.gender !== "" &&
-    dobValid &&
-    hasHealthData &&
-    healthConsent
+  const missing = [
+    firstName.trim().length === 0 && "First name",
+    lastName.trim().length === 0 && "Last name",
+    p.phone.trim().length === 0 && "Phone number",
+    p.gender === "" && "Gender",
+    !dobValid && "Birth month & year",
+    !hasHealthData && "Height and weight",
+    !healthConsent && "Health data consent",
+  ].filter(Boolean) as string[]
+
+  const canContinue = missing.length === 0
 
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Tell us about you</h1>
-      <p className="text-ink-muted mb-8">We'll use this to calculate your BMI and recommend meals for your goal.</p>
+      <p className="text-ink-muted mb-8">We'll use this to calculate your BMI and recommend meals for your style.</p>
 
       <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft space-y-5">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="firstName">First name</Label>
+            <Label htmlFor="firstName">First name <Required /></Label>
             <Input
               id="firstName"
               autoComplete="given-name"
@@ -89,7 +92,7 @@ function Profile() {
             />
           </div>
           <div>
-            <Label htmlFor="lastName">Last name</Label>
+            <Label htmlFor="lastName">Last name <Required /></Label>
             <Input
               id="lastName"
               autoComplete="family-name"
@@ -100,7 +103,7 @@ function Profile() {
         </div>
 
         <div>
-          <Label htmlFor="phone">Phone number</Label>
+          <Label htmlFor="phone">Phone number <Required /></Label>
           <PhoneInput
             id="phone"
             value={p.phone}
@@ -109,7 +112,7 @@ function Profile() {
         </div>
 
         <div>
-          <Label htmlFor="gender">Gender</Label>
+          <Label htmlFor="gender">Gender <Required /></Label>
           <Select value={p.gender} onValueChange={(v) => update({ profile: { ...p, gender: v as Gender } })}>
             <SelectTrigger id="gender">
               <SelectValue placeholder="Select" />
@@ -123,7 +126,7 @@ function Profile() {
         </div>
 
         <div>
-          <Label htmlFor="dobMonth">Birth month &amp; year</Label>
+          <Label htmlFor="dobMonth">Birth month &amp; year <Required /></Label>
           <div className="grid grid-cols-2 gap-2">
             <Select
               value={dobMonth ? String(dobMonth) : ""}
@@ -153,13 +156,13 @@ function Profile() {
             </Select>
           </div>
           {p.dateOfBirth !== "" && !dobValid && (
-            <p className="mt-1.5 text-sm text-coral-600">You must be between 7 and 100 years old.</p>
+            <p className="mt-1.5 text-sm text-coral-600">You must be 16 or above.</p>
           )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="height">Height (cm)</Label>
+            <Label htmlFor="height">Height (cm) <Required /></Label>
             <Input
               id="height"
               type="number"
@@ -170,7 +173,7 @@ function Profile() {
             />
           </div>
           <div>
-            <Label htmlFor="weight">Weight (kg)</Label>
+            <Label htmlFor="weight">Weight (kg) <Required /></Label>
             <Input
               id="weight"
               type="number"
@@ -192,8 +195,9 @@ function Profile() {
             />
             <Label htmlFor="health-consent" className="mb-0 font-normal leading-snug cursor-pointer">
               I consent to OlivePinch collecting my height, weight, and body measurements
-              to calculate my BMI and recommend meals for my goal. This is special category
-              health data under UK GDPR — see our{" "}
+              to calculate my BMI and personalise my meal recommendations. This is special
+              category health data under UK GDPR, and we make no claims about health
+              outcomes — see our{" "}
               <Link to="/privacy-policy" target="_blank" className="text-olive-600 underline">Privacy Policy</Link>.
             </Label>
           </div>
@@ -208,7 +212,19 @@ function Profile() {
             <Badge variant={BMI_CATEGORY_COLOR[category]}>{category}</Badge>
           </div>
         )}
+        {bmi && (
+          <p className="text-xs text-ink-muted">
+            BMI is a general guide only and doesn't account for muscle, build, or age. It isn't
+            medical advice — speak to a healthcare professional about what's right for you.
+          </p>
+        )}
       </div>
+
+      {missing.length > 0 && (
+        <p className="mt-6 text-sm text-ink-muted">
+          Still needed to continue: <span className="text-coral-600">{missing.join(", ")}</span>.
+        </p>
+      )}
 
       <StepNav
         backTo="/subscribe/menu"

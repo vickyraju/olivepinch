@@ -13,7 +13,7 @@ export const PHASES: Phase[] = [
     name: "Choose",
     steps: [
       { path: "/subscribe", label: "Postcode" },
-      { path: "/subscribe/goal", label: "Goal" },
+      { path: "/subscribe/goal", label: "Style" },
       { path: "/subscribe/tier", label: "Tier" },
       { path: "/subscribe/plan", label: "Plan" },
       { path: "/subscribe/preferences", label: "Preferences" },

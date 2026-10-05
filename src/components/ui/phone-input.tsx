@@ -121,7 +121,6 @@ function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
         onBlur={() => setFocused(false)}
         placeholder={focused ? "" : "7911 123456"}
         inputMode="tel"
-        limitMaxLength
         // UK only: the number is stored as +44<digits> and the placeholder shows no leading 0, so
         // a typed trunk "0" just adds an 11th digit the library tolerates. Other countries are
         // left alone — a leading 0 is part of the number in some (e.g. Italy).

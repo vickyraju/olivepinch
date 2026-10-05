@@ -8,7 +8,7 @@ function SiteFooter() {
         <div className="col-span-2 md:col-span-1">
           <Logo className="text-xl" />
           <p className="mt-3 text-sm text-ink-muted max-w-xs">
-            Meals cooked fresh each morning and matched to your goal, delivered daily across Birmingham.
+            Fresh, Tasty, Delivered at your doorstep.
           </p>
         </div>
 
@@ -17,7 +17,7 @@ function SiteFooter() {
           <ul className="space-y-2 text-sm text-ink-muted">
             <li><Link to="/" className="hover:text-olive-600">Home</Link></li>
             <li><Link to="/about" className="hover:text-olive-600">About Us</Link></li>
-            <li><Link to="/diet-plans" className="hover:text-olive-600">Diet Plans</Link></li>
+            <li><Link to="/diet-plans" className="hover:text-olive-600">Meal Plans</Link></li>
             <li><Link to="/contact" className="hover:text-olive-600">Contact Us</Link></li>
           </ul>
         </div>
