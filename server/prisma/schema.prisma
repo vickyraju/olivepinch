@@ -206,7 +206,7 @@ model MenuWeekItem {
   // menu is a different lineup each day, so items are scoped to one date, not the whole week.
   date       DateTime @db.Date
 
-  @@unique([menuWeekId, menuItemId])
+  @@unique([menuWeekId, date, menuItemId])
   @@index([menuWeekId, date])
 }
 
