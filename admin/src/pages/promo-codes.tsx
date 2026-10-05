@@ -24,10 +24,10 @@ interface PromoCode {
 }
 
 const GOAL_LABELS: Record<string, string> = {
-  WEIGHT_LOSS: "Weight Loss",
-  WEIGHT_GAIN: "Weight Gain",
-  WEIGHT_MAINTENANCE: "Weight Maintenance",
-  MUSCLE_BUILDING: "Muscle Building",
+  WEIGHT_LOSS: "Little",
+  WEIGHT_GAIN: "Hearty",
+  WEIGHT_MAINTENANCE: "Classic",
+  MUSCLE_BUILDING: "Charged",
 }
 const TIER_LABELS: Record<string, string> = { BASIC: "Basic", ADVANCED: "Advanced" }
 

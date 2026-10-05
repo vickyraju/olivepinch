@@ -18,10 +18,10 @@ interface Plan {
 const DURATIONS = [7, 14, 28] as const
 const GOALS = ["WEIGHT_LOSS", "WEIGHT_GAIN", "WEIGHT_MAINTENANCE", "MUSCLE_BUILDING"] as const
 const GOAL_LABELS: Record<string, string> = {
-  WEIGHT_LOSS: "Weight Loss",
-  WEIGHT_GAIN: "Weight Gain",
-  WEIGHT_MAINTENANCE: "Weight Maintenance",
-  MUSCLE_BUILDING: "Muscle Building",
+  WEIGHT_LOSS: "Little",
+  WEIGHT_GAIN: "Hearty",
+  WEIGHT_MAINTENANCE: "Classic",
+  MUSCLE_BUILDING: "Charged",
 }
 const TIERS = ["BASIC", "ADVANCED"] as const
 const TIER_LABELS: Record<string, string> = { BASIC: "Basic", ADVANCED: "Advanced" }
