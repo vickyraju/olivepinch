@@ -1,10 +1,12 @@
 import type { DietType, Goal, DeliverySlot, MealSlot, PlanTier } from "@prisma/client"
 
+// Mirrors the customer app's Style names (src/lib/enum-map.ts GOAL_TO_ENUM) — the enum values
+// stay WEIGHT_LOSS/WEIGHT_GAIN/... but what a customer reads is "Little"/"Hearty"/...
 export const GOAL_LABELS: Record<Goal, string> = {
-  WEIGHT_LOSS: "Weight Loss",
-  WEIGHT_GAIN: "Weight Gain",
-  WEIGHT_MAINTENANCE: "Weight Maintenance",
-  MUSCLE_BUILDING: "Muscle Building",
+  WEIGHT_LOSS: "Little",
+  WEIGHT_GAIN: "Hearty",
+  WEIGHT_MAINTENANCE: "Classic",
+  MUSCLE_BUILDING: "Charged",
 }
 
 export const DIET_LABELS: Record<DietType, string> = {
