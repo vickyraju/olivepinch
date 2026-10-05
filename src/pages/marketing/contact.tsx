@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Clock, Mail, MapPin, Phone } from "lucide-react"
+import { Mail, MapPin, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -8,7 +8,6 @@ const CONTACT_INFO = [
   { icon: Mail, label: "hello@olivepinch.co.uk" },
   { icon: Phone, label: "0121 496 0000" },
   { icon: MapPin, label: "Birmingham, UK" },
-  { icon: Clock, label: "Support hours: Mon–Sat, 8am–8pm" },
 ]
 
 function Contact() {

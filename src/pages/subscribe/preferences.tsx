@@ -30,7 +30,12 @@ function Preferences() {
   }
 
   function toggleNoAllergies(checked: boolean) {
-    update({ noAllergies: checked, allergens: checked ? [] : state.allergens })
+    update({
+      noAllergies: checked,
+      allergens: checked ? [] : state.allergens,
+      otherAllergen: checked ? "" : state.otherAllergen,
+      otherAllergenSelected: checked ? false : state.otherAllergenSelected,
+    })
   }
 
   return (
@@ -91,6 +96,33 @@ function Preferences() {
             </div>
           ))}
         </div>
+        <div className="border-t border-border pt-4">
+          <div className="flex items-center gap-2.5">
+            <Checkbox
+              id="allergen-other"
+              checked={state.otherAllergenSelected}
+              disabled={state.noAllergies}
+              onCheckedChange={(v) => update({ otherAllergenSelected: v === true })}
+            />
+            <Label htmlFor="allergen-other" className="mb-0 font-normal cursor-pointer">
+              Other
+            </Label>
+          </div>
+          {state.otherAllergenSelected && (
+            <div className="mt-3">
+              <Label htmlFor="allergen-other-text">Please specify</Label>
+              <input
+                id="allergen-other-text"
+                type="text"
+                value={state.otherAllergen}
+                disabled={state.noAllergies}
+                onChange={(e) => update({ otherAllergen: e.target.value })}
+                className="flex h-11 w-full rounded-md border border-border bg-surface px-4 py-2 text-base text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500"
+                placeholder="Enter an allergen"
+              />
+            </div>
+          )}
+        </div>
         <div className="flex items-center gap-2.5 border-t border-border pt-4">
           <Checkbox
             id="no-allergies"
@@ -105,7 +137,13 @@ function Preferences() {
 
       <StepNav
         backTo="/subscribe/plan"
-        continueDisabled={state.dietTypes.length === 0 || (!state.noAllergies && state.allergens.length === 0)}
+        continueDisabled={
+          state.dietTypes.length === 0 ||
+          (!state.noAllergies &&
+            state.allergens.length === 0 &&
+            !(state.otherAllergenSelected && state.otherAllergen.trim())) ||
+          (state.otherAllergenSelected && !state.otherAllergen.trim())
+        }
         onContinue={() => navigate("/subscribe/menu")}
       />
     </div>

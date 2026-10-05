@@ -28,7 +28,7 @@ const MONTHS = [
 ]
 
 // Runs from this year back, rather than starting at the youngest allowed birth year — a list
-// that opens at 2019 reads like a bug. The 7-100 check below still rejects a too-recent pick.
+// that opens at 2019 reads like a bug. The 16-100 check below still rejects a too-recent pick.
 const CURRENT_YEAR = new Date().getFullYear()
 const DOB_YEARS = Array.from({ length: 101 }, (_, i) => CURRENT_YEAR - i)
 

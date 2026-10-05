@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field-error"
 import { GoogleIcon } from "@/components/ui/social-icons"
-import { useSubscribe } from "@/lib/subscribe-context"
+import { useSubscribe, type SubscribeState } from "@/lib/subscribe-context"
 import { useAuth, PENDING_SOCIAL_SIGNUP_KEY } from "@/lib/auth"
 import { GOAL_TO_ENUM, DIET_TO_ENUM } from "@/lib/enum-map"
 import { SUBSCRIBE_STORAGE_KEY } from "@/lib/subscribe-storage"
@@ -18,6 +18,13 @@ const PERKS = [
   "Pause up to 4 times a month — never lose a meal you've paid for",
   "Your health data stays yours — export or delete it any time",
 ]
+
+function selectedAllergens(state: SubscribeState): string[] {
+  const allergens = [...state.allergens]
+  const other = state.otherAllergen.trim()
+  if (state.otherAllergenSelected && other && !allergens.includes(other)) allergens.push(other)
+  return allergens
+}
 
 function AccountSetup() {
   const { state, update } = useSubscribe()
@@ -79,7 +86,7 @@ function AccountSetup() {
           {
             goal: GOAL_TO_ENUM[state.goal],
             dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
-            allergens: state.allergens,
+            allergens: selectedAllergens(state),
             postcode: state.postcode,
           },
           { Authorization: `Bearer ${signupToken}` }
@@ -122,7 +129,7 @@ function AccountSetup() {
         {
           goal: GOAL_TO_ENUM[state.goal],
           dietTypes: state.dietTypes.map((d) => DIET_TO_ENUM[d]),
-          allergens: state.allergens,
+          allergens: selectedAllergens(state),
           postcode: state.postcode,
         },
         { Authorization: `Bearer ${res.signupToken}` }

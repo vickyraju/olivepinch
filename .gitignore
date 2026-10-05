@@ -4,6 +4,7 @@ dist-ssr
 *.local
 .DS_Store
 .vercel
+.firecrawl/
 .env
 .mcp.json
 .env*

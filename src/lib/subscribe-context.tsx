@@ -44,6 +44,8 @@ export interface SubscribeState {
   tier: PlanTier | null
   dietTypes: DietType[]
   allergens: string[]
+  otherAllergen: string
+  otherAllergenSelected: boolean
   noAllergies: boolean
   mealsPerDay: MealsPerDay | null
   dayMenus: DayMenu[]
@@ -92,6 +94,8 @@ const INITIAL_STATE: SubscribeState = {
   tier: null,
   dietTypes: [],
   allergens: [],
+  otherAllergen: "",
+  otherAllergenSelected: false,
   noAllergies: false,
   mealsPerDay: null,
   dayMenus: [],

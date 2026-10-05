@@ -7,7 +7,7 @@ function Hero() {
     <section className="pt-14 pb-20 sm:pt-20 sm:pb-28">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <div>
-          <p className="eyebrow mb-4">Fresh, Tasty, At your Doorstep</p>
+          <p className="eyebrow mb-4">Tasty, at your doorstep</p>
           <h1 className="text-5xl sm:text-6xl lg:text-7xl text-ink">
             Fresh meals, built around <em>your</em> choice.
           </h1>
@@ -21,6 +21,11 @@ function Hero() {
             </Button>
             <Button asChild variant="outline" size="lg">
               <a href="#how-it-works">See how it works</a>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <a href="https://orbitonline.co.uk/olivepinch/" target="_blank" rel="noopener noreferrer">
+                Order Now
+              </a>
             </Button>
           </div>
         </div>

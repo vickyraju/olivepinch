@@ -8,7 +8,7 @@ function SiteFooter() {
         <div className="col-span-2 md:col-span-1">
           <Logo className="text-xl" />
           <p className="mt-3 text-sm text-ink-muted max-w-xs">
-            Fresh, Tasty, At your Doorstep.
+            Fresh, tasty, delivered at your doorstep.
           </p>
         </div>
 
@@ -45,6 +45,14 @@ function SiteFooter() {
           <span>© {new Date().getFullYear()} OlivePinch.</span>
           <span>Prices in GBP (£). Delivering to Birmingham postcodes only.</span>
         </div>
+      </div>
+      <div className="border-t border-border">
+        <p className="mx-auto max-w-7xl px-5 sm:px-8 py-5 text-xs text-ink-muted">
+          OlivePinch meals are designed to be part of a varied and balanced diet. We do not
+          provide medical, nutritional, or weight-management advice, and make no claims about
+          health outcomes. For specific dietary or health needs, consult a registered dietitian
+          or healthcare professional.
+        </p>
       </div>
     </footer>
   )
