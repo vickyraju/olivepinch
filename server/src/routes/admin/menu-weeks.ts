@@ -56,16 +56,18 @@ adminMenuWeeksRouter.put("/:weekStart", validateBody(putWeekSchema), async (req,
 
   const validDates = new Set(weekDates(weekStart).map((d) => d.toISOString().slice(0, 10)))
   const rows: { menuItemId: string; date: string }[] = []
-  const seenItemIds = new Set<string>()
+  const seenItemIdsByDate = new Map<string, Set<string>>()
   for (const { date, menuItemIds } of dayItems) {
     if (!validDates.has(date)) return res.status(400).json({ error: `${date} is not in this week` })
+    const seen = seenItemIdsByDate.get(date) ?? new Set<string>()
     for (const menuItemId of menuItemIds) {
-      if (seenItemIds.has(menuItemId)) {
-        return res.status(400).json({ error: "The same item can't be used twice in one week" })
+      if (seen.has(menuItemId)) {
+        return res.status(400).json({ error: "The same item can't be used twice on the same day" })
       }
-      seenItemIds.add(menuItemId)
+      seen.add(menuItemId)
       rows.push({ menuItemId, date })
     }
+    seenItemIdsByDate.set(date, seen)
   }
 
   const existing = await prisma.menuWeek.findUnique({ where: { weekStart } })
