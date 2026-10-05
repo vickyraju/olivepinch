@@ -35,10 +35,6 @@ const GOAL_LABELS: Record<string, string> = {
 const TIERS = ["BASIC", "ADVANCED"]
 const TIER_LABELS: Record<string, string> = { BASIC: "Basic", ADVANCED: "Advanced" }
 
-// Must match REQUIRED_PHOTO_WIDTH/HEIGHT in the backend's admin/menu-items route.
-const REQUIRED_PHOTO_WIDTH = 1200
-const REQUIRED_PHOTO_HEIGHT = 800
-
 type SlotFilter = "ALL" | "BREAKFAST" | "LUNCH" | "DINNER"
 
 const slotFilters: { key: SlotFilter; label: string }[] = [
@@ -61,15 +57,6 @@ const emptyForm = {
   protein: "",
   carbs: "",
   fat: "",
-}
-
-function readImageDimensions(dataUrl: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
-    img.onerror = () => reject(new Error("Could not read image"))
-    img.src = dataUrl
-  })
 }
 
 function MenuItemCard({
@@ -242,18 +229,21 @@ function MenuControl() {
       setPhotoError("Photo must be a PNG or JPEG file.")
       return
     }
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = () => reject(new Error("Could not read file"))
-      reader.readAsDataURL(file)
-    })
-    const { width, height } = await readImageDimensions(dataUrl)
-    if (width !== REQUIRED_PHOTO_WIDTH || height !== REQUIRED_PHOTO_HEIGHT) {
-      setPhotoError(`Photo must be exactly ${REQUIRED_PHOTO_WIDTH}×${REQUIRED_PHOTO_HEIGHT}px (uploaded ${width}×${height}px).`)
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          if (typeof reader.result === "string") resolve(reader.result)
+          else reject(new Error("Could not read file"))
+        }
+        reader.onerror = () => reject(new Error("Could not read file"))
+        reader.readAsDataURL(file)
+      })
+      setForm((f) => ({ ...f, photoUrl: dataUrl }))
+    } catch {
+      setPhotoError("Could not read photo. Please try another PNG or JPEG file.")
       return
     }
-    setForm((f) => ({ ...f, photoUrl: dataUrl }))
   }
 
   function removePhoto() {
@@ -520,9 +510,7 @@ function MenuControl() {
                   <label className="flex flex-col items-center justify-center gap-1.5 w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-[#2E6B3E] hover:bg-green-50/40 transition-colors">
                     <span className="material-symbols-outlined text-[26px] text-gray-400">cloud_upload</span>
                     <span className="text-sm font-medium text-gray-700">Click to upload photo</span>
-                    <span className="text-xs text-gray-400">
-                      PNG or JPEG, exactly {REQUIRED_PHOTO_WIDTH}×{REQUIRED_PHOTO_HEIGHT}px
-                    </span>
+                    <span className="text-xs text-gray-400">PNG or JPEG, any resolution</span>
                     <input
                       type="file"
                       accept="image/png,image/jpeg"
