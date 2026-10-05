@@ -66,15 +66,31 @@ function SiteHeader() {
           )}
         </div>
 
-        <button
-          type="button"
-          className="md:hidden h-11 w-11 flex items-center justify-center cursor-pointer"
-          aria-label={open ? "Close menu" : "Open menu"}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex md:hidden items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href={ORDER_NOW_URL} target="_blank" rel="noopener noreferrer">Order Now</a>
+          </Button>
+          {isAuthenticated ? (
+            <Button asChild variant="outline" size="sm">
+              <Link to="/dashboard">
+                <User className="h-3.5 w-3.5" /> Hi, {firstName}
+              </Link>
+            </Button>
+          ) : (
+            <Button asChild variant="primary" size="sm">
+              <Link to="/subscribe">Subscribe Now</Link>
+            </Button>
+          )}
+          <button
+            type="button"
+            className="h-11 w-11 flex items-center justify-center cursor-pointer ml-1"
+            aria-label={open ? "Close menu" : "Open menu"}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -90,22 +106,6 @@ function SiteHeader() {
               {link.label}
             </NavLink>
           ))}
-          <div className="flex gap-3">
-            <Button asChild variant="outline" size="md" className="flex-1" onClick={() => setOpen(false)}>
-              <a href={ORDER_NOW_URL} target="_blank" rel="noopener noreferrer">Order Now</a>
-            </Button>
-            {isAuthenticated ? (
-              <Button asChild variant="outline" size="md" className="flex-1" onClick={() => setOpen(false)}>
-                <Link to="/dashboard">
-                  <User className="h-4 w-4" /> Hi, {firstName}
-                </Link>
-              </Button>
-            ) : (
-              <Button asChild variant="primary" size="md" className="flex-1" onClick={() => setOpen(false)}>
-                <Link to="/subscribe">Subscribe Now</Link>
-              </Button>
-            )}
-          </div>
         </nav>
       )}
     </header>
