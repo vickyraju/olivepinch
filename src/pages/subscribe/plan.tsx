@@ -47,8 +47,8 @@ function Plan() {
 
   return (
     <div>
-      <h1 className="text-3xl sm:text-4xl text-ink mb-2">Choose your plan</h1>
-      <p className="text-ink-muted mb-8">Choose your meals per day and plan length. You can renew, pause, or change your plan at any time from your dashboard.</p>
+      <h1 className="text-3xl sm:text-4xl text-ink mb-2">Choose your meals per day and plan length</h1>
+      <p className="text-ink-muted mb-8">You can renew, pause, or change your plan at any time from your dashboard.</p>
 
       <h2 className="text-xl text-ink mb-1">How many meals a day?</h2>
       <p className="text-sm text-ink-muted mb-4">This sets how many meal slots we fill for every day of your plan.</p>
