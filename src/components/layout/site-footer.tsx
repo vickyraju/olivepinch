@@ -48,7 +48,7 @@ function SiteFooter() {
       </div>
       <div className="border-t border-border">
         <p className="mx-auto max-w-7xl px-5 sm:px-8 py-5 text-xs text-ink-muted">
-          OlivePinch meals are designed to be part of a varied and balanced diet. We do not
+          <strong className="font-semibold text-ink">Disclaimer:</strong> OlivePinch meals are designed to be part of a varied and balanced diet. We do not
           provide medical, nutritional, or weight-management advice, and make no claims about
           health outcomes. For specific dietary or health needs, consult a registered dietitian
           or healthcare professional.
