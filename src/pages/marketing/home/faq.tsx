@@ -9,7 +9,7 @@ const FAQS = [
   },
   {
     q: "Can I pause my subscription?",
-    a: "Yes — up to 4 times a month, in whole delivery days. Paused days are added back onto your subscription's end date, so you never lose meals you've paid for.",
+    a: "Yes — pauses depend on your plan length. A 7-day plan has no pauses, a 14-day plan includes 2 pauses and a 28-day plan includes 4. Each paused delivery day moves your end date back by one day, so you never lose a meal you've paid for.",
   },
   {
     q: "What if my payment fails?",
