@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 const CONTACT_INFO = [
-  { icon: Mail, label: "hello@olivepinch.co.uk" },
+  { icon: Mail, label: "hello@olivepinch.com" },
   { icon: Phone, label: "0121 496 0000" },
   { icon: MapPin, label: "Birmingham, UK" },
 ]

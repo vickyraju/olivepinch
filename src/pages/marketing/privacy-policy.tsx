@@ -93,8 +93,8 @@ const SECTIONS = [
     body: (
       <p>
         Questions about this policy or your data? Email{" "}
-        <a href="mailto:hello@olivepinch.co.uk" className="text-olive-600 underline">
-          hello@olivepinch.co.uk
+        <a href="mailto:hello@olivepinch.com" className="text-olive-600 underline">
+          hello@olivepinch.com
         </a>{" "}
         or reach us via our{" "}
         <a href="/contact" className="text-olive-600 underline">Contact page</a>.
