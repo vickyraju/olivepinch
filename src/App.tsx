@@ -6,6 +6,7 @@ import DietPlans from '@/pages/marketing/diet-plans'
 import Contact from '@/pages/marketing/contact'
 import PrivacyPolicy from '@/pages/marketing/privacy-policy'
 import ShippingRefundPolicy from '@/pages/marketing/shipping-refund-policy'
+import Terms from '@/pages/marketing/terms'
 import Login from '@/pages/login'
 import CompleteAccount from '@/pages/complete-account'
 import { ProtectedRoute } from '@/components/protected-route'
@@ -38,6 +39,7 @@ function App() {
         <Route path="/diet-plans" element={<DietPlans />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/shipping-refund-policy" element={<ShippingRefundPolicy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Route>
       <Route path="/login" element={<Login />} />

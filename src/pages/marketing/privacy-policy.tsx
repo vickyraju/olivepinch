@@ -1,125 +1,242 @@
-const SECTIONS = [
+import { LegalPage, type LegalSection } from "@/components/legal/legal-page"
+
+const MAIL = (
+  <a href="mailto:hello@olivepinch.com" className="text-olive-600 underline">
+    hello@olivepinch.com
+  </a>
+)
+
+const SECTIONS: LegalSection[] = [
   {
-    heading: "What we collect",
+    heading: "1. Who we are",
+    body: (
+      <p>
+        The controller of your personal information is Olive Pinch LTD trading as Olive Pinch, at 260
+        Windsor street, Birmingham, B7 4DX. You can contact us about privacy at {MAIL}.
+      </p>
+    ),
+  },
+  {
+    heading: "2. What information we collect",
+    body: (
+      <ul className="list-disc pl-5 space-y-2">
+        <li><strong>Identity and contact details:</strong> your name, email address, phone number and delivery address.</li>
+        <li><strong>Order details:</strong> what you ordered, delivery date and time, delivery instructions, and your order history.</li>
+        <li>
+          <strong>Payment information:</strong> your payment is handled by our payment provider, so we do not see or
+          store your full card number. We receive confirmation that you have paid, and the last four digits of your card.
+        </li>
+        <li>
+          <strong>Dietary and allergy information:</strong> if you tell us about allergies, intolerances or health-related
+          dietary needs, we collect that so we can prepare and describe your food safely. This can count as health
+          information, which receives extra protection (see section 4).
+        </li>
+        <li>
+          <strong>Messages and feedback:</strong> emails, phone calls, and messages you send us through our website or
+          social media, and any reviews or complaints.
+        </li>
+        <li>
+          <strong>Technical information:</strong> your IP address, browser type, device and pages you visit, collected
+          through cookies and similar technologies (see section 9).
+        </li>
+        <li><strong>Marketing preferences:</strong> whether you have chosen to receive updates and offers from us.</li>
+      </ul>
+    ),
+  },
+  {
+    heading: "3. How and why we use your information",
     body: (
       <>
-        <p>When you sign up and use OlivePinch, we collect:</p>
-        <ul className="list-disc pl-5 space-y-1 mt-2">
-          <li>Contact and account details — name, email, phone, delivery address, postcode.</li>
-          <li>
-            Health data you choose to give us — height, weight, and body measurements, used to
-            calculate your BMI and recommend meals for your style. This is <strong>special category
-            data</strong> under UK GDPR, so we only collect it with your explicit, separate consent
-            during signup, and you can withdraw it at any time from your dashboard.
-          </li>
-          <li>Order, subscription, and delivery history — plans chosen, menu selections, delivery dates.</li>
-          <li>Payment confirmation — processed by Worldpay; we never see or store your card details.</li>
-          <li>Marketing preferences, if you opt in — this is always optional and separate from account creation.</li>
-        </ul>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border border-border border-collapse">
+            <thead className="bg-olive-50 text-ink text-left">
+              <tr>
+                <th className="p-3 font-semibold border border-border">What we do</th>
+                <th className="p-3 font-semibold border border-border">Information used</th>
+                <th className="p-3 font-semibold border border-border">Legal basis</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Take, prepare and deliver your food", "Identity and contact details, order details, delivery address", "Contract: we need it to fulfil your order"],
+                ["Take payment and give refunds", "Order details, payment confirmation", "Contract"],
+                ["Keep you safe with allergens and dietary needs", "Allergy and dietary information", "Your explicit consent, and our legal duty to provide allergen information"],
+                ["Answer your questions and handle complaints", "Contact details, messages, order details", "Legitimate interests: running our business and helping customers"],
+                ["Keep business and tax records", "Order and payment records", "Legal obligation"],
+                ["Send you updates, offers and news", "Name, email, phone, marketing preferences", "Your consent. You can withdraw it at any time"],
+                ["Improve our website and menu, and prevent fraud", "Technical information, order history", "Legitimate interests"],
+              ].map(([what, info, basis]) => (
+                <tr key={what}>
+                  <td className="p-3 border border-border align-top">{what}</td>
+                  <td className="p-3 border border-border align-top">{info}</td>
+                  <td className="p-3 border border-border align-top">{basis}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-4">We do not sell your personal information.</p>
       </>
     ),
   },
   {
-    heading: "How we use it",
+    heading: "4. Allergy and health-related information",
     body: (
       <p>
-        To run your subscription: matching meals to your styles, processing payment, scheduling and
-        confirming deliveries, and providing customer support. Where you've opted in, we may also
-        email you about new menus or offers. We do not use your health data for anything beyond
-        meal recommendation, and we do not sell your data.
+        If you give us information about allergies or health-related dietary needs, we will only use it to prepare,
+        describe and deliver your food safely and to answer your questions about it. We ask for your explicit consent
+        to do this, and you can withdraw consent at any time by contacting us, although we may then be unable to
+        confirm that a dish is suitable for you.
       </p>
     ),
   },
   {
-    heading: "Who we share it with",
+    heading: "5. Who we share your information with",
     body: (
       <>
-        <p>We share only what's needed to run the service, with these processors:</p>
+        <p>We only share your information where we need to, with:</p>
         <ul className="list-disc pl-5 space-y-1 mt-2">
-          <li><strong>Supabase</strong> — hosts our database and handles account sign-in (email code, or Google sign-in).</li>
-          <li><strong>Worldpay</strong> — processes card payments securely; card details go directly to Worldpay.</li>
-          <li><strong>Resend</strong> — sends transactional emails (order confirmations, account recovery).</li>
+          <li>our <strong>payment provider</strong> “TakePayment” for secure payments;</li>
+          <li>our <strong>delivery drivers</strong>, who receive your name, address, phone number and delivery instructions;</li>
+          <li>our <strong>website host, order system and email provider</strong>, who store and process data on our behalf;</li>
+          <li>
+            <strong>professional advisers</strong>, such as accountants, and <strong>authorities</strong> such as HMRC or
+            the police, where the law requires it.
+          </li>
         </ul>
-        <p className="mt-2">We don't sell or rent your data to third parties for marketing.</p>
+        <p className="mt-3">
+          We make sure any company that handles your information on our behalf keeps it secure and uses it only on our
+          instructions.
+        </p>
       </>
     ),
   },
   {
-    heading: "How long we keep it",
+    heading: "6. Transfers outside the UK",
     body: (
       <p>
-        We keep active account data for as long as your subscription is open. If you close your
-        account, records we're legally required to retain (such as payment and order history for
-        tax purposes) are anonymised rather than deleted outright — your name and contact details
-        are removed, but the underlying transaction record is kept for the period the law requires.
+        Some of our providers may store or process information outside the UK. Where this happens, we make sure
+        appropriate protection is in place, such as approved standard contractual clauses or an adequacy decision.
       </p>
     ),
   },
   {
-    heading: "Your rights",
+    heading: "7. How long we keep your information",
+    body: (
+      <ul className="list-disc pl-5 space-y-1">
+        <li><strong>Order and payment records:</strong> for 6 years after the order, to meet tax and accounting rules.</li>
+        <li><strong>Account and contact details:</strong> while you remain a customer, and for 3 years after your last order.</li>
+        <li><strong>Allergy and dietary information:</strong> until you ask us to delete it, or for 3 years after your last order.</li>
+        <li><strong>Marketing details:</strong> until you unsubscribe or withdraw consent.</li>
+        <li><strong>Messages and complaints:</strong> for 2 years.</li>
+        <li className="list-none pl-0 pt-1">When we no longer need your information, we delete it or anonymize it.</li>
+      </ul>
+    ),
+  },
+  {
+    heading: "8. Keeping your information secure",
+    body: (
+      <p>
+        We use sensible technical and organizational measures to protect your information, including secure payment
+        processing, restricted access, and encrypted connections on our website. No online service is completely
+        secure, so please keep any passwords private. If a data breach puts your rights at risk, we will tell you and
+        the Information Commissioner’s Office (ICO) as the law requires.
+      </p>
+    ),
+  },
+  {
+    heading: "9. Cookies",
+    body: (
+      <p>
+        Our website uses cookies, which are small files stored on your device. Essential cookies make the site and
+        checkout work. We also use analytics and marketing cookies, but only if you accept them in our cookie banner.
+        You can change your choice at any time through our cookie settings or your browser settings.
+      </p>
+    ),
+  },
+  {
+    heading: "10. Your rights",
     body: (
       <>
-        <p>Under UK GDPR, you can at any time:</p>
+        <p>Under UK data protection law, you have the right to:</p>
         <ul className="list-disc pl-5 space-y-1 mt-2">
-          <li>
-            <strong>Export your data</strong> — download everything we hold on you, including your
-            profile, health data, order history, and consent record, from your dashboard's Privacy
-            settings.
-          </li>
-          <li>
-            <strong>Delete your account</strong> — also from your dashboard's Privacy settings. This
-            erases your personal data immediately, other than what we're legally required to retain
-            in anonymised form as described above.
-          </li>
-          <li>Withdraw marketing or health-data consent at any time from your account settings.</li>
-          <li>Contact us to correct inaccurate data or ask any question about how we handle it.</li>
+          <li>ask for a copy of the personal information we hold about you;</li>
+          <li>ask us to correct information that is wrong or incomplete;</li>
+          <li>ask us to delete your information, in some circumstances;</li>
+          <li>ask us to restrict how we use your information, in some circumstances;</li>
+          <li>object to us using your information based on our legitimate interests, and to direct marketing at any time;</li>
+          <li>ask for your information in a portable format, where we use it based on consent or contract;</li>
+          <li>withdraw consent at any time, where we rely on it.</li>
         </ul>
+        <p className="mt-3">
+          To use any of these rights, contact us using the details below. We will normally reply within one month and
+          will not charge a fee, unless a request is clearly unfounded or excessive. We may need to confirm your identity
+          first.
+        </p>
+        <p className="mt-3">
+          You also have the right to complain to the Information Commissioner’s Office (ICO), the UK data protection
+          regulator, at ico.org.uk or on 0303 123 1113. We would appreciate the chance to resolve your concern first, so
+          please contact us.
+        </p>
       </>
     ),
   },
   {
-    heading: "Cookies",
+    heading: "11. Marketing",
     body: (
-      <p id="cookies">
-        We use only strictly necessary cookies — to keep you signed in and remember your session.
-        We don't use advertising, tracking, or analytics cookies, so there are no optional cookie
-        preferences to configure. Because these cookies are essential to the site working, they
-        can't be switched off; you can still clear them any time via your browser settings.
+      <p>
+        We will only send you marketing emails or messages if you have agreed to receive them. Every message includes a
+        way to unsubscribe, or you can contact us at any time.
       </p>
     ),
   },
   {
-    heading: "Contact us",
+    heading: "12. Children",
     body: (
       <p>
-        Questions about this policy or your data? Email{" "}
-        <a href="mailto:hello@olivepinch.com" className="text-olive-600 underline">
-          hello@olivepinch.com
-        </a>{" "}
-        or reach us via our{" "}
-        <a href="/contact" className="text-olive-600 underline">Contact page</a>.
+        Our website and ordering service are for people aged 18 and over. We do not knowingly collect information about
+        children.
       </p>
     ),
+  },
+  {
+    heading: "13. Links to other websites",
+    body: (
+      <p>
+        Our website may link to other websites, such as our social media pages. We are not responsible for their privacy
+        practices, so please read their policies.
+      </p>
+    ),
+  },
+  {
+    heading: "14. Changes to this policy",
+    body: (
+      <p>
+        We may update this policy from time to time. The latest version will always be on our website, with the date it
+        was last updated at the top.
+      </p>
+    ),
+  },
+  {
+    heading: "15. Contact us",
+    body: <p>Email: {MAIL}</p>,
   },
 ]
 
 function PrivacyPolicy() {
   return (
-    <section className="pt-14 pb-20 sm:pt-20 sm:pb-28">
-      <div className="mx-auto max-w-3xl px-5 sm:px-8">
-        <h1 className="text-4xl sm:text-5xl text-ink mb-3">Privacy Policy</h1>
-        <p className="text-ink-muted mb-12">Last updated 24 August 2026</p>
-
-        <div className="space-y-10">
-          {SECTIONS.map((section) => (
-            <div key={section.heading}>
-              <h2 className="text-xl font-semibold text-ink mb-3">{section.heading}</h2>
-              <div className="text-ink-muted leading-relaxed">{section.body}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <LegalPage
+      title="Privacy Policy"
+      lastUpdated="5 October 2026"
+      intro={
+        <p>
+          At OlivePinch we respect your privacy. This policy explains what personal information we collect when you use
+          our website or order from us, how we use it, who we share it with, and what rights you have. We follow the UK
+          General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.
+        </p>
+      }
+      sections={SECTIONS}
+    />
   )
 }
 

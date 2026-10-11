@@ -102,7 +102,7 @@ function SiteFooter() {
           <ul className="space-y-2 text-sm text-ink-muted">
             <li><Link to="/shipping-refund-policy" className="hover:text-olive-600">Shipping and Refund Policy</Link></li>
             <li><Link to="/privacy-policy" className="hover:text-olive-600">Privacy Policy</Link></li>
-            <li><a href="#" className="hover:text-olive-600">Terms &amp; Conditions</a></li>
+            <li><Link to="/terms" className="hover:text-olive-600">Terms &amp; Conditions</Link></li>
             <li><Link to="/privacy-policy#cookies" className="hover:text-olive-600">Cookie Settings</Link></li>
           </ul>
         </div>
