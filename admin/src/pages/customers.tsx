@@ -29,10 +29,10 @@ interface CustomersResponse {
 }
 
 const GOAL_LABELS: Record<string, string> = {
-  WEIGHT_LOSS: "Little",
-  WEIGHT_GAIN: "Hearty",
-  WEIGHT_MAINTENANCE: "Classic",
-  MUSCLE_BUILDING: "Charged",
+  WEIGHT_LOSS: "Weight Loss",
+  WEIGHT_GAIN: "Weight Gain",
+  WEIGHT_MAINTENANCE: "Weight Maintenance",
+  MUSCLE_BUILDING: "Muscle Building",
 }
 
 type SubscribedFilter = "" | "true" | "false"

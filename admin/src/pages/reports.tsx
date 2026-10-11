@@ -32,10 +32,10 @@ interface ReportsSummary {
 }
 
 const GOAL_LABELS: Record<string, string> = {
-  WEIGHT_LOSS: "Little",
-  MUSCLE_BUILDING: "Charged",
-  WEIGHT_MAINTENANCE: "Classic",
-  WEIGHT_GAIN: "Hearty",
+  WEIGHT_LOSS: "Weight Loss",
+  MUSCLE_BUILDING: "Muscle Building",
+  WEIGHT_MAINTENANCE: "Weight Maintenance",
+  WEIGHT_GAIN: "Weight Gain",
   Unknown: "Unknown",
 }
 
