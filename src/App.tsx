@@ -5,6 +5,7 @@ import About from '@/pages/marketing/about'
 import DietPlans from '@/pages/marketing/diet-plans'
 import Contact from '@/pages/marketing/contact'
 import PrivacyPolicy from '@/pages/marketing/privacy-policy'
+import ShippingRefundPolicy from '@/pages/marketing/shipping-refund-policy'
 import Login from '@/pages/login'
 import CompleteAccount from '@/pages/complete-account'
 import { ProtectedRoute } from '@/components/protected-route'
@@ -36,6 +37,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/diet-plans" element={<DietPlans />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/shipping-refund-policy" element={<ShippingRefundPolicy />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Route>
       <Route path="/login" element={<Login />} />
