@@ -67,7 +67,7 @@ function About() {
                   <v.icon className="h-5 w-5 text-olive-600" strokeWidth={1.75} />
                 </span>
                 <div>
-                  <h3 className="text-base font-semibold text-ink mb-1">{v.title}</h3>
+                  <h3 className="text-lg font-semibold text-ink mb-1">{v.title}</h3>
                   <p className="text-sm text-ink-muted leading-relaxed">{v.desc}</p>
                 </div>
               </Card>
