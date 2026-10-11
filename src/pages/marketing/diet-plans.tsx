@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { ArrowRight, ChevronDown } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,7 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { GOALS, GOAL_PHOTOS, SLOTS_BY_MEALS_PER_DAY, defaultMenuFor, type Goal } from "@/data/menu"
+import { GOALS, GOAL_PHOTOS, type Goal } from "@/data/menu"
 import type { PlanTier } from "@/lib/subscribe-context"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { cn } from "@/lib/utils"
@@ -25,9 +25,6 @@ const TIERS: PlanTier[] = ["Basic", "Advanced"]
 const MEALS_OPTIONS: (1 | 2 | 3)[] = [1, 2, 3]
 
 function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }) {
-  const [expanded, setExpanded] = useState(false)
-  const sample = SLOTS_BY_MEALS_PER_DAY[3].map((slot) => defaultMenuFor(goal.id, ["Meat"], [], slot))
-
   return (
     <Card className="overflow-hidden flex flex-col">
       <FoodPhoto seed={seed} src={GOAL_PHOTOS[goal.id]} alt={goal.id} className="aspect-[16/9] rounded-none" />
@@ -42,28 +39,8 @@ function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }
           from <strong className="text-ink">£{TEASER_META[goal.id].from}</strong>/meal
         </p>
 
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="flex items-center justify-between text-sm font-semibold text-ink py-3 border-t border-border cursor-pointer"
-          aria-expanded={expanded}
-        >
-          View sample menu
-          <ChevronDown className={cn("h-4 w-4 transition-transform", expanded && "rotate-180")} />
-        </button>
-        {expanded && (
-          <ul className="text-sm text-ink-muted space-y-2 pb-4">
-            {sample.map((item) => (
-              <li key={item.id} className="flex justify-between gap-3">
-                <span>{item.slot}</span>
-                <span className="text-ink text-right">{item.name}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-
         <Button asChild variant="primary" size="md" className="mt-auto">
-          <Link to="/subscribe">Choose this style</Link>
+          <Link to="/subscribe">Choose this goal</Link>
         </Button>
       </div>
     </Card>
