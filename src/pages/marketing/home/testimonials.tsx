@@ -4,22 +4,22 @@ import { AvatarPlaceholder } from "@/components/ui/avatar-placeholder"
 const TESTIMONIALS = [
   {
     name: "Priya Shah",
-    role: "Charged plan",
+    role: "Muscle Building plan",
     quote: "Swapping meals to fit my macros took two minutes, and the pause feature saved me during a work trip without losing a single paid meal.",
   },
   {
     name: "Daniel Osei",
-    role: "Little plan",
+    role: "Weight Loss plan",
     quote: "Portion sizes and calories are consistent every day, which is exactly what I needed to actually stick with a plan for once.",
   },
   {
     name: "Freya Whitlock",
-    role: "Vegetarian, Classic",
+    role: "Vegetarian, Weight Maintenance",
     quote: "I set my allergies once at signup and every default menu since has respected them without me having to double-check.",
   },
   {
     name: "Marcus Ilie",
-    role: "Hearty plan",
+    role: "Weight Gain plan",
     quote: "Deliveries have shown up in my morning window every day since I started. Renewing took under a minute and I stayed logged in.",
   },
 ]

@@ -7,7 +7,7 @@ const STEPS = [
   {
     number: "02",
     title: "Choose your menu",
-    description: "Tell us your style and meal type — we build your daily menu, and you can pick from a wide variety.",
+    description: "Tell us your goal and meal type — we build your daily menu, and you can pick from a wide variety.",
   },
   {
     number: "03",
