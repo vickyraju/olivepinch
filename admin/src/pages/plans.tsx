@@ -101,7 +101,7 @@ function Plans() {
       <Header title="Pricing Plans" />
       <div className="flex-1 overflow-y-auto p-8">
         <p className="mb-6 text-sm text-gray-500">
-          The flat rate a customer pays, set per goal, tier, plan length and meals per day — not a sum of individual
+          The flat rate a customer pays, set per style, tier, plan length and meals per day — not a sum of individual
           meals. Pick a tier and meal count below, then click a price to edit it.
         </p>
 
