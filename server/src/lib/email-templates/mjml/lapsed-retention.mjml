@@ -45,7 +45,7 @@
             Still cooking for you, {{name}}?
           </mj-text>
           <mj-text padding="0 0 28px" color="#4b4b3f" font-size="16px">
-            It's been over a year since your last OlivePinch plan ended. Same kitchen, same city, same fresh meals cooked the morning they go out. Pick a goal and you can be back on a plan today.
+            It's been over a year since your last OlivePinch plan ended. Same kitchen, same city, same fresh meals cooked the morning they go out. Pick a style and you can be back on a plan today.
           </mj-text>
           <mj-button background-color="#c9502c" color="#ffffff" font-size="14px" font-weight="bold" border-radius="999px" padding="0" inner-padding="14px 30px" href="{{dashboardUrl}}">
             Start a new plan

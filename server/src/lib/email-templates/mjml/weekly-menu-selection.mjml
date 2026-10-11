@@ -1,7 +1,7 @@
 <mjml lang="en">
   <mj-head>
     <mj-title>Next week's menu is open — choose your meals</mj-title>
-    <mj-preview>Pick what you'd like for the week of {{weekStart}}, or we'll match your goal for you.</mj-preview>
+    <mj-preview>Pick what you'd like for the week of {{weekStart}}, or we'll match your style for you.</mj-preview>
     <mj-attributes>
       <mj-all font-family="Arial, Helvetica, sans-serif" />
       <mj-text color="#272c0f" font-size="15px" line-height="1.6" padding="0" />
@@ -70,7 +70,7 @@
             Choose my meals
           </mj-button>
           <mj-text align="center" font-size="13px" color="#6b6b5f" padding="0">
-            Don't fancy choosing? Leave it with us &mdash; we'll match your meals to your goal automatically.
+            Don't fancy choosing? Leave it with us &mdash; we'll match your meals to your style automatically.
           </mj-text>
         </mj-column>
       </mj-section>
