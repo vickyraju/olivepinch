@@ -1,7 +1,5 @@
-import { Link } from "react-router-dom"
 import { ChefHat, Leaf, PauseCircle, ShieldCheck } from "lucide-react"
 import { FoodPhoto } from "@/components/ui/food-photo"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
 const STATS = [
@@ -76,19 +74,6 @@ function About() {
         </div>
       </section>
 
-      <section className="py-20 sm:py-24">
-        <div className="mx-auto max-w-5xl px-5 sm:px-8">
-          <div className="rounded-2xl bg-olive-600 px-8 py-14 sm:px-16 sm:py-16 text-center">
-            <h2 className="text-3xl sm:text-4xl text-white">See if we deliver to you</h2>
-            <p className="mt-3 text-olive-100 max-w-md mx-auto">
-              Enter your postcode to check coverage and start building your plan.
-            </p>
-            <Button asChild variant="surface" size="lg" className="mt-8">
-              <Link to="/subscribe">Check your postcode</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
     </div>
   )
 }
