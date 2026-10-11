@@ -151,7 +151,7 @@ function Plans() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Goal</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Style</th>
                 {DURATIONS.map((d) => (
                   <th
                     key={d}

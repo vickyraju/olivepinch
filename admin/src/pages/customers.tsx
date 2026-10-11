@@ -107,7 +107,7 @@ function Customers() {
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Address</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Goal</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Style</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan Ends</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Joined</th>

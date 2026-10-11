@@ -417,7 +417,7 @@ function MenuControl() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Goal Tags</label>
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Style Tags</label>
                 <div className="flex gap-2 flex-wrap">
                   {GOALS.map((g) => (
                     <button

@@ -280,13 +280,13 @@ function PromoCodes() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Goal</label>
+                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Style</label>
                   <select
                     className="w-full h-10 border border-gray-200 rounded-lg px-3"
                     value={form.restrictToGoal}
                     onChange={(e) => updateForm("restrictToGoal", e.target.value)}
                   >
-                    <option value="">Any goal</option>
+                    <option value="">Any style</option>
                     {Object.entries(GOAL_LABELS).map(([value, label]) => (
                       <option key={value} value={value}>{label}</option>
                     ))}

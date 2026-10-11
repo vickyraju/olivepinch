@@ -190,7 +190,7 @@ function Reports() {
 
         <div className="bg-white p-[24px] border border-gray-200 rounded-[12px]">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-[16px] font-bold text-gray-900">Customer Goal Split</h2>
+            <h2 className="text-[16px] font-bold text-gray-900">Customer Style Split</h2>
             <span className="text-xs text-gray-500">{rangeLabel}</span>
           </div>
           {isLoading ? (
@@ -211,7 +211,7 @@ function Reports() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-[24px]">
           <ChartPanel
-            title="Revenue by Goal"
+            title="Revenue by Style"
             subtitle={rangeLabel}
             loading={isLoading}
             data={(data?.revenueByGoal ?? []).map((r) => ({ label: r.label, value: r.total }))}
