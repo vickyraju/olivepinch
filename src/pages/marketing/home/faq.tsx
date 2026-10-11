@@ -5,7 +5,7 @@ const FAQS = [
   },
   {
     q: "When does my plan start?",
-    a: "The earliest start date is 3 days from today, leaving two full days for our kitchen to prepare your first delivery. You'll only be able to pick valid dates on the calendar.",
+    a: "The earliest start date is 2 days from today. You'll only be able to pick valid dates on the calendar.",
   },
   {
     q: "Can I pause my subscription?",
