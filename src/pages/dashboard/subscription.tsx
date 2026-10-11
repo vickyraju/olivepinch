@@ -156,22 +156,6 @@ function Subscription() {
         </div>
       )}
 
-      {isExpired && (
-        <Card className="p-5 bg-coral-50 border-coral-100">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-coral-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-semibold text-coral-600">Your plan has expired</p>
-              <p className="text-sm text-ink-muted mt-1">
-                Deliveries have stopped, but your account and data are still here — renew any time to
-                pick up where you left off. If your plan stays inactive for a while, we'll email you
-                about closing the account, with the option to export or delete your data first.
-              </p>
-            </div>
-          </div>
-        </Card>
-      )}
-
       {isCancelled && (
         <Card className="p-5 bg-coral-50 border-coral-100">
           <div className="flex items-start gap-3">

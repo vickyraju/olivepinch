@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Activity, Truck, RefreshCw, ArrowRight, ShieldCheck, MapPin } from "lucide-react"
+import { Activity, Truck, RefreshCw, ArrowRight, ShieldCheck, MapPin, AlertTriangle } from "lucide-react"
 import { useDashboard } from "@/lib/dashboard-context"
 import type { DeliveryAddress } from "@/lib/subscribe-context"
 import { formatAddress } from "@/lib/address"
@@ -91,6 +91,19 @@ function Profile() {
 
       <Card className="p-6 sm:p-8">
         <h2 className="text-lg text-ink mb-4">Your plan</h2>
+        {sub.status === "expired" && (
+          <div className="flex items-start gap-3 rounded-xl bg-coral-50 border border-coral-100 p-4 mb-6">
+            <AlertTriangle className="h-5 w-5 text-coral-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-coral-600">Your plan has expired</p>
+              <p className="text-sm text-ink-muted mt-1">
+                Deliveries have stopped, but your account and data are still here — renew any time to
+                pick up where you left off. If your plan stays inactive for a while, we'll email you
+                about closing the account, with the option to export or delete your data first.
+              </p>
+            </div>
+          </div>
+        )}
         <dl className="grid grid-cols-2 sm:grid-cols-4 gap-6">
           <div>
             <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Plan length</dt>
