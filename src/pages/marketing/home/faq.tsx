@@ -1,6 +1,6 @@
 const FAQ_GROUPS = [
   {
-    title: "About OlivePinch",
+    title: "",
     items: [
       {
         q: "What is OlivePinch?",
@@ -91,7 +91,7 @@ function Faq() {
         <div className="space-y-14">
           {FAQ_GROUPS.map((group) => (
             <div key={group.title}>
-              <h3 className="font-display text-2xl text-ink mb-6">{group.title}</h3>
+              {group.title && <h3 className="font-display text-2xl text-ink mb-6">{group.title}</h3>}
               <div className="grid gap-x-10 gap-y-9 sm:grid-cols-2">
                 {group.items.map((faq) => (
                   <div key={faq.q}>
