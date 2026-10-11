@@ -5,6 +5,13 @@ import { useSubscribe } from "@/lib/subscribe-context"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
+const DESCRIPTIONS: Record<GoalId, string> = {
+  "Weight Loss": "Smaller portions, calorie-conscious and easy on the plate.",
+  "Weight Gain": "Bigger portions with extra calories.",
+  "Weight Maintenance": "Varied, balanced meals for everyday eating.",
+  "Muscle Building": "Meals with a higher protein content.",
+}
+
 const ICONS: Record<GoalId, typeof Flame> = {
   "Weight Loss": TrendingDown,
   "Weight Gain": TrendingUp,
@@ -40,7 +47,7 @@ function Goal() {
                 <Icon className={cn("h-5 w-5", active ? "text-white" : "text-olive-600")} strokeWidth={1.75} />
               </div>
               <h3 className="text-xl font-semibold text-ink mb-1">{goal.id}</h3>
-              <p className="text-base text-ink-muted">{goal.description}</p>
+              <p className="text-base text-ink-muted">{DESCRIPTIONS[goal.id]}</p>
             </button>
           )
         })}
