@@ -13,7 +13,7 @@ function SiteFooter() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold text-ink mb-3">Company</h4>
+          <h4 className="text-base font-semibold text-ink mb-3">Company</h4>
           <ul className="space-y-2 text-sm text-ink-muted">
             <li><Link to="/" className="hover:text-olive-600">Home</Link></li>
             <li><Link to="/about" className="hover:text-olive-600">About Us</Link></li>
@@ -23,7 +23,7 @@ function SiteFooter() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold text-ink mb-3">Get Started</h4>
+          <h4 className="text-base font-semibold text-ink mb-3">Get Started</h4>
           <ul className="space-y-2 text-sm text-ink-muted">
             <li><Link to="/subscribe" className="hover:text-olive-600">Check your postcode</Link></li>
             <li><Link to="/login" className="hover:text-olive-600">Log in</Link></li>
@@ -31,7 +31,7 @@ function SiteFooter() {
         </div>
 
         <div>
-          <h4 className="text-sm font-semibold text-ink mb-3">Legal</h4>
+          <h4 className="text-base font-semibold text-ink mb-3">Legal</h4>
           <ul className="space-y-2 text-sm text-ink-muted">
             <li><Link to="/privacy-policy" className="hover:text-olive-600">Privacy Policy</Link></li>
             <li><a href="#" className="hover:text-olive-600">Terms &amp; Conditions</a></li>
