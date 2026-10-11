@@ -4,13 +4,6 @@ import { Button } from "@/components/ui/button"
 import { FoodPhoto } from "@/components/ui/food-photo"
 import { GOALS, GOAL_PHOTOS } from "@/data/menu"
 
-const TEASER_META: Record<string, { kcal: string; protein: string }> = {
-  "Weight Loss": { kcal: "450 kcal", protein: "35g P" },
-  "Weight Gain": { kcal: "750 kcal", protein: "40g P" },
-  "Weight Maintenance": { kcal: "600 kcal", protein: "38g P" },
-  "Muscle Building": { kcal: "700 kcal", protein: "50g P" },
-}
-
 function DietPlansTeaser() {
   return (
     <section className="py-20 sm:py-28">
@@ -32,7 +25,6 @@ function DietPlansTeaser() {
               <div className="p-5">
                 <div className="flex items-center justify-between mb-2">
                   <span className="eyebrow">Style</span>
-                  <span className="text-xs text-ink-muted">{TEASER_META[goal.id].kcal} · {TEASER_META[goal.id].protein}</span>
                 </div>
                 <h3 className="text-xl text-ink mb-1.5">{goal.id}</h3>
                 <p className="text-sm text-ink-muted mb-3">{goal.description}</p>
