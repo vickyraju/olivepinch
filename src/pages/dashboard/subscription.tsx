@@ -233,7 +233,7 @@ function Subscription() {
                   <dd className="mt-0.5 text-ink font-medium">{mealsPerDay}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Goal</dt>
+                  <dt className="text-xs text-ink-muted uppercase tracking-wide">Style</dt>
                   <dd className="mt-0.5 text-ink font-medium">{goal}</dd>
                 </div>
                 <div>
@@ -298,7 +298,7 @@ function Subscription() {
               </div>
 
               <div>
-                <Label id="goal-label">Goal</Label>
+                <Label id="goal-label">Style</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" role="radiogroup" aria-labelledby="goal-label">
                   {GOALS.map((g) => (
                     <button

@@ -23,7 +23,7 @@ const SECTIONS = [
     heading: "How we use it",
     body: (
       <p>
-        To run your subscription: matching meals to your goals, processing payment, scheduling and
+        To run your subscription: matching meals to your styles, processing payment, scheduling and
         confirming deliveries, and providing customer support. Where you've opted in, we may also
         email you about new menus or offers. We do not use your health data for anything beyond
         meal recommendation, and we do not sell your data.

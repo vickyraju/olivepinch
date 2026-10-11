@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { StepNav } from "./step-nav"
 
 const TIER_COPY: Record<PlanTier, { icon: typeof Sparkles; blurb: string }> = {
-  Basic: { icon: Sparkles, blurb: "Our standard goal-matched menu rotation." },
+  Basic: { icon: Sparkles, blurb: "Our standard style-matched menu rotation." },
   Advanced: { icon: Star, blurb: "Wider menu variety and premium recipes for the same goal." },
 }
 

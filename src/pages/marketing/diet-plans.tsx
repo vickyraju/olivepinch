@@ -40,7 +40,7 @@ function GoalCard({ goal, seed }: { goal: (typeof GOALS)[number]; seed: number }
         </p>
 
         <Button asChild variant="primary" size="md" className="mt-auto">
-          <Link to="/subscribe">Choose this goal</Link>
+          <Link to="/subscribe">Choose this style</Link>
         </Button>
       </div>
     </Card>
@@ -58,10 +58,10 @@ function PriceEstimator() {
   return (
     <Card className="p-6 sm:p-8">
       <h2 className="text-xl text-ink mb-1">See your price</h2>
-      <p className="text-sm text-ink-muted mb-6">Pricing is set by your goal and plan length — pick both to see the exact total.</p>
+      <p className="text-sm text-ink-muted mb-6">Pricing is set by your style and plan length — pick both to see the exact total.</p>
 
       <div>
-        <label className="text-sm font-medium text-ink block mb-1.5">Goal</label>
+        <label className="text-sm font-medium text-ink block mb-1.5">Style</label>
         <Select value={goal} onValueChange={(v) => setGoal(v as Goal)}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
@@ -147,7 +147,7 @@ function DietPlans() {
     <div>
       <section className="pt-14 pb-16 sm:pt-20 sm:pb-20">
         <div className="mx-auto max-w-3xl px-5 sm:px-8 text-center">
-          <h1 className="text-4xl sm:text-5xl text-ink">A plan for whatever your goal is</h1>
+          <h1 className="text-4xl sm:text-5xl text-ink">A plan for whatever your style is</h1>
           <p className="mt-4 text-lg text-ink-muted">
             Every plan starts from a menu matched to your goal, filtered to your calorie
             needs and allergies — and you can still swap any meal you want.

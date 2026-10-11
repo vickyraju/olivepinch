@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: "What if my payment fails?",
-    a: "Your profile, goal, menu, and address selections are all saved. You'll be taken straight back to the payment step to retry — no need to start over.",
+    a: "Your profile, style, menu, and address selections are all saved. You'll be taken straight back to the payment step to retry — no need to start over.",
   },
   {
     q: "How do you handle allergies?",

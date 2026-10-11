@@ -97,7 +97,7 @@ function Profile() {
             <dd className="mt-1 text-ink">{sub.planDuration} days</dd>
           </div>
           <div>
-            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Goal</dt>
+            <dt className="text-xs font-medium text-ink-muted uppercase tracking-wide">Style</dt>
             <dd className="mt-1 text-ink">{sub.goal}</dd>
           </div>
           <div>
