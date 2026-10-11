@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button"
 import { FoodPhoto } from "@/components/ui/food-photo"
 import { GOALS, GOAL_PHOTOS } from "@/data/menu"
 
+const TILE_DESCRIPTIONS: Record<string, string> = {
+  "Weight Loss": "Smaller portions, calorie-conscious and easy on the plate.",
+  "Weight Gain": "Bigger portions with extra calories.",
+  "Weight Maintenance": "Varied, balanced meals for everyday eating.",
+  "Muscle Building": "Meals with a higher protein content.",
+}
+
 function DietPlansTeaser() {
   return (
     <section className="py-20 sm:py-28">
@@ -27,7 +34,7 @@ function DietPlansTeaser() {
                   <span className="eyebrow">Style</span>
                 </div>
                 <h3 className="text-xl text-ink mb-1.5">{goal.id}</h3>
-                <p className="text-sm text-ink-muted mb-3">{goal.description}</p>
+                <p className="text-sm text-ink-muted mb-3">{TILE_DESCRIPTIONS[goal.id]}</p>
                 <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-olive-600">
                   See this plan <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </span>
