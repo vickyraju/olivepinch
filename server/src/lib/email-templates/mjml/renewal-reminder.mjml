@@ -47,7 +47,7 @@
             Your meals stop on {{endDate}}, {{name}}.
           </mj-text>
           <mj-text padding="0 0 24px" color="#4b4b3f">
-            Your {{planDuration}}-day plan runs out then. Renew before it does and your deliveries carry on without a gap &mdash; same goal, same kitchen, no restart.
+            Your {{planDuration}}-day plan runs out then. Renew before it does and your deliveries carry on without a gap &mdash; same style, same kitchen, no restart.
           </mj-text>
         </mj-column>
       </mj-section>
