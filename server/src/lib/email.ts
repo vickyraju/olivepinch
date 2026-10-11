@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer"
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
-const EMAIL_FROM = process.env.EMAIL_FROM ?? "OlivePinch <hello@olivepinch.co.uk>"
+const EMAIL_FROM = process.env.EMAIL_FROM ?? "OlivePinch <hello@olivepinch.com>"
 
 // ponytail: no real provider configured in dev -> log to console instead of failing signup/checkout
 const devTransport = nodemailer.createTransport({ jsonTransport: true })

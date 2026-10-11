@@ -23,7 +23,7 @@ import { fileURLToPath } from "node:url"
 process.loadEnvFile(fileURLToPath(new URL("../.env", import.meta.url)))
 const API_KEY = process.env.RESEND_API_KEY
 if (!API_KEY) throw new Error("RESEND_API_KEY is not set (expected in server/.env)")
-const FROM = process.env.EMAIL_FROM ?? "OlivePinch <hello@olivepinch.co.uk>"
+const FROM = process.env.EMAIL_FROM ?? "OlivePinch <hello@olivepinch.com>"
 
 const TYPES: Record<string, "string" | "number"> = {
   NAME: "string",
