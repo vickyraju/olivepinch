@@ -5,7 +5,7 @@ export type MealSlot = "Box1" | "Box2" | "Box3"
 export const GOALS: { id: Goal; description: string }[] = [
   { id: "Weight Loss", description: "Calorie-controlled meals that keep you full and on track." },
   { id: "Weight Gain", description: "Nutrient-dense meals with the extra calories you need." },
-  { id: "Weight Maintenance", description: "Balanced meals to help you hold steady at your goal." },
+  { id: "Weight Maintenance", description: "Balanced meals to help you hold steady at your style." },
   { id: "Muscle Building", description: "High-protein meals built to support training and recovery." },
 ]
 

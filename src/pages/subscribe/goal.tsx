@@ -18,7 +18,7 @@ function Goal() {
 
   return (
     <div>
-      <h1 className="text-3xl sm:text-4xl text-ink mb-2">What's your goal?</h1>
+      <h1 className="text-3xl sm:text-4xl text-ink mb-2">What's your style?</h1>
       <p className="text-ink-muted mb-8">This drives your default meal recommendations — you can fine-tune the menu later.</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

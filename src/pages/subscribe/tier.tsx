@@ -6,7 +6,7 @@ import { StepNav } from "./step-nav"
 
 const TIER_COPY: Record<PlanTier, { icon: typeof Sparkles; blurb: string }> = {
   Basic: { icon: Sparkles, blurb: "Our standard style-matched menu rotation." },
-  Advanced: { icon: Star, blurb: "Wider menu variety and premium recipes for the same goal." },
+  Advanced: { icon: Star, blurb: "Wider menu variety and premium recipes for the same style." },
 }
 
 const OPTIONS: PlanTier[] = ["Basic", "Advanced"]

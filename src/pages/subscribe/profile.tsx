@@ -78,7 +78,7 @@ function Profile() {
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Tell us about you</h1>
-      <p className="text-ink-muted mb-8">We'll use this to calculate your BMI and recommend meals for your goal.</p>
+      <p className="text-ink-muted mb-8">We'll use this to calculate your BMI and recommend meals for your style.</p>
 
       <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft space-y-5">
         <div className="grid grid-cols-2 gap-4">

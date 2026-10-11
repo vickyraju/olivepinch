@@ -14,7 +14,7 @@ import { api, ApiError } from "@/lib/api"
 import { StepNav } from "./step-nav"
 
 const PERKS = [
-  "Meals matched to your goal, diet, and BMI",
+  "Meals matched to your style, diet, and BMI",
   "Pause up to 4 times a month — never lose a meal you've paid for",
   "Your health data stays yours — export or delete it any time",
 ]

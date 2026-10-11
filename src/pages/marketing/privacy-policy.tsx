@@ -8,7 +8,7 @@ const SECTIONS = [
           <li>Contact and account details — name, email, phone, delivery address, postcode.</li>
           <li>
             Health data you choose to give us — height, weight, and body measurements, used to
-            calculate your BMI and recommend meals for your goal. This is <strong>special category
+            calculate your BMI and recommend meals for your style. This is <strong>special category
             data</strong> under UK GDPR, so we only collect it with your explicit, separate consent
             during signup, and you can withdraw it at any time from your dashboard.
           </li>

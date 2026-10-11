@@ -218,7 +218,7 @@ function Subscription() {
         <Card className="p-6 sm:p-8 space-y-6">
           <div>
             <h2 className="text-lg text-ink mb-1">Renew your subscription</h2>
-            <p className="text-sm text-ink-muted mb-4">Your goal, diet, and allergy preferences carry over — edit them below if anything's changed.</p>
+            <p className="text-sm text-ink-muted mb-4">Your style, diet, and allergy preferences carry over — edit them below if anything's changed.</p>
           </div>
 
           {!editingPreferences ? (

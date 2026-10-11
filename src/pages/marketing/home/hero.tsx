@@ -12,7 +12,7 @@ function Hero() {
             Fresh meals, built around <em>your</em> choice.
           </h1>
           <p className="mt-5 text-lg text-ink-muted max-w-lg">
-            Tell us your preferences and goal, and we'll take care of the meals. Freshly
+            Tell us your preferences and style, and we'll take care of the meals. Freshly
             prepared dishes, delivered to your door — simple, convenient and ready to enjoy.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
