@@ -33,7 +33,7 @@ function DashboardLayoutInner() {
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-4 flex items-center justify-between">
           <Link to="/">
-            <Logo className="text-lg" />
+            <Logo className="h-8" />
           </Link>
           <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-medium text-ink-muted hover:text-ink cursor-pointer">
             <LogOut className="h-4 w-4" /> Log out

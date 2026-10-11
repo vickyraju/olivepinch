@@ -124,7 +124,7 @@ function Login() {
       <div className="flex min-h-dvh lg:min-h-0 items-center justify-center bg-cream px-5 py-16 sm:px-8">
         <div className="w-full max-w-sm">
           <Link to="/" className="mb-8 inline-block">
-            <Logo className="text-2xl" />
+            <Logo className="h-11" />
           </Link>
 
           <h1 className="text-3xl sm:text-4xl text-ink mb-2">Welcome back</h1>

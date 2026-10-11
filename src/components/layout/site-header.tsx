@@ -28,7 +28,7 @@ function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 py-3 sm:px-8">
         <Link to="/">
-          <Logo className="text-xl" />
+          <Logo className="h-9" />
         </Link>
 
         <nav aria-label="Primary" className="hidden md:flex items-center gap-8">

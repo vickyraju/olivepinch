@@ -20,7 +20,7 @@ function SubscribeLayoutInner() {
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-4 grid grid-cols-[auto_1fr] sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
           <Link to="/" className="shrink-0 justify-self-start">
-            <Logo className="text-lg" />
+            <Logo className="h-8" />
           </Link>
           <div className="justify-self-end sm:justify-self-center">
             <ProgressStepper phases={PHASES} currentPhase={currentPhase} currentStep={currentStep} />

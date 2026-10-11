@@ -6,7 +6,7 @@ function SiteFooter() {
     <footer className="border-t border-border bg-cream-100">
       <div className="mx-auto max-w-7xl px-5 sm:px-8 py-14 grid grid-cols-2 gap-10 md:grid-cols-4">
         <div className="col-span-2 md:col-span-1">
-          <Logo className="text-xl" />
+          <Logo className="h-9" />
           <p className="mt-3 text-sm text-ink-muted max-w-xs">
             Fresh, tasty, delivered at your doorstep.
           </p>
