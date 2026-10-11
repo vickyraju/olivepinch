@@ -20,10 +20,7 @@ const PERKS = [
 ]
 
 function selectedAllergens(state: SubscribeState): string[] {
-  const allergens = [...state.allergens]
-  const other = state.otherAllergen.trim()
-  if (state.otherAllergenSelected && other && !allergens.includes(other)) allergens.push(other)
-  return allergens
+  return [...state.allergens]
 }
 
 function AccountSetup() {
