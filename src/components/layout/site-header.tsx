@@ -41,12 +41,11 @@ function HeaderActions({ className, buttonClassName }: { className?: string; but
 }
 
 // Phones are too narrow for logo + two buttons + menu icon in one row (the logo got squashed to a
-// sliver), so the buttons get their own full-width row under the pinned bar. Not sticky: it scrolls
-// away with the page so it doesn't cost screen height.
+// sliver), so the buttons get their own full-width row under the logo, pinned with the header.
 function MobileActionsBar() {
   return (
-    <div className="md:hidden border-b border-border bg-cream">
-      <HeaderActions className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 py-3" buttonClassName="h-11 w-full" />
+    <div className="md:hidden border-t border-border">
+      <HeaderActions className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 py-2" buttonClassName="h-10 w-full" />
     </div>
   )
 }
@@ -61,7 +60,7 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur">
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 py-3 sm:px-8">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-5 py-2 sm:px-8 md:h-18 md:py-3">
         <Link to="/" className="shrink-0">
           <Logo className="h-9" />
         </Link>
@@ -99,8 +98,10 @@ function SiteHeader() {
         </div>
       </div>
 
+      <MobileActionsBar />
+
       {open && (
-        <nav aria-label="Primary mobile" className="md:hidden border-t border-border bg-cream px-5 py-4 flex flex-col gap-4">
+        <nav aria-label="Primary mobile" className="md:hidden max-h-[60dvh] overflow-y-auto border-t border-border bg-cream px-5 py-4 flex flex-col gap-4">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
@@ -118,4 +119,4 @@ function SiteHeader() {
   )
 }
 
-export { SiteHeader, MobileActionsBar }
+export { SiteHeader }
