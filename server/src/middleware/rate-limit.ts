@@ -19,3 +19,12 @@ export const checkEmailLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many requests. Try again shortly." },
 })
+
+// The contact form is public and sends a real email each time, so it gets a tight per-IP cap.
+export const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many messages sent. Please try again later, or email hello@olivepinch.com." },
+})

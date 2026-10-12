@@ -1,3 +1,4 @@
+import { contactRouter } from "./routes/contact.js"
 import express from "express"
 import cors from "cors"
 import rateLimit from "express-rate-limit"
@@ -60,6 +61,7 @@ export function createApp() {
   app.use("/api/promo-codes", promoCodesRouter)
   app.use("/api/delivery-time-slots", deliveryTimeSlotsRouter)
   app.use("/api/allergens", allergensRouter)
+  app.use("/api/contact", contactRouter)
   app.use("/api/admin", adminRouter)
   app.use("/api/internal", internalRouter)
 
