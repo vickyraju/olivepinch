@@ -8,6 +8,7 @@ import { isPostcodeInActiveZone } from "../../lib/postcode.js"
 import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
 import { PHONE_REGEX } from "../customers.js"
 import { computeEndDate, londonToday } from "../../lib/subscription.js"
+import { renewalsFor, lastRenewedAt } from "../../lib/renewals.js"
 import { sendEmail } from "../../lib/email.js"
 import { cancellationEmail } from "../../lib/email-templates.js"
 import { worldpayConfig, getRefundActions, refundFull, refundPartial } from "../../lib/worldpay.js"
@@ -25,6 +26,8 @@ adminCustomersRouter.get("/", async (req, res) => {
   const status = String(req.query.status ?? "").trim()
   const subscribed = String(req.query.subscribed ?? "").trim()
   const sort = String(req.query.sort ?? "newest")
+  // "Recently renewed" window in days; anything else means no renewal filter.
+  const renewedDays = [7, 14, 30].includes(Number(req.query.renewed)) ? Number(req.query.renewed) : null
   const page = Math.max(1, Number(req.query.page ?? 1) || 1)
   const where = {
     ...(search ? { OR: [{ fullName: { contains: search, mode: "insensitive" as const } }, { email: { contains: search, mode: "insensitive" as const } }] } : {}),
@@ -47,22 +50,37 @@ adminCustomersRouter.get("/", async (req, res) => {
     addressStreet: true,
     addressArea: true,
     addressPostcode: true,
-    // Most recent subscription regardless of status — renewals create a new row per plan, so
-    // this doubles as both "their current plan" (for goal/duration/end-date columns) and,
-    // via its status, whether they're presently subscribed.
+    // Newest first, regardless of status — renewals create a new row per plan, so [0] doubles as
+    // both "their current plan" (for goal/duration/end-date columns) and, via its status, whether
+    // they're presently subscribed. The full list (plus succeeded payments) is what renewals are
+    // derived from.
     subscriptions: {
       orderBy: { createdAt: "desc" as const },
-      select: { status: true, planDuration: true, startDate: true, pausedDates: true },
-      take: 1,
+      select: {
+        id: true,
+        createdAt: true,
+        status: true,
+        planDuration: true,
+        mealsPerDay: true,
+        tier: true,
+        startDate: true,
+        pausedDates: true,
+        discountAmount: true,
+      },
+    },
+    payments: {
+      where: { status: "succeeded" },
+      select: { subscriptionId: true, status: true, paidAt: true, amount: true },
     },
   }
 
   function toRow(c: Awaited<ReturnType<typeof prisma.customer.findFirstOrThrow<{ select: typeof select }>>>) {
     const latest = c.subscriptions[0]
     const planEndDate = latest ? computeEndDate(latest.startDate, latest.planDuration, latest.pausedDates) : null
-    const { subscriptions, ...c2 } = c
+    const { subscriptions, payments, ...c2 } = c
     return {
       ...c2,
+      lastRenewedAt: lastRenewedAt(renewalsFor(subscriptions, payments)),
       // "Subscribed"/"Unsubscribed" is the admin-facing status — whether they currently have an
       // active subscription — distinct from accountStatus, which is the identity/login state.
       subscribed: latest?.status === "ACTIVE",
@@ -72,21 +90,22 @@ adminCustomersRouter.get("/", async (req, res) => {
     }
   }
 
-  if (sort === "planEndDate") {
-    // ponytail: plan end date is computed (startDate + duration + pauses), not a sortable DB
-    // column, so this sorts in memory rather than at the DB. Fine at this customer-base scale
-    // (single-city delivery); move to a stored/generated column if the table grows large.
-    const all = await prisma.customer.findMany({ where, select })
-    const total = all.length
-    const rows = all
-      .map(toRow)
-      .sort((a, b) => {
-        if (a.planEndDate === null) return 1
-        if (b.planEndDate === null) return -1
-        return b.planEndDate.getTime() - a.planEndDate.getTime()
-      })
-      .slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-    return res.json({ customers: rows, page, pageSize: PAGE_SIZE, total, totalPages: Math.max(1, Math.ceil(total / PAGE_SIZE)) })
+  if (sort === "planEndDate" || sort === "lastRenewed" || renewedDays) {
+    // ponytail: plan end date and renewal dates are derived (startDate + duration + pauses; later
+    // paid subscriptions), not sortable/filterable DB columns, so these sort and filter in memory
+    // rather than at the DB. Fine at this customer-base scale (single-city delivery); move to
+    // stored columns if the table grows large.
+    const all = (await prisma.customer.findMany({ where, select, orderBy: SORTABLE[sort as keyof typeof SORTABLE] ?? SORTABLE.newest })).map(toRow)
+    const cutoff = renewedDays ? Date.now() - renewedDays * 86_400_000 : null
+    const matching = cutoff === null ? all : all.filter((r) => r.lastRenewedAt !== null && r.lastRenewedAt.getTime() >= cutoff)
+    const newestFirst = (field: "planEndDate" | "lastRenewedAt") => (a: (typeof all)[number], b: (typeof all)[number]) => {
+      if (a[field] === null) return 1
+      if (b[field] === null) return -1
+      return b[field]!.getTime() - a[field]!.getTime()
+    }
+    const ordered = sort === "planEndDate" ? [...matching].sort(newestFirst("planEndDate")) : sort === "lastRenewed" ? [...matching].sort(newestFirst("lastRenewedAt")) : matching
+    const rows = ordered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+    return res.json({ customers: rows, page, pageSize: PAGE_SIZE, total: matching.length, totalPages: Math.max(1, Math.ceil(matching.length / PAGE_SIZE)) })
   }
 
   const [customers, total] = await Promise.all([
@@ -122,7 +141,7 @@ adminCustomersRouter.get("/:id", async (req, res) => {
     },
   })
   const { passwordHash: _passwordHash, ...safe } = customer
-  res.json({ ...safe, address: formatAddress(customer) })
+  res.json({ ...safe, address: formatAddress(customer), renewals: renewalsFor(customer.subscriptions, customer.payments) })
 })
 
 function logAction(adminId: string, action: string, customerId?: string, detail?: string) {
