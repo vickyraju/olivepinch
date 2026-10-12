@@ -15,10 +15,45 @@ const BASE_LINKS = [
 
 const ORDER_NOW_URL = "https://orbitonline.co.uk/olivepinch/"
 
-function SiteHeader() {
-  const [open, setOpen] = useState(false)
+// "Order Now" plus Subscribe (or the signed-in "Hi, name" link). Rendered in the desktop header and in
+// the phone buttons row below it, so the two never drift apart.
+function HeaderActions({ className, buttonClassName }: { className?: string; buttonClassName?: string }) {
   const { isAuthenticated, customer } = useAuth()
   const firstName = customer ? splitFullName(customer.fullName).firstName : ""
+  return (
+    <div className={className}>
+      <Button asChild variant="outline" size="sm" className={buttonClassName}>
+        <a href={ORDER_NOW_URL} target="_blank" rel="noopener noreferrer">Order Now</a>
+      </Button>
+      {isAuthenticated ? (
+        <Button asChild variant="outline" size="sm" className={buttonClassName}>
+          <Link to="/dashboard">
+            <User className="h-3.5 w-3.5" /> Hi, {firstName}
+          </Link>
+        </Button>
+      ) : (
+        <Button asChild variant="primary" size="sm" className={buttonClassName}>
+          <Link to="/subscribe">Subscribe Now</Link>
+        </Button>
+      )}
+    </div>
+  )
+}
+
+// Phones are too narrow for logo + two buttons + menu icon in one row (the logo got squashed to a
+// sliver), so the buttons get their own full-width row under the pinned bar. Not sticky: it scrolls
+// away with the page so it doesn't cost screen height.
+function MobileActionsBar() {
+  return (
+    <div className="md:hidden border-b border-border bg-cream">
+      <HeaderActions className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 py-3" buttonClassName="h-11 w-full" />
+    </div>
+  )
+}
+
+function SiteHeader() {
+  const [open, setOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
   const navLinks = [
     ...BASE_LINKS,
     isAuthenticated ? { label: "Dashboard", to: "/dashboard" } : { label: "Login", to: "/login" },
@@ -27,7 +62,7 @@ function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-5 py-3 sm:px-8">
-        <Link to="/">
+        <Link to="/" className="shrink-0">
           <Logo className="h-9" />
         </Link>
 
@@ -49,41 +84,12 @@ function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
-          <Button asChild variant="outline" size="sm">
-            <a href={ORDER_NOW_URL} target="_blank" rel="noopener noreferrer">Order Now</a>
-          </Button>
-          {isAuthenticated ? (
-            <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard">
-                <User className="h-3.5 w-3.5" /> Hi, {firstName}
-              </Link>
-            </Button>
-          ) : (
-            <Button asChild variant="primary" size="sm">
-              <Link to="/subscribe">Subscribe Now</Link>
-            </Button>
-          )}
-        </div>
+        <HeaderActions className="hidden md:flex items-center gap-3" />
 
-        <div className="flex md:hidden items-center gap-2">
-          <Button asChild variant="outline" size="sm">
-            <a href={ORDER_NOW_URL} target="_blank" rel="noopener noreferrer">Order Now</a>
-          </Button>
-          {isAuthenticated ? (
-            <Button asChild variant="outline" size="sm">
-              <Link to="/dashboard">
-                <User className="h-3.5 w-3.5" /> Hi, {firstName}
-              </Link>
-            </Button>
-          ) : (
-            <Button asChild variant="primary" size="sm">
-              <Link to="/subscribe">Subscribe Now</Link>
-            </Button>
-          )}
+        <div className="flex md:hidden items-center">
           <button
             type="button"
-            className="h-11 w-11 flex items-center justify-center cursor-pointer ml-1"
+            className="-mr-2 h-11 w-11 flex items-center justify-center cursor-pointer"
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -112,4 +118,4 @@ function SiteHeader() {
   )
 }
 
-export { SiteHeader }
+export { SiteHeader, MobileActionsBar }
