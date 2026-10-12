@@ -43,6 +43,12 @@ export interface Subscription {
   deliveryTimeSlot: DeliveryTimeSlot
   orders: OrderDay[]
   earlierOrders: OrderDay[]
+  // The plan this one renewed, while it still has deliveries: choosing meals for those days goes
+  // against that plan, and it can have a different meals-per-day.
+  earlierSubscriptionId: string | null
+  earlierMealsPerDay: 1 | 2 | 3 | null
+  // Set while a renewal is awaiting payment; confirmed by id when the customer returns from payment.
+  pendingRenewalId: string | null
 }
 
 export interface DashboardCustomer {
@@ -67,6 +73,9 @@ interface RawSubscription {
   deliveryTimeSlot: string
   orders: RawOrder[]
   earlierOrders?: RawOrder[]
+  earlierSubscriptionId?: string | null
+  earlierMealsPerDay?: 1 | 2 | 3 | null
+  pendingRenewalId?: string | null
 }
 
 interface RawOrder {
@@ -116,6 +125,9 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[]
     earlierOrders: (raw.earlierOrders ?? [])
       .filter((o) => !raw.orders.some((c) => c.deliveryDate.slice(0, 10) === o.deliveryDate.slice(0, 10)))
       .map((o) => ({ ...mapOrder(o), fromPreviousPlan: true })),
+    earlierSubscriptionId: raw.earlierSubscriptionId ?? null,
+    earlierMealsPerDay: raw.earlierMealsPerDay ?? null,
+    pendingRenewalId: raw.pendingRenewalId ?? null,
   }
 }
 
@@ -205,9 +217,10 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
   )
 
   const confirmRenewal = useCallback(async () => {
-    await api.post("/payments/confirm", { subscriptionId: customer.subscription.id })
+    // The dashboard shows the paid plan, so the renewal awaiting payment has its own id.
+    await api.post("/payments/confirm", { subscriptionId: customer.subscription.pendingRenewalId ?? customer.subscription.id })
     setCustomer(await refetch())
-  }, [customer.subscription.id, refetch])
+  }, [customer.subscription.id, customer.subscription.pendingRenewalId, refetch])
 
   const renew = useCallback(
     async (planDuration: 7 | 14 | 28, mealsPerDay: 1 | 2 | 3, goal: Goal, dietTypes: DietType[], allergens: string[], deliverySlot: DeliverySlot, deliveryTimeSlot: DeliveryTimeSlot, promoCode?: string) => {
@@ -265,15 +278,31 @@ function DashboardProviderInner({ initial, refetch, children }: { initial: Dashb
 
   const chooseMenuWeek = useCallback(
     async (weekStart: string, dayItems: { date: string; items: string[] }[]) => {
+      const { id, earlierSubscriptionId, earlierOrders } = customer.subscription
+      // Days still coming from the previous plan are saved against that plan; the rest against this one.
+      const earlierDates = new Set(earlierOrders.map((o) => o.date))
+      const earlierItems = dayItems.filter((d) => earlierDates.has(d.date))
+      const currentItems = dayItems.filter((d) => !earlierDates.has(d.date))
       try {
-        await api.patch(`/subscriptions/${customer.subscription.id}/menu-weeks/${weekStart}`, { dayItems })
+        if (earlierSubscriptionId && earlierItems.length > 0) {
+          await api.patch(`/subscriptions/${earlierSubscriptionId}/menu-weeks/${weekStart}`, { dayItems: earlierItems })
+        }
+        if (currentItems.length > 0) {
+          await api.patch(`/subscriptions/${id}/menu-weeks/${weekStart}`, { dayItems: currentItems })
+        }
         setCustomer(await refetch())
         return { ok: true }
       } catch (err) {
+        // The first request may already have saved; show what's stored rather than a stale page.
+        try {
+          setCustomer(await refetch())
+        } catch {
+          // keep the error below
+        }
         return { ok: false, reason: err instanceof ApiError ? err.message : "Couldn't save your menu choices — try again." }
       }
     },
-    [customer.subscription.id, refetch]
+    [customer.subscription, refetch]
   )
 
   const deleteAccount = useCallback(async () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { CalendarRange, Sparkles, CheckCircle2 } from "lucide-react"
-import { useDashboard } from "@/lib/dashboard-context"
+import { useDashboard, type OrderDay } from "@/lib/dashboard-context"
 import { SLOTS_BY_MEALS_PER_DAY } from "@/data/menu"
 import { mondayOf, addWeeks, toDateKey, fromDateKey } from "@/lib/subscription"
 import { mealSlotFromEnum } from "@/lib/enum-map"
@@ -38,10 +38,14 @@ function WeeklyMenu() {
   const [error, setError] = useState("")
   const [saved, setSaved] = useState(false)
 
-  const slots = SLOTS_BY_MEALS_PER_DAY[sub.mealsPerDay]
+  // Days still coming from the plan this one renewed sit alongside this plan's own days. They have
+  // their own meals per day (a renewal can change it), so the boxes to fill depend on the day.
+  const slotsFor = (day: OrderDay) =>
+    SLOTS_BY_MEALS_PER_DAY[day.fromPreviousPlan ? (sub.earlierMealsPerDay ?? sub.mealsPerDay) : sub.mealsPerDay]
+  const allOrders = [...sub.earlierOrders, ...sub.orders]
   const inRange = (date: string, start: string) => date >= start && date < addWeeks(start, 1)
-  const thisWeekOrders = sub.orders.filter((o) => inRange(o.date, thisMonday))
-  const nextWeekOrders = sub.orders.filter((o) => inRange(o.date, nextMonday))
+  const thisWeekOrders = allOrders.filter((o) => inRange(o.date, thisMonday))
+  const nextWeekOrders = allOrders.filter((o) => inRange(o.date, nextMonday))
   const needsChoice = nextWeekOrders.some((o) => !o.menuChosenAt)
   const cutoffPassed = today >= cutoff
   const showBanner = today >= wednesdayThisWeek && needsChoice && !cutoffPassed && nextWeekOrders.length > 0
@@ -99,7 +103,7 @@ function WeeklyMenu() {
     if (Array.isArray(nextWeekItems)) preloadImages(nextWeekItems.map((item) => item.photoUrl))
   }, [nextWeekItems])
 
-  const canSave = nextWeekOrders.every((o) => (selections[o.date] ?? []).filter(Boolean).length === slots.length)
+  const canSave = nextWeekOrders.every((o) => (selections[o.date] ?? []).filter(Boolean).length === slotsFor(o).length)
 
   return (
     <div className="space-y-8">
@@ -170,7 +174,7 @@ function WeeklyMenu() {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="grid gap-4 sm:grid-cols-2">
-                      {slots.map((slot, slotIndex) => {
+                      {slotsFor(day).map((slot, slotIndex) => {
                         const options = optionsByDateSlot.get(`${day.date}|${slot}`) ?? []
                         const value = selections[day.date]?.[slotIndex]
                         const chosen = options.find((opt) => opt.id === value)
