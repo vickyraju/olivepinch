@@ -83,11 +83,12 @@ function Menu() {
   const dietEnums = new Set(state.dietTypes.map((d) => DIET_TO_ENUM[d]))
   const excludedAllergens = new Set(state.allergens)
 
-  function optionsFor(weekStart: string, slot: MealSlot): PublishedMenuItem[] {
+  function optionsFor(weekStart: string, date: string, slot: MealSlot): PublishedMenuItem[] {
     const items = weeks?.[weekStart]
     if (!Array.isArray(items)) return []
     return items.filter(
       (item) =>
+        item.date === date &&
         mealSlotFromEnum(item.slot) === slot &&
         item.dietTags.some((tag) => dietEnums.has(tag)) &&
         !item.allergenTags.some((a) => excludedAllergens.has(a))
@@ -138,7 +139,7 @@ function Menu() {
                     <AccordionContent>
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {slots.map((slot: MealSlot, slotIndex: number) => {
-                          const options = optionsFor(weekStart, slot)
+                          const options = optionsFor(weekStart, date, slot)
                           const value = dayItems[slotIndex]
                           const chosen = options.find((opt) => opt.id === value)
                           return (

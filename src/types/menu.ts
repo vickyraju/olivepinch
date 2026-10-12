@@ -11,4 +11,5 @@ export interface PublishedMenuItem {
   protein: number
   carbs: number
   fat: number
+  date: string // YYYY-MM-DD this item is served on within the published week
 }

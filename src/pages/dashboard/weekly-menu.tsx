@@ -84,11 +84,12 @@ function WeeklyMenu() {
     }
   }
 
-  const optionsBySlot = new Map<string, PublishedMenuItem[]>()
+  // Keyed by date + slot: the admin composes each day separately, so a day only offers its own items.
+  const optionsByDateSlot = new Map<string, PublishedMenuItem[]>()
   if (Array.isArray(nextWeekItems)) {
     for (const item of nextWeekItems) {
-      const label = mealSlotFromEnum(item.slot)
-      optionsBySlot.set(label, [...(optionsBySlot.get(label) ?? []), item])
+      const key = `${item.date}|${mealSlotFromEnum(item.slot)}`
+      optionsByDateSlot.set(key, [...(optionsByDateSlot.get(key) ?? []), item])
     }
   }
 
@@ -164,7 +165,7 @@ function WeeklyMenu() {
                   <AccordionContent>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {slots.map((slot, slotIndex) => {
-                        const options = optionsBySlot.get(slot) ?? []
+                        const options = optionsByDateSlot.get(`${day.date}|${slot}`) ?? []
                         const value = selections[day.date]?.[slotIndex]
                         const chosen = options.find((opt) => opt.id === value)
                         return (
