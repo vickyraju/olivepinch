@@ -169,7 +169,7 @@ function WeeklyMenu() {
                     {new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-4 sm:grid-cols-2">
                       {slots.map((slot, slotIndex) => {
                         const options = optionsByDateSlot.get(`${day.date}|${slot}`) ?? []
                         const value = selections[day.date]?.[slotIndex]
@@ -192,7 +192,7 @@ function WeeklyMenu() {
                                   <SelectItem key={opt.id} value={opt.id}>
                                     <span className="flex items-center gap-2">
                                       <FoodPhoto eager src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
-                                      {opt.name}
+                                      <span className="min-w-0 truncate">{opt.name}</span>
                                     </span>
                                   </SelectItem>
                                 ))}
@@ -201,7 +201,8 @@ function WeeklyMenu() {
                             {chosen && (
                               <div className="mt-2 rounded-lg border border-border overflow-hidden">
                                 <FoodPhoto eager src={chosen.photoUrl ?? undefined} alt={chosen.name} className="aspect-[16/9] rounded-none" />
-                                <div className="p-2 flex gap-1 flex-wrap">
+                                <p className="px-3 pt-2.5 text-sm font-medium text-ink">{chosen.name}</p>
+                                  <div className="p-2 flex gap-1 flex-wrap">
                                   <Badge variant="olive">{chosen.kcal} kcal</Badge>
                                   <Badge variant="coral">{chosen.protein}g protein</Badge>
                                   <Badge variant="neutral">{chosen.carbs}g carbs</Badge>

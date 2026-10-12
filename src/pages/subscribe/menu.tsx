@@ -152,7 +152,7 @@ function Menu() {
                       </span>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      <div className="grid gap-4 sm:grid-cols-2">
                         {slots.map((slot: MealSlot, slotIndex: number) => {
                           const options = optionsFor(weekStart, date, slot)
                           const value = dayItems[slotIndex]
@@ -175,7 +175,7 @@ function Menu() {
                                     <SelectItem key={opt.id} value={opt.id}>
                                       <span className="flex items-center gap-2">
                                         <FoodPhoto eager src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
-                                        {opt.name}
+                                        <span className="min-w-0 truncate">{opt.name}</span>
                                       </span>
                                     </SelectItem>
                                   ))}
@@ -184,6 +184,7 @@ function Menu() {
                               {chosen && (
                                 <div className="mt-2 rounded-lg border border-border overflow-hidden">
                                   <FoodPhoto eager src={chosen.photoUrl ?? undefined} alt={chosen.name} className="aspect-[16/9] rounded-none" />
+                                  <p className="px-3 pt-2.5 text-sm font-medium text-ink">{chosen.name}</p>
                                   <div className="p-2 flex gap-1 flex-wrap">
                                     <Badge variant="olive">{chosen.kcal} kcal</Badge>
                                     <Badge variant="coral">{chosen.protein}g protein</Badge>

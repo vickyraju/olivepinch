@@ -9,7 +9,10 @@ function SelectTrigger({ className, children, ...props }: React.ComponentProps<t
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        "flex h-12 w-full items-center justify-between rounded-md border border-border bg-surface px-4 text-base text-ink cursor-pointer",
+        "flex h-12 w-full items-center justify-between gap-2 rounded-md border border-border bg-surface px-4 text-base text-ink cursor-pointer",
+        // The selected value is one line: long names (e.g. a meal name beside its thumbnail) get an
+        // ellipsis instead of wrapping out of the fixed-height box.
+        "[&>span:first-child]:min-w-0 [&>span:first-child]:flex-1 [&>span:first-child]:overflow-hidden [&>span:first-child]:text-left [&>span:first-child]:whitespace-nowrap",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500",
         "data-[placeholder]:text-ink-muted disabled:cursor-not-allowed disabled:opacity-50",
         className
@@ -18,7 +21,7 @@ function SelectTrigger({ className, children, ...props }: React.ComponentProps<t
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="h-4 w-4 opacity-60" />
+        <ChevronDown className="h-4 w-4 shrink-0 opacity-60" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
