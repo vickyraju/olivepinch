@@ -24,6 +24,9 @@ export interface OrderDay {
   status: OrderStatus
   menuChosenAt: string | null
   items: { id: string; name: string; slot: string }[]
+  // A delivery still coming from the plan this one renewed. Shown for information only: pausing it
+  // would push the old plan's end date into the first day of the renewed plan.
+  fromPreviousPlan?: boolean
 }
 
 export interface Subscription {
@@ -39,6 +42,7 @@ export interface Subscription {
   deliverySlot: DeliverySlot
   deliveryTimeSlot: DeliveryTimeSlot
   orders: OrderDay[]
+  earlierOrders: OrderDay[]
 }
 
 export interface DashboardCustomer {
@@ -61,13 +65,16 @@ interface RawSubscription {
   pausedDates: string[]
   deliverySlot: string
   deliveryTimeSlot: string
-  orders: {
-    id: string
-    deliveryDate: string
-    status: string
-    menuChosenAt: string | null
-    items: { slot: string; menuItem: { id: string; name: string } }[]
-  }[]
+  orders: RawOrder[]
+  earlierOrders?: RawOrder[]
+}
+
+interface RawOrder {
+  id: string
+  deliveryDate: string
+  status: string
+  menuChosenAt: string | null
+  items: { slot: string; menuItem: { id: string; name: string } }[]
 }
 
 /** SCHEDULED never advances on its own in this pilot (no ops staff/cron flips it) — derive a
@@ -78,6 +85,16 @@ function displayStatusFor(deliveryDateIso: string, backendStatus: string): Order
   if (deliveryDateIso < today) return "Delivered"
   if (deliveryDateIso === today) return "Out for Delivery"
   return "Scheduled"
+}
+
+function mapOrder(o: RawOrder): OrderDay {
+  return {
+    id: o.id,
+    date: o.deliveryDate.slice(0, 10),
+    status: displayStatusFor(o.deliveryDate.slice(0, 10), o.status),
+    menuChosenAt: o.menuChosenAt,
+    items: o.items.map((i) => ({ id: i.menuItem.id, name: i.menuItem.name, slot: mealSlotFromEnum(i.slot) })),
+  }
 }
 
 function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[], allergens: string[]): Subscription {
@@ -93,13 +110,12 @@ function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[]
     pausedDates: raw.pausedDates.map((d) => d.slice(0, 10)),
     deliverySlot: deliverySlotFromEnum(raw.deliverySlot),
     deliveryTimeSlot: raw.deliveryTimeSlot,
-    orders: raw.orders.map((o) => ({
-      id: o.id,
-      date: o.deliveryDate.slice(0, 10),
-      status: displayStatusFor(o.deliveryDate.slice(0, 10), o.status),
-      menuChosenAt: o.menuChosenAt,
-      items: o.items.map((i) => ({ id: i.menuItem.id, name: i.menuItem.name, slot: mealSlotFromEnum(i.slot) })),
-    })),
+    orders: raw.orders.map(mapOrder),
+    // Renewals made before the start-date rule existed can overlap the old plan; skip days this
+    // plan already delivers so nothing shows twice.
+    earlierOrders: (raw.earlierOrders ?? [])
+      .filter((o) => !raw.orders.some((c) => c.deliveryDate.slice(0, 10) === o.deliveryDate.slice(0, 10)))
+      .map((o) => ({ ...mapOrder(o), fromPreviousPlan: true })),
   }
 }
 

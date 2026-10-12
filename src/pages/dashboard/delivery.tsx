@@ -33,7 +33,8 @@ function Delivery() {
 
   const limit = PAUSE_LIMITS_BY_DURATION[sub.planDuration]
   const remaining = limit - pausesUsed
-  const allUpcoming = sub.orders.filter((o) => o.status !== "Delivered")
+  // Days still coming from the plan this one renewed come first (they end before this plan starts).
+  const allUpcoming = [...sub.earlierOrders, ...sub.orders].filter((o) => o.status !== "Delivered")
   const upcoming = allUpcoming.slice(0, visibleCount)
   const batches = groupIntoBatches(upcoming, sub.deliverySlot)
 
@@ -75,8 +76,11 @@ function Delivery() {
   function renderDay(day: OrderDay) {
     const style = STATUS_STYLE[day.status]
     const withinCutoff = canPauseDate(day.date)
-    const isFuture = (day.status === "Scheduled" || day.status === "Paused") && withinCutoff
-    const isSelectable = selecting && day.status === "Scheduled" && withinCutoff
+    // Previous-plan days can't be paused here: that would move the old plan's end date into the
+    // first day of the renewed plan.
+    const pausable = !day.fromPreviousPlan
+    const isFuture = pausable && (day.status === "Scheduled" || day.status === "Paused") && withinCutoff
+    const isSelectable = pausable && selecting && day.status === "Scheduled" && withinCutoff
     return (
       <div key={day.id} className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
@@ -100,6 +104,7 @@ function Delivery() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          {day.fromPreviousPlan && <Badge variant="neutral">Previous plan</Badge>}
           <Badge variant={style.variant}>{day.status}</Badge>
           {!selecting && isFuture && (day.status === "Paused" || remaining > 0) && (
             <Button
