@@ -41,8 +41,8 @@ export function createApp() {
   // Webhook signature verification needs raw body — keep this ahead of the global
   // JSON parser regardless of provider (currently a stub; see routes/payments.ts).
   app.use("/api/payments/webhook", express.raw({ type: "application/json" }))
-  // Default 100kb is too small for a menu-item photo submitted as a base64 data URL.
-  app.use(express.json({ limit: "8mb" }))
+  // Menu photos arrive as base64 data URLs; phone photos can be 10MB+ before encoding.
+  app.use(express.json({ limit: "30mb" }))
 
   app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 120 }))
 

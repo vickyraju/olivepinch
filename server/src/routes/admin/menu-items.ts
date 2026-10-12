@@ -6,7 +6,7 @@ import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, MEAL_SLOT_VALUES, PLAN_TIER_VALUES } from "../../lib/enums.js"
-import { getImageDimensions } from "../../lib/image-dimensions.js"
+import { storeMenuPhoto } from "../../lib/menu-photos.js"
 
 export const adminMenuItemsRouter = Router()
 adminMenuItemsRouter.use(requireAdminAuth)
@@ -30,27 +30,34 @@ const menuItemSchema = z.object({
   fat: z.number().int().nonnegative(),
 })
 
-function photoError(res: Response, photoUrl: string | undefined) {
-  if (!photoUrl) return null
-  const match = /^data:image\/(png|jpeg);base64,(.+)$/.exec(photoUrl)
-  if (!match) return res.status(400).json({ error: "Photo must be a PNG or JPEG upload" })
-  const dimensions = getImageDimensions(Buffer.from(match[2] as string, "base64"))
-  if (!dimensions) {
-    return res.status(400).json({ error: "Photo must be a valid PNG or JPEG image" })
+// Uploaded photos are resized and stored; the item keeps only the public URL.
+async function resolvePhoto(res: Response, photoUrl: string | undefined): Promise<string | null | undefined> {
+  if (!photoUrl) return photoUrl
+  try {
+    return await storeMenuPhoto(photoUrl)
+  } catch (err) {
+    const status = (err as { status?: number }).status
+    if (status === 501) {
+      res.status(501).json({ error: "Photo storage is not configured on the server" })
+      return null
+    }
+    res.status(400).json({ error: "Photo must be a valid image file" })
+    return null
   }
-  return null
 }
 
 // FR-A01: manage menu items (name, description, photo, dietary/allergen tags)
 adminMenuItemsRouter.post("/", validateBody(menuItemSchema), async (req, res) => {
-  if (photoError(res, req.body.photoUrl)) return
-  const item = await prisma.menuItem.create({ data: req.body as never })
+  const photoUrl = await resolvePhoto(res, req.body.photoUrl)
+  if (photoUrl === null) return
+  const item = await prisma.menuItem.create({ data: { ...req.body, photoUrl } as never })
   res.status(201).json(item)
 })
 
 adminMenuItemsRouter.patch("/:id", validateBody(menuItemSchema.partial()), async (req, res) => {
-  if (photoError(res, req.body.photoUrl)) return
-  const item = await prisma.menuItem.update({ where: { id: req.params.id as string }, data: req.body as never })
+  const photoUrl = await resolvePhoto(res, req.body.photoUrl)
+  if (photoUrl === null) return
+  const item = await prisma.menuItem.update({ where: { id: req.params.id as string }, data: { ...req.body, photoUrl } as never })
   res.json(item)
 })
 
