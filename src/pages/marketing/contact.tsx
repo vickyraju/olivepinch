@@ -3,6 +3,7 @@ import { Mail, MapPin, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { api, ApiError } from "@/lib/api"
 
 const CONTACT_INFO = [
   { icon: Mail, label: "hello@olivepinch.com" },
@@ -12,6 +13,30 @@ const CONTACT_INFO = [
 
 function Contact() {
   const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState("")
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (sending) return
+    const data = new FormData(e.currentTarget)
+    setSending(true)
+    setError("")
+    try {
+      await api.post("/contact", {
+        name: String(data.get("name") ?? ""),
+        email: String(data.get("email") ?? ""),
+        message: String(data.get("message") ?? ""),
+        website: String(data.get("website") ?? ""),
+      })
+      setSent(true)
+    } catch (err) {
+      // The form stays filled in, so the customer can retry without retyping.
+      setError(err instanceof ApiError ? err.message : "We couldn't send your message just now. Please email hello@olivepinch.com instead.")
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <section className="pt-14 pb-20 sm:pt-20 sm:pb-28">
@@ -38,26 +63,26 @@ function Contact() {
             </ul>
           </div>
 
-          <div className="rounded-2xl bg-surface border border-border p-8 shadow-soft">
+          <div className="relative rounded-2xl bg-surface border border-border p-8 shadow-soft">
             {sent ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-8">
                 <h3 className="text-xl text-ink mb-2">Message sent</h3>
                 <p className="text-ink-muted">Thanks for reaching out — we'll reply within one business day.</p>
               </div>
             ) : (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  setSent(true)
-                }}
-              >
+              <form onSubmit={handleSubmit}>
+                {/* Honeypot: invisible to people, tempting to bots. Never shown or tabbed to. */}
+                <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                  <label htmlFor="contact-website">Website</label>
+                  <input id="contact-website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+                </div>
                 <div className="mb-5">
                   <Label htmlFor="contact-name">Full name</Label>
-                  <Input id="contact-name" name="name" required autoComplete="name" />
+                  <Input id="contact-name" name="name" required maxLength={100} autoComplete="name" />
                 </div>
                 <div className="mb-5">
                   <Label htmlFor="contact-email">Email address</Label>
-                  <Input id="contact-email" name="email" type="email" required autoComplete="email" />
+                  <Input id="contact-email" name="email" type="email" required maxLength={200} autoComplete="email" />
                 </div>
                 <div className="mb-6">
                   <Label htmlFor="contact-message">Message</Label>
@@ -65,12 +90,18 @@ function Contact() {
                     id="contact-message"
                     name="message"
                     required
+                    maxLength={3000}
                     rows={4}
                     className="flex w-full rounded-md border border-border bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500"
                   />
                 </div>
-                <Button type="submit" variant="primary" size="lg" className="w-full sm:w-auto">
-                  Send message
+                {error && (
+                  <p role="alert" className="mb-4 text-sm text-coral-600">
+                    {error}
+                  </p>
+                )}
+                <Button type="submit" variant="primary" size="lg" className="w-full sm:w-auto" disabled={sending}>
+                  {sending ? "Sending…" : "Send message"}
                 </Button>
               </form>
             )}
