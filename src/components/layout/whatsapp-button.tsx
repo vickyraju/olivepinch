@@ -21,4 +21,4 @@ function WhatsAppButton() {
   )
 }
 
-export { WhatsAppButton }
+export { WhatsAppButton, CHAT_URL as WHATSAPP_CHAT_URL }

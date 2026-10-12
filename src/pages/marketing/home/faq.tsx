@@ -1,3 +1,8 @@
+import { Link } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { WHATSAPP_CHAT_URL } from "@/components/layout/whatsapp-button"
+
 const FAQ_GROUPS = [
   {
     title: "",
@@ -81,27 +86,58 @@ const FAQ_GROUPS = [
   },
 ]
 
+function StillNeedHelp() {
+  return (
+    <div className="rounded-2xl border border-olive-100 bg-olive-50 p-6">
+      <p className="font-display text-xl text-ink">Still have a question?</p>
+      <p className="mt-1.5 text-sm text-ink-muted">Send us a message and we'll reply within one business day.</p>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button asChild variant="primary" size="md">
+          <Link to="/contact">Contact us</Link>
+        </Button>
+        <Button asChild variant="outline" size="md">
+          <a href={WHATSAPP_CHAT_URL} target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function Faq() {
   return (
-    <section id="faq" className="py-20 sm:py-28">
-      <div className="mx-auto max-w-5xl px-5 sm:px-8">
-        <div className="max-w-xl mb-12">
-          <h2 className="text-3xl sm:text-4xl text-ink">Frequently asked questions</h2>
-        </div>
-        <div className="space-y-14">
-          {FAQ_GROUPS.map((group) => (
-            <div key={group.title}>
-              {group.title && <h3 className="font-display text-2xl text-ink mb-6">{group.title}</h3>}
-              <div className="grid gap-x-10 gap-y-9 sm:grid-cols-2">
-                {group.items.map((faq) => (
-                  <div key={faq.q}>
-                    <h4 className="text-lg font-semibold text-ink mb-1.5">{faq.q}</h4>
-                    <p className="text-sm text-ink-muted leading-relaxed">{faq.a}</p>
-                  </div>
-                ))}
-              </div>
+    <section id="faq" className="scroll-mt-32 py-20 sm:py-28">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)] lg:gap-16">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <h2 className="text-3xl sm:text-4xl text-ink">Frequently asked questions</h2>
+            <p className="mt-3 text-ink-muted">Quick answers about our meals, delivery and ordering.</p>
+            <div className="mt-8 hidden lg:block">
+              <StillNeedHelp />
             </div>
-          ))}
+          </div>
+
+          <div>
+            {/* One answer open at a time; the first is open so the section never looks empty. */}
+            <Accordion type="single" collapsible defaultValue={FAQ_GROUPS[0]!.items[0]!.q} className="space-y-8">
+              {FAQ_GROUPS.map((group) => (
+                <div key={group.title || "general"}>
+                  {group.title && <p className="eyebrow mb-3">{group.title}</p>}
+                  <div className="rounded-2xl border border-border bg-surface px-5 sm:px-6">
+                    {group.items.map((faq) => (
+                      <AccordionItem key={faq.q} value={faq.q}>
+                        <AccordionTrigger className="gap-4">{faq.q}</AccordionTrigger>
+                        <AccordionContent>{faq.a}</AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </Accordion>
+
+            <div className="mt-10 lg:hidden">
+              <StillNeedHelp />
+            </div>
+          </div>
         </div>
       </div>
     </section>
