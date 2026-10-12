@@ -7,7 +7,7 @@ import { formatAddress } from "../../lib/address.js"
 import { isPostcodeInActiveZone } from "../../lib/postcode.js"
 import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
 import { PHONE_REGEX } from "../customers.js"
-import { computeEndDate, londonToday } from "../../lib/subscription.js"
+import { computeEndDate, londonToday, pickSubscriptions } from "../../lib/subscription.js"
 import { renewalsFor, lastRenewedAt } from "../../lib/renewals.js"
 import { sendEmail } from "../../lib/email.js"
 import { cancellationEmail } from "../../lib/email-templates.js"
@@ -75,7 +75,8 @@ adminCustomersRouter.get("/", async (req, res) => {
   }
 
   function toRow(c: Awaited<ReturnType<typeof prisma.customer.findFirstOrThrow<{ select: typeof select }>>>) {
-    const latest = c.subscriptions[0]
+    // Skips an unpaid renewal attempt, which would otherwise show a paying customer as Unsubscribed.
+    const latest = pickSubscriptions(c.subscriptions)?.current
     const planEndDate = latest ? computeEndDate(latest.startDate, latest.planDuration, latest.pausedDates) : null
     const { subscriptions, payments, ...c2 } = c
     return {

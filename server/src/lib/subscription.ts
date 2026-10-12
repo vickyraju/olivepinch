@@ -72,3 +72,20 @@ export function buildDeliveryDates(startDate: Date, planDuration: number, paused
   const totalDays = planDuration + pausedDates.length
   return Array.from({ length: totalDays }, (_, i) => addDays(startDate, i))
 }
+
+// Which of a customer's subscriptions is "the plan" (newest first in, as ordered by createdAt desc).
+//  current: the newest one that isn't an unpaid PENDING_PAYMENT attempt, so an abandoned renewal
+//    can't hide the plan the customer is actually on. Falls back to the newest of all when there is
+//    nothing else (a first signup that hasn't paid yet).
+//  pendingRenewal: an unpaid attempt made after `current`: a renewal in progress. Its payment is
+//    confirmed by id when the customer returns from the payment page.
+//  earlier: the previous plan, if still active; a renewal can start while it still has deliveries.
+export function pickSubscriptions<T extends { id: string; status: string; createdAt: Date }>(newestFirst: T[]) {
+  const current = newestFirst.find((s) => s.status !== "PENDING_PAYMENT") ?? newestFirst[0]
+  if (!current) return null
+  const pendingRenewal =
+    newestFirst.find((s) => s.id !== current.id && s.status === "PENDING_PAYMENT" && s.createdAt.getTime() > current.createdAt.getTime()) ?? null
+  const earlier =
+    newestFirst.find((s) => s.id !== current.id && s.status === "ACTIVE" && s.createdAt.getTime() < current.createdAt.getTime()) ?? null
+  return { current, pendingRenewal, earlier }
+}

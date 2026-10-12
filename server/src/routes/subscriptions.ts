@@ -6,7 +6,7 @@ import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
 import { formatDate } from "../lib/email-templates.js"
-import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, earliestStartDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
+import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, earliestStartDate, pickSubscriptions, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
 import { validatePromoCode } from "../lib/promo.js"
@@ -155,28 +155,41 @@ subscriptionsRouter.post(
 subscriptionsRouter.use(requireAuth)
 
 subscriptionsRouter.get("/current", async (req, res) => {
-  const subscription = await prisma.subscription.findFirst({
+  const all = await prisma.subscription.findMany({
     where: { customerId: req.customerId },
     orderBy: { createdAt: "desc" },
+    select: { id: true, status: true, createdAt: true },
+  })
+  const picked = pickSubscriptions(all)
+  if (!picked) return res.status(404).json({ error: "No active subscription" })
+
+  const subscription = await prisma.subscription.findUniqueOrThrow({
+    where: { id: picked.current.id },
     include: { orders: { include: { items: { include: { menuItem: true } } }, orderBy: { deliveryDate: "asc" } } },
   })
-  if (!subscription) return res.status(404).json({ error: "No active subscription" })
-
   const endDate = computeEndDate(subscription.startDate, subscription.planDuration, subscription.pausedDates)
 
   // A renewal made before the old plan ended starts the day after it, so the old plan still has
-  // deliveries coming. Return those too, or the delivery page would drop days that are still on
-  // their way. They belong to the earlier subscription, so the customer app shows them read-only.
-  const earlier = await prisma.subscription.findFirst({
-    where: { customerId: req.customerId, id: { not: subscription.id }, status: "ACTIVE", createdAt: { lt: subscription.createdAt } },
-    orderBy: { createdAt: "desc" },
-    include: { orders: { where: { deliveryDate: { gte: londonToday() } }, include: { items: { include: { menuItem: true } } }, orderBy: { deliveryDate: "asc" } } },
-  })
+  // deliveries coming (from the start of this week, so the whole week reads correctly). Return
+  // those too, with the old plan's id and meals per day, since a customer chooses meals for them
+  // against that plan, not the new one.
+  const thisMonday = londonToday()
+  thisMonday.setUTCDate(thisMonday.getUTCDate() - ((thisMonday.getUTCDay() + 6) % 7))
+  const earlier = picked.earlier
+    ? await prisma.subscription.findUnique({
+        where: { id: picked.earlier.id },
+        include: { orders: { where: { deliveryDate: { gte: thisMonday } }, include: { items: { include: { menuItem: true } } }, orderBy: { deliveryDate: "asc" } } },
+      })
+    : null
 
   res.json({
     ...subscription,
     endDate,
     earlierOrders: earlier?.orders ?? [],
+    earlierSubscriptionId: earlier && earlier.orders.length > 0 ? earlier.id : null,
+    earlierMealsPerDay: earlier && earlier.orders.length > 0 ? earlier.mealsPerDay : null,
+    // Set while a renewal is awaiting payment; the dashboard confirms this id on return from payment.
+    pendingRenewalId: picked.pendingRenewal?.id ?? null,
     pausesUsedTotal: pausesUsedTotal(subscription.pausedDates),
     pauseLimit: PAUSE_LIMITS_BY_DURATION[subscription.planDuration as 7 | 14 | 28],
   })

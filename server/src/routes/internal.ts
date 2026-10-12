@@ -139,7 +139,8 @@ const RETENTION_MONTHS = 12
 export async function runLapsedRetentionSweep() {
   const customers = await prisma.customer.findMany({
     where: { accountStatus: "ACTIVE" },
-    include: { subscriptions: { orderBy: { startDate: "desc" }, take: 1 } },
+    // Unpaid attempts are skipped: an abandoned renewal must not stop the lapsed-customer email.
+    include: { subscriptions: { where: { status: { not: "PENDING_PAYMENT" } }, orderBy: { startDate: "desc" }, take: 1 } },
   })
 
   const cutoff = londonToday()
