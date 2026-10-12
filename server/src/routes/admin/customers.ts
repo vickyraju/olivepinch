@@ -9,6 +9,8 @@ import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
 import { PHONE_REGEX } from "../customers.js"
 import { computeEndDate, londonToday, pickSubscriptions } from "../../lib/subscription.js"
 import { renewalsFor, lastRenewedAt } from "../../lib/renewals.js"
+import { diffCustomerEdit } from "../../lib/customer-edit.js"
+import { calculateAge } from "../../lib/age.js"
 import { sendEmail } from "../../lib/email.js"
 import { cancellationEmail } from "../../lib/email-templates.js"
 import { worldpayConfig, getRefundActions, refundFull, refundPartial } from "../../lib/worldpay.js"
@@ -148,6 +150,79 @@ adminCustomersRouter.get("/:id", async (req, res) => {
 function logAction(adminId: string, action: string, customerId?: string, detail?: string) {
   return prisma.adminAuditLog.create({ data: { adminId, action, customerId, detail } })
 }
+
+// Full admin edit of a customer's details: any subset of the fields below. Each field is validated like
+// the customer-facing signup rules (phone format, age 16-100, delivery-zone postcode), but admins can
+// change things customers can't edit themselves (name, email, date of birth, body measurements).
+// Only real differences are written; the audit log records which fields changed (never health or
+// contact values, see lib/customer-edit.ts).
+const optionalText = (max: number) => z.string().trim().max(max).nullable()
+const requiredText = (max: number) => z.string().trim().min(1, "This can't be empty").max(max)
+
+const editCustomerSchema = z.object({
+  fullName: requiredText(100).optional(),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address").max(200).optional(),
+  phone: z.union([z.string().regex(PHONE_REGEX, "Enter the phone number in international format, e.g. +447123456789"), z.literal(""), z.null()]).optional(),
+  gender: optionalText(50).optional(),
+  dateOfBirth: z
+    .union([
+      z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter a valid date of birth")
+        .refine((v) => !isNaN(new Date(v).getTime()), "Enter a valid date of birth")
+        .refine((v) => {
+          const age = calculateAge(new Date(v))
+          return age >= 16 && age <= 100
+        }, "Age must be between 16 and 100"),
+      z.literal(""),
+      z.null(),
+    ])
+    .optional(),
+  heightCm: z.number().min(50, "Height looks too small (cm)").max(260, "Height looks too large (cm)").nullable().optional(),
+  weightKg: z.number().min(20, "Weight looks too small (kg)").max(500, "Weight looks too large (kg)").nullable().optional(),
+  goal: z.enum(GOAL_VALUES as [string, ...string[]]).optional(),
+  dietTypes: z.array(z.enum(DIET_VALUES as [string, ...string[]])).min(1, "Choose at least one food type").optional(),
+  allergens: z.array(z.string().trim().min(1).max(60)).max(30).optional(),
+  addressDoorNumber: requiredText(30).optional(),
+  addressBuildingName: optionalText(100).optional(),
+  addressStreet: requiredText(120).optional(),
+  addressArea: requiredText(100).optional(),
+  addressPostcode: requiredText(12).optional(),
+  marketingOptIn: z.boolean().optional(),
+  // DELETED is a data-scrubbing flow of its own, and PROVISIONAL is a signup state, so neither is offered here.
+  accountStatus: z.enum(["ACTIVE", "READ_ONLY"]).optional(),
+})
+
+adminCustomersRouter.patch("/:id", validateBody(editCustomerSchema), async (req, res) => {
+  const id = req.params.id as string
+  const edit = req.body as z.infer<typeof editCustomerSchema>
+  const existing = await prisma.customer.findUniqueOrThrow({ where: { id } })
+  if (existing.accountStatus === "DELETED") {
+    return res.status(400).json({ error: "This account has been deleted, so its details can't be edited." })
+  }
+
+  const { data, changed, detail, emailChanged } = diffCustomerEdit(existing, edit)
+  if (changed.length === 0) return res.json({ changed: [] })
+
+  if (emailChanged) {
+    const taken = await prisma.customer.findUnique({ where: { email: String(data.email) }, select: { id: true } })
+    if (taken && taken.id !== id) return res.status(409).json({ error: "Another customer already uses that email address." })
+  }
+  // Same delivery-zone rule as the customer's own address edit: we only deliver to active zones.
+  if (changed.includes("addressPostcode") && !(await isPostcodeInActiveZone(String(data.addressPostcode)))) {
+    return res.status(400).json({ error: "That postcode isn't in an active delivery zone. Add it under Postcode Coverage first." })
+  }
+
+  await prisma.$transaction([
+    prisma.customer.update({ where: { id }, data: data as never }),
+    // A change of marketing consent is a consent record, as it is when the customer does it at signup.
+    ...(changed.includes("marketingOptIn")
+      ? [prisma.consentLog.create({ data: { customerId: id, consentType: "marketing", granted: Boolean(data.marketingOptIn), version: "1.0" } })]
+      : []),
+    prisma.adminAuditLog.create({ data: { adminId: req.adminId!, action: "customer-edit", customerId: id, detail } }),
+  ])
+  res.json({ changed, emailChanged })
+})
 
 // FR-A05: support tools — manual pause override (bypasses the 4/month cap)
 adminCustomersRouter.post(
