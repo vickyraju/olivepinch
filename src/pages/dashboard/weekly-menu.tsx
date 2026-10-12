@@ -171,6 +171,12 @@ function WeeklyMenu() {
                         return (
                           <div key={slot}>
                             <span className="text-xs font-semibold text-coral-600">{slot}</span>
+                            {options.length === 0 ? (
+                              <p className="mt-1 rounded-lg border border-dashed border-border bg-cream-100 px-3 py-2.5 text-sm text-ink-muted">
+                                No meals have been set for this box on this day yet — check back once the menu is updated.
+                              </p>
+                            ) : (
+                            <>
                             <Select value={value} onValueChange={(v) => setItem(day.date, slotIndex, v)}>
                               <SelectTrigger className="mt-1">
                                 <SelectValue placeholder="Choose…" />
@@ -196,6 +202,8 @@ function WeeklyMenu() {
                                   <Badge variant="neutral">{chosen.fat}g fat</Badge>
                                 </div>
                               </div>
+                            )}
+                            </>
                             )}
                           </div>
                         )

@@ -105,10 +105,15 @@ function Menu() {
     })
   }
 
-  const canContinue = choosableDates.every((date) => {
-    const items = state.dayMenus.find((d) => d.date === date)?.items
-    return items && items.length === slots.length && items.every(Boolean)
-  })
+  // A box with no options (nothing set for that day, or nothing that fits the diet) has nothing to
+  // choose, and the server falls back to a default meal for it, so it doesn't block continuing.
+  function dayComplete(date: string): boolean {
+    const weekStart = mondayOf(date)
+    const items = state.dayMenus.find((d) => d.date === date)?.items ?? []
+    return slots.every((slot, i) => optionsFor(weekStart, date, slot).length === 0 || Boolean(items[i]))
+  }
+
+  const canContinue = choosableDates.every(dayComplete)
 
   return (
     <div>
@@ -127,7 +132,7 @@ function Menu() {
               {choosableDates.map((date) => {
                 const weekStart = mondayOf(date)
                 const dayItems = state.dayMenus.find((d) => d.date === date)?.items ?? []
-                const complete = dayItems.length === slots.length && dayItems.every(Boolean)
+                const complete = dayComplete(date)
                 return (
                   <AccordionItem key={date} value={date}>
                     <AccordionTrigger>
@@ -145,6 +150,12 @@ function Menu() {
                           return (
                             <div key={slot}>
                               <span className="text-xs font-semibold text-coral-600">{slot}</span>
+                              {options.length === 0 ? (
+                                <p className="mt-1 rounded-lg border border-dashed border-border bg-cream-100 px-3 py-2.5 text-sm text-ink-muted">
+                                  Nothing to choose here for this day — we'll pick a meal that fits your style and diet.
+                                </p>
+                              ) : (
+                              <>
                               <Select value={value || undefined} onValueChange={(v) => setItem(date, slotIndex, v)}>
                                 <SelectTrigger className="mt-1">
                                   <SelectValue placeholder="Choose…" />
@@ -170,6 +181,8 @@ function Menu() {
                                     <Badge variant="neutral">{chosen.fat}g fat</Badge>
                                   </div>
                                 </div>
+                              )}
+                              </>
                               )}
                             </div>
                           )
