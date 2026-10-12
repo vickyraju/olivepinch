@@ -6,6 +6,8 @@ import { QueryError } from "@/components/query-error"
 import { api, ApiError } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES, formatPhone } from "@/lib/status-styles"
+import { DIET_LABELS, GOAL_LABELS, ageFromDateOfBirth } from "@/lib/customer-labels"
+import { EditCustomerModal, type EditResult } from "@/components/edit-customer-modal"
 
 interface OrderItemRow {
   slot: string
@@ -61,7 +63,19 @@ interface CustomerDetail {
   fullName: string
   email: string
   phone: string | null
-  age: number | null
+  gender: string | null
+  dateOfBirth: string | null
+  heightCm: number | null
+  weightKg: number | null
+  goal: string | null
+  dietTypes: string[]
+  allergens: string[]
+  addressDoorNumber: string | null
+  addressBuildingName: string | null
+  addressStreet: string | null
+  addressArea: string | null
+  addressPostcode: string | null
+  marketingOptIn: boolean
   postcode: string | null
   address: string | null
   accountStatus: string
@@ -83,6 +97,7 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
   refund: "Refund",
   reactivate: "Reactivate",
   "cancel-subscription": "Cancel subscription",
+  "customer-edit": "Details edited",
 }
 
 const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
@@ -329,6 +344,8 @@ function CustomerDetail() {
   const [error, setError] = useState("")
   const [pauseDate, setPauseDate] = useState("")
   const [refundingPayment, setRefundingPayment] = useState<Payment | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [notice, setNotice] = useState("")
 
   const customerQuery = useQuery({
     queryKey: ["customer", id],
@@ -361,6 +378,18 @@ function CustomerDetail() {
   async function submitRefund(paymentId: string, mode: RefundMode, value?: number) {
     await api.post(`/customers/${id}/refund`, { paymentId, mode, value })
     setRefundingPayment(null)
+    await invalidate()
+  }
+
+  async function handleEdited(result: EditResult) {
+    setEditing(false)
+    setNotice(
+      result.changed.length === 0
+        ? "No changes were needed."
+        : result.emailChanged
+          ? "Details saved. The email changed, so this customer will log in again with a code sent to the new address."
+          : "Details saved."
+    )
     await invalidate()
   }
 
@@ -428,6 +457,17 @@ function CustomerDetail() {
           </div>
           <div className="flex items-center gap-3">
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>{style.label}</span>
+            {customer.accountStatus !== "DELETED" ? (
+              <button
+                onClick={() => {
+                  setNotice("")
+                  setEditing(true)
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-[#2E6B3E] text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">edit</span> Edit details
+              </button>
+            ) : null}
             {customer.accountStatus !== "ACTIVE" ? (
               <button
                 onClick={reactivate}
@@ -439,10 +479,19 @@ function CustomerDetail() {
           </div>
         </div>
 
+        {notice ? (
+          <div role="status" className="flex items-center justify-between gap-3 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+            <span>{notice}</span>
+            <button onClick={() => setNotice("")} aria-label="Dismiss" className="cursor-pointer">
+              <span className="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+        ) : null}
+
         <div className="grid gap-4 sm:grid-cols-4">
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Age</p>
-            <p className="text-gray-900 font-semibold">{customer.age ?? "—"}</p>
+            <p className="text-gray-900 font-semibold">{ageFromDateOfBirth(customer.dateOfBirth) ?? "—"}</p>
           </div>
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Phone</p>
@@ -450,7 +499,7 @@ function CustomerDetail() {
           </div>
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Postcode</p>
-            <p className="text-gray-900 font-semibold">{customer.postcode ?? "—"}</p>
+            <p className="text-gray-900 font-semibold">{customer.addressPostcode ?? customer.postcode ?? "—"}</p>
           </div>
           <div className="bg-white p-5 border border-gray-200 rounded-[12px]">
             <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Address</p>
@@ -458,6 +507,40 @@ function CustomerDetail() {
               {customer.address ?? "—"}
             </p>
           </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 className="text-[16px] font-bold text-gray-900">Profile Details</h3>
+            {customer.accountStatus !== "DELETED" ? (
+              <button
+                onClick={() => {
+                  setNotice("")
+                  setEditing(true)
+                }}
+                className="text-sm font-semibold text-primary hover:underline cursor-pointer"
+              >
+                Edit
+              </button>
+            ) : null}
+          </div>
+          <dl className="grid gap-x-6 gap-y-5 p-6 sm:grid-cols-3 text-sm">
+            {[
+              ["Date of birth", customer.dateOfBirth ? new Date(customer.dateOfBirth).toLocaleDateString("en-GB") : "—"],
+              ["Gender", customer.gender ?? "—"],
+              ["Height", customer.heightCm ? `${customer.heightCm} cm` : "—"],
+              ["Weight", customer.weightKg ? `${customer.weightKg} kg` : "—"],
+              ["Style", customer.goal ? GOAL_LABELS[customer.goal] ?? customer.goal : "—"],
+              ["Food types", customer.dietTypes.length ? customer.dietTypes.map((d) => DIET_LABELS[d] ?? d).join(", ") : "—"],
+              ["Allergens", customer.allergens.length ? customer.allergens.join(", ") : "None"],
+              ["Marketing emails", customer.marketingOptIn ? "Agreed" : "Not agreed"],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">{label}</dt>
+                <dd className="text-gray-900 font-medium">{value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
@@ -711,6 +794,7 @@ function CustomerDetail() {
           </div>
         )}
       </div>
+      {editing ? <EditCustomerModal customer={customer} onClose={() => setEditing(false)} onSaved={handleEdited} /> : null}
       {refundingPayment ? (
         <RefundModal
           payment={refundingPayment}

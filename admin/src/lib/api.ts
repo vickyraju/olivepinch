@@ -1,10 +1,18 @@
 export const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api/admin"
 const TOKEN_KEY = "olivepinch_admin_token"
 
+// One reason a request body was rejected: which field, and why.
+export interface ApiIssue {
+  path: (string | number)[]
+  message: string
+}
+
 export class ApiError extends Error {
   status: number
-  constructor(status: number, message: string) {
+  details?: ApiIssue[]
+  constructor(status: number, message: string, details?: ApiIssue[]) {
     super(message)
+    this.details = details
     this.name = "ApiError"
     this.status = status
   }
@@ -42,7 +50,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const json = text ? JSON.parse(text) : undefined
 
   if (!res.ok) {
-    throw new ApiError(res.status, json?.error ?? `Request failed with status ${res.status}`)
+    throw new ApiError(res.status, json?.error ?? `Request failed with status ${res.status}`, Array.isArray(json?.details) ? json.details : undefined)
   }
   return json as T
 }
