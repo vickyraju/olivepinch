@@ -65,7 +65,7 @@ async function main() {
     create: { id: "zone-birmingham", name: "Birmingham", postcodePrefixes: ["B"], isActive: true },
   })
 
-  const adminEmail = "admin@olivepinch.co.uk"
+  const adminEmail = "admin@olivepinch.com"
   await prisma.adminUser.upsert({
     where: { email: adminEmail },
     update: {},
