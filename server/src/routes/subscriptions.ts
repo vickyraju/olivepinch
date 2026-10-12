@@ -151,9 +151,20 @@ subscriptionsRouter.get("/current", async (req, res) => {
   if (!subscription) return res.status(404).json({ error: "No active subscription" })
 
   const endDate = computeEndDate(subscription.startDate, subscription.planDuration, subscription.pausedDates)
+
+  // A renewal made before the old plan ended starts the day after it, so the old plan still has
+  // deliveries coming. Return those too, or the delivery page would drop days that are still on
+  // their way. They belong to the earlier subscription, so the customer app shows them read-only.
+  const earlier = await prisma.subscription.findFirst({
+    where: { customerId: req.customerId, id: { not: subscription.id }, status: "ACTIVE", createdAt: { lt: subscription.createdAt } },
+    orderBy: { createdAt: "desc" },
+    include: { orders: { where: { deliveryDate: { gte: londonToday() } }, include: { items: { include: { menuItem: true } } }, orderBy: { deliveryDate: "asc" } } },
+  })
+
   res.json({
     ...subscription,
     endDate,
+    earlierOrders: earlier?.orders ?? [],
     pausesUsedTotal: pausesUsedTotal(subscription.pausedDates),
     pauseLimit: PAUSE_LIMITS_BY_DURATION[subscription.planDuration as 7 | 14 | 28],
   })
