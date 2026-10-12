@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom"
 import { SiteHeader } from "@/components/layout/site-header"
 import { SiteFooter } from "@/components/layout/site-footer"
+import { WhatsAppButton } from "@/components/layout/whatsapp-button"
 
 function MarketingLayout() {
   return (
@@ -10,6 +11,7 @@ function MarketingLayout() {
         <Outlet />
       </main>
       <SiteFooter />
+      <WhatsAppButton />
     </div>
   )
 }
