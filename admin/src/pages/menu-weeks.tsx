@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Header } from "@/components/header"
 import { api, ApiError } from "@/lib/api"
+import { Skeleton } from "@/components/skeleton"
 import { formatPhone } from "@/lib/status-styles"
 
 interface MenuItem {
@@ -243,6 +244,9 @@ function MenuWeeks() {
   const [composerWeek, setComposerWeek] = useState(nextMondayIso())
   const [composerItemsByDate, setComposerItemsByDate] = useState<Record<string, string[]>>({})
   const [composerPublished, setComposerPublished] = useState(false)
+  // True from the moment a week is picked until its items arrive, so nothing renders against stale data.
+  const [weekLoading, setWeekLoading] = useState(true)
+  const loadSeq = useRef(0)
   const [composerError, setComposerError] = useState("")
   const [saving, setSaving] = useState(false)
   const [publishing, setPublishing] = useState(false)
@@ -272,14 +276,19 @@ function MenuWeeks() {
     setComposerWeek(weekStart)
     setComposerError("")
     setUnlocked(false)
+    // Clear straight away so the previous week's items and status never show against the new dates.
+    setComposerItemsByDate({})
+    setComposerPublished(false)
+    const seq = ++loadSeq.current
     if (!isMonday(weekStart)) {
-      setComposerItemsByDate({})
-      setComposerPublished(false)
+      setWeekLoading(false)
       return
     }
+    setWeekLoading(true)
     api
       .get<{ published: boolean; items: MenuItem[] }>(`/menu-weeks/${weekStart}`)
       .then((res) => {
+        if (seq !== loadSeq.current) return // a newer week was picked while this one loaded
         const byDate: Record<string, string[]> = {}
         for (const item of res.items) {
           if (!item.date) continue
@@ -289,8 +298,12 @@ function MenuWeeks() {
         setComposerPublished(res.published)
       })
       .catch(() => {
+        if (seq !== loadSeq.current) return
         setComposerItemsByDate({})
         setComposerPublished(false)
+      })
+      .finally(() => {
+        if (seq === loadSeq.current) setWeekLoading(false)
       })
   }
 
@@ -425,6 +438,8 @@ function MenuWeeks() {
 
   // Live completeness of whatever's currently in the composer (including unsaved edits) —
   // every day needs all required slots filled before the week can publish.
+  // The "Published / Incomplete" badge needs both the week's items and the item catalogue (for slots).
+  const composerReady = !weekLoading && !itemsQuery.isLoading
   const composerComplete =
     composerDates.length > 0 &&
     composerDates.every((date) => {
@@ -455,7 +470,16 @@ function MenuWeeks() {
             <div className="px-5 py-3 border-b border-gray-200">
               <h3 className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Weeks</h3>
             </div>
-            {weeks.length === 0 ? (
+            {weeksQuery.isLoading ? (
+              <div className="p-5 space-y-4" aria-busy="true" aria-label="Loading weeks">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                ))}
+              </div>
+            ) : weeks.length === 0 ? (
               <p className="p-5 text-sm text-gray-400">No weeks composed yet.</p>
             ) : (
               <ul className="divide-y divide-gray-100">
@@ -518,7 +542,7 @@ function MenuWeeks() {
                   Viewing {composerWeek}
                 </span>
               )}
-              {composerPublished && (
+              {composerReady && composerPublished && (
                 <span
                   className={`px-2 py-1 rounded-full text-[10px] font-semibold border ${
                     composerComplete
@@ -529,7 +553,7 @@ function MenuWeeks() {
                   {composerComplete ? "Published" : "Incomplete"}
                 </span>
               )}
-              {composerPublished && unlocked && (
+              {composerReady && composerPublished && unlocked && (
                 <span className="px-2 py-1 rounded-full text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
                   Editing live week
                 </span>
@@ -569,14 +593,26 @@ function MenuWeeks() {
                           {weekday} {day}
                         </span>
                         <span className={`text-[10px] font-medium ${active ? "text-white/80" : "text-gray-400"}`}>
-                          {count === 0 ? "Empty" : `${count} item${count === 1 ? "" : "s"}`}
+                          {!composerReady ? "…" : count === 0 ? "Empty" : `${count} item${count === 1 ? "" : "s"}`}
                         </span>
                       </button>
                     )
                   })}
                 </div>
 
-                {activeDay && (
+                {activeDay && !composerReady && (
+                  <div className="border border-gray-100 rounded-lg p-4 space-y-4" aria-busy="true" aria-label="Loading menu">
+                    <Skeleton className="h-5 w-40" />
+                    {SLOTS.map((slot) => (
+                      <div key={slot} className="space-y-2">
+                        <Skeleton className="h-3 w-20" />
+                        <Skeleton className="h-10 w-full" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {activeDay && composerReady && (
                   <div className="border border-gray-100 rounded-lg p-4">
                     <p className="text-sm font-bold text-gray-900 mb-3">{formatDayLabel(activeDay)}</p>
                     <div className="space-y-4">
@@ -608,7 +644,9 @@ function MenuWeeks() {
             )}
 
             <div className="flex gap-3 pt-5">
-              {locked ? (
+              {!composerReady ? (
+                <Skeleton className="h-10 w-40" />
+              ) : locked ? (
                 isPastEditLock(composerWeek) ? (
                   <span
                     title="Customers can choose from this week's menu starting Wednesday — the roster is locked from that point on"
