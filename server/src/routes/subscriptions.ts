@@ -5,7 +5,7 @@ import { requireAuth, requireSignupToken } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
-import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
+import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
 import { validatePromoCode } from "../lib/promo.js"
@@ -243,7 +243,15 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
   })
 
   const slots = SLOTS_BY_MEALS_PER_DAY[body.mealsPerDay]
-  const startDate = londonToday()
+  // Follows on from the customer's latest paid plan (abandoned PENDING_PAYMENT attempts don't count).
+  const previous = await prisma.subscription.findFirst({
+    where: { customerId: req.customerId, status: { in: ["ACTIVE", "EXPIRED"] } },
+    orderBy: { createdAt: "desc" },
+  })
+  const startDate = renewalStartDate(
+    londonToday(),
+    previous ? computeEndDate(previous.startDate, previous.planDuration, previous.pausedDates) : null
+  )
   const deliveryDates = buildDeliveryDates(startDate, body.planDuration, [])
   const dayItems = await Promise.all(
     deliveryDates.map((date) =>

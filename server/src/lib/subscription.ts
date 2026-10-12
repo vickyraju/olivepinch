@@ -11,6 +11,20 @@ export function computeEndDate(startDate: Date, planDuration: number, pausedDate
   return addDays(startDate, planDuration - 1 + pausedDates.length)
 }
 
+// Kitchen lead time: the earliest a plan can start is this many days after today (subscribing on a
+// Monday allows a Wednesday start). Mirrors minStartDate() in the customer app's plan step.
+export const START_LEAD_DAYS = 2
+
+// A renewal starts after the lead time, and never before the day after the plan it follows ends,
+// so renewing on a plan's last day (a Monday) starts the new plan on Wednesday rather than on top
+// of Monday's delivery, and an early renewal carries on straight after the old plan.
+export function renewalStartDate(today: Date, previousEnd: Date | null): Date {
+  const earliest = addDays(today, START_LEAD_DAYS)
+  if (!previousEnd) return earliest
+  const dayAfterEnd = addDays(previousEnd, 1)
+  return dayAfterEnd.getTime() > earliest.getTime() ? dayAfterEnd : earliest
+}
+
 export function pausesUsedTotal(pausedDates: Date[]): number {
   return pausedDates.length
 }
