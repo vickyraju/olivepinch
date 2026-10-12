@@ -18,11 +18,12 @@ const MEALS_OPTIONS: { value: MealsPerDay; label: string }[] = [
   { value: 3, label: "3 meals" },
 ]
 
-// Leave two full days between signup and the first delivery.
+// Two days of lead time for the kitchen: subscribing on Monday allows a Wednesday start.
+// Keep in step with START_LEAD_DAYS in the backend (lib/subscription.ts).
 function minStartDate(): Date {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
-  d.setDate(d.getDate() + 3)
+  d.setDate(d.getDate() + 2)
   return d
 }
 
@@ -106,7 +107,7 @@ function Plan() {
 
       <h2 className="text-xl text-ink mb-1">Pick your start date</h2>
       <p className="text-sm text-ink-muted mb-4">
-        Earliest available start is {min.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} — this leaves two full days to prepare your first delivery.
+        Earliest available start is {min.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} — our kitchen needs two days to prepare your first delivery.
       </p>
       <Calendar
         minDate={min}
