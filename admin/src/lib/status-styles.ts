@@ -39,3 +39,12 @@ export function getInitials(name: string): string {
   const last = parts.length > 1 ? parts[parts.length - 1][0] : ""
   return (first + last).toUpperCase()
 }
+
+// "Today" / "Yesterday" / "3 days ago" for a past ISO timestamp.
+export function daysAgoLabel(iso: string): string {
+  // Calendar days in the viewer's timezone, so 11pm yesterday reads "Yesterday", not "Today".
+  const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const days = Math.round((startOfDay(new Date()) - startOfDay(new Date(iso))) / 86_400_000)
+  if (days <= 0) return "Today"
+  return days === 1 ? "Yesterday" : `${days} days ago`
+}

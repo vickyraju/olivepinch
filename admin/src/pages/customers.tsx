@@ -5,7 +5,7 @@ import { Header } from "@/components/header"
 import { TableSkeleton } from "@/components/skeletons/table-skeleton"
 import { QueryError } from "@/components/query-error"
 import { api } from "@/lib/api"
-import { getInitials, formatPhone } from "@/lib/status-styles"
+import { getInitials, formatPhone, daysAgoLabel } from "@/lib/status-styles"
 
 interface CustomerRow {
   id: string
@@ -18,6 +18,7 @@ interface CustomerRow {
   goal: string | null
   planDuration: number | null
   planEndDate: string | null
+  lastRenewedAt: string | null
   createdAt: string
 }
 
@@ -36,29 +37,32 @@ const GOAL_LABELS: Record<string, string> = {
 }
 
 type SubscribedFilter = "" | "true" | "false"
-type SortOption = "newest" | "oldest" | "planEndDate"
+type RenewedFilter = "" | "7" | "14" | "30"
+type SortOption = "newest" | "oldest" | "planEndDate" | "lastRenewed"
 
 const SORT_LABELS: Record<SortOption, string> = {
   newest: "Joined (newest)",
   oldest: "Joined (oldest)",
   planEndDate: "Plan end date",
+  lastRenewed: "Recently renewed",
 }
 
 function Customers() {
   const [search, setSearch] = useState("")
   const [subscribedFilter, setSubscribedFilter] = useState<SubscribedFilter>("")
+  const [renewedFilter, setRenewedFilter] = useState<RenewedFilter>("")
   const [sort, setSort] = useState<SortOption>("newest")
   const [page, setPage] = useState(1)
 
-  useEffect(() => setPage(1), [search, subscribedFilter, sort])
+  useEffect(() => setPage(1), [search, subscribedFilter, renewedFilter, sort])
 
   const customersQuery = useQuery({
-    queryKey: ["customers", search, subscribedFilter, sort, page],
+    queryKey: ["customers", search, subscribedFilter, renewedFilter, sort, page],
     queryFn: () =>
       api.get<CustomersResponse>(
         `/customers?page=${page}&sort=${sort}${search ? `&search=${encodeURIComponent(search)}` : ""}${
           subscribedFilter ? `&subscribed=${subscribedFilter}` : ""
-        }`
+        }${renewedFilter ? `&renewed=${renewedFilter}` : ""}`
       ),
   })
   const data = customersQuery.data
@@ -89,6 +93,17 @@ function Customers() {
             </select>
             <select
               className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none"
+              value={renewedFilter}
+              onChange={(e) => setRenewedFilter(e.target.value as RenewedFilter)}
+              aria-label="Filter by renewal"
+            >
+              <option value="">Renewed: any time</option>
+              <option value="7">Renewed in last 7 days</option>
+              <option value="14">Renewed in last 14 days</option>
+              <option value="30">Renewed in last 30 days</option>
+            </select>
+            <select
+              className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm outline-none"
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
             >
@@ -110,6 +125,7 @@ function Customers() {
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Style</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan Ends</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Last Renewed</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -117,12 +133,12 @@ function Customers() {
               <tbody className="divide-y divide-gray-100 text-sm">
                 {customersQuery.isError ? (
                   <tr>
-                    <td colSpan={9}>
+                    <td colSpan={10}>
                       <QueryError onRetry={() => customersQuery.refetch()} />
                     </td>
                   </tr>
                 ) : null}
-                {customersQuery.isLoading ? <TableSkeleton columns={9} /> : null}
+                {customersQuery.isLoading ? <TableSkeleton columns={10} /> : null}
                 {!customersQuery.isLoading &&
                   !customersQuery.isError &&
                   (data?.customers ?? []).map((c) => {
@@ -158,6 +174,16 @@ function Customers() {
                         <td className="py-4 px-6 text-gray-600">
                           {c.planEndDate ? new Date(c.planEndDate).toLocaleDateString("en-GB") : "—"}
                         </td>
+                        <td className="py-4 px-6 text-gray-600">
+                          {c.lastRenewedAt ? (
+                            <span title={new Date(c.lastRenewedAt).toLocaleString("en-GB")}>
+                              <span className="block">{new Date(c.lastRenewedAt).toLocaleDateString("en-GB")}</span>
+                              <span className="block text-xs text-gray-400">{daysAgoLabel(c.lastRenewedAt)}</span>
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
                         <td className="py-4 px-6 text-gray-600">{new Date(c.createdAt).toLocaleDateString("en-GB")}</td>
                         <td className="py-4 px-6">
                           <Link to={`/customers/${c.id}`} className="text-sm font-semibold text-primary hover:underline">
@@ -169,7 +195,7 @@ function Customers() {
                   })}
                 {!customersQuery.isLoading && !customersQuery.isError && (data?.customers ?? []).length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-10 text-center text-sm text-gray-400">
+                    <td colSpan={10} className="py-10 text-center text-sm text-gray-400">
                       No customers found.
                     </td>
                   </tr>

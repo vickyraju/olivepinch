@@ -40,6 +40,22 @@ interface Payment {
   refundedAmount: string | null
 }
 
+interface PlanSummary {
+  planDuration: number
+  tier: string
+  mealsPerDay: number
+}
+
+interface Renewal {
+  subscriptionId: string
+  renewedAt: string
+  previous: PlanSummary
+  current: PlanSummary
+  amountPaid: number
+  discountAmount: number
+  daysBeforePreviousEnd: number
+}
+
 interface CustomerDetail {
   id: string
   fullName: string
@@ -51,6 +67,7 @@ interface CustomerDetail {
   accountStatus: string
   subscriptions: Subscription[]
   payments: Payment[]
+  renewals: Renewal[]
 }
 
 interface AuditLogEntry {
@@ -70,6 +87,16 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
 
 const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
 const WEEKDAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+const planLabel = (p: PlanSummary) =>
+  `${p.planDuration}-day ${p.tier.charAt(0)}${p.tier.slice(1).toLowerCase()}, ${p.mealsPerDay} meal${p.mealsPerDay === 1 ? "" : "s"}/day`
+
+function renewalTiming(days: number): string {
+  if (days > 0) return `${days} day${days === 1 ? "" : "s"} before the previous plan ended`
+  if (days === 0) return "on the last day of the previous plan"
+  const late = -days
+  return `${late} day${late === 1 ? "" : "s"} after the previous plan ended`
+}
 
 function mondayOf(date: Date): Date {
   const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
@@ -431,6 +458,37 @@ function CustomerDetail() {
               {customer.address ?? "—"}
             </p>
           </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-[16px] font-bold text-gray-900">Renewal History</h3>
+          </div>
+          {customer.renewals.length === 0 ? (
+            <p className="px-6 py-6 text-sm text-gray-400">No renewals yet.</p>
+          ) : (
+            <ul className="divide-y divide-gray-100">
+              {customer.renewals.map((r) => (
+                <li key={r.subscriptionId} className="px-6 py-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-semibold text-gray-900">
+                      {new Date(r.renewedAt).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}
+                    </span>
+                    <span className="font-semibold text-gray-900">
+                      {formatGBP(r.amountPaid)}
+                      {r.discountAmount > 0 ? <span className="ml-2 text-xs font-medium text-green-700">promo −{formatGBP(r.discountAmount)}</span> : null}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-gray-600">
+                    {planLabel(r.previous)} <span className="text-gray-400">→</span> {planLabel(r.current)}
+                  </p>
+                  <p className="mt-0.5 text-xs text-gray-500">
+                    Renewed by {customer.fullName} (customer, from their dashboard) · {renewalTiming(r.daysBeforePreviousEnd)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
