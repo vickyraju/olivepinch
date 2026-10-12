@@ -5,11 +5,13 @@ import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
 import { formatAddress } from "../../lib/address.js"
 import { isPostcodeInActiveZone } from "../../lib/postcode.js"
-import { GOAL_VALUES, DIET_VALUES } from "../../lib/enums.js"
+import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, DELIVERY_SLOT_LABELS } from "../../lib/enums.js"
 import { PHONE_REGEX } from "../customers.js"
 import { computeEndDate, londonToday, pickSubscriptions } from "../../lib/subscription.js"
 import { renewalsFor, lastRenewedAt } from "../../lib/renewals.js"
 import { diffCustomerEdit } from "../../lib/customer-edit.js"
+import { checkDayMeals } from "../../lib/day-meals.js"
+import { SLOTS_BY_MEALS_PER_DAY } from "../../lib/pricing.js"
 import { calculateAge } from "../../lib/age.js"
 import { sendEmail } from "../../lib/email.js"
 import { cancellationEmail } from "../../lib/email-templates.js"
@@ -222,6 +224,89 @@ adminCustomersRouter.patch("/:id", validateBody(editCustomerSchema), async (req,
     prisma.adminAuditLog.create({ data: { adminId: req.adminId!, action: "customer-edit", customerId: id, detail } }),
   ])
   res.json({ changed, emailChanged })
+})
+
+// Admin edit of how a plan is delivered: the delivery slot (daily / weekly / alternate days) and the
+// time window. Plan length, tier and meals per day are deliberately not editable here: they decide what
+// the customer paid, so changing them means cancelling and starting a new plan.
+const editSubscriptionSchema = z.object({
+  deliverySlot: z.enum(DELIVERY_SLOT_VALUES as [string, ...string[]]).optional(),
+  deliveryTimeSlot: z.string().trim().min(1).optional(),
+})
+
+adminCustomersRouter.patch("/:id/subscriptions/:subscriptionId", validateBody(editSubscriptionSchema), async (req, res) => {
+  const edit = req.body as z.infer<typeof editSubscriptionSchema>
+  const subscription = await prisma.subscription.findFirstOrThrow({
+    where: { id: req.params.subscriptionId as string, customerId: req.params.id as string },
+  })
+  if (subscription.status !== "ACTIVE") return res.status(400).json({ error: "Only an active plan can be edited." })
+
+  if (edit.deliveryTimeSlot && edit.deliveryTimeSlot !== subscription.deliveryTimeSlot) {
+    // Same rule as customer renewal: only a time window that is currently offered.
+    if (!(await prisma.deliveryTimeSlot.findFirst({ where: { label: edit.deliveryTimeSlot, active: true } }))) {
+      return res.status(400).json({ error: "That delivery time window isn't available. Pick one of the active windows." })
+    }
+  }
+  const data: { deliverySlot?: never; deliveryTimeSlot?: string } = {}
+  const changes: string[] = []
+  if (edit.deliverySlot && edit.deliverySlot !== subscription.deliverySlot) {
+    data.deliverySlot = edit.deliverySlot as never
+    changes.push(`delivery ${DELIVERY_SLOT_LABELS[subscription.deliverySlot]} → ${DELIVERY_SLOT_LABELS[edit.deliverySlot as keyof typeof DELIVERY_SLOT_LABELS]}`)
+  }
+  if (edit.deliveryTimeSlot && edit.deliveryTimeSlot !== subscription.deliveryTimeSlot) {
+    data.deliveryTimeSlot = edit.deliveryTimeSlot
+    changes.push(`time window ${subscription.deliveryTimeSlot} → ${edit.deliveryTimeSlot}`)
+  }
+  if (changes.length === 0) return res.json({ changed: false })
+
+  await prisma.$transaction([
+    prisma.subscription.update({ where: { id: subscription.id }, data }),
+    prisma.adminAuditLog.create({
+      data: { adminId: req.adminId!, action: "subscription-edit", customerId: req.params.id as string, detail: `subscription ${subscription.id}: ${changes.join("; ")}` },
+    }),
+  ])
+  res.json({ changed: true })
+})
+
+// Admin sets the meals on specific upcoming days of a plan. Not limited to the published menu or the Friday
+// cutoff (that is for customers), but a meal must fit its box, the day must still be changeable, and a meal
+// containing an allergen the customer avoids is refused. Any problem rejects the whole request, so a save
+// never leaves some days changed and others not.
+const dayMealsSchema = z.object({
+  dayItems: z.array(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), items: z.array(z.string()).min(1).max(3) })).min(1).max(60),
+})
+
+adminCustomersRouter.patch("/:id/subscriptions/:subscriptionId/meals", validateBody(dayMealsSchema), async (req, res) => {
+  const { dayItems } = req.body as z.infer<typeof dayMealsSchema>
+  const subscription = await prisma.subscription.findFirstOrThrow({
+    where: { id: req.params.subscriptionId as string, customerId: req.params.id as string },
+    include: { customer: { select: { allergens: true, dietTypes: true } }, orders: { select: { id: true, deliveryDate: true, status: true } } },
+  })
+  if (subscription.status !== "ACTIVE") return res.status(400).json({ error: "Only an active plan's meals can be edited." })
+
+  const menuItems = await prisma.menuItem.findMany({ where: { id: { in: [...new Set(dayItems.flatMap((d) => d.items))] } } })
+  const { errors, warnings, updates } = checkDayMeals({
+    slots: SLOTS_BY_MEALS_PER_DAY[subscription.mealsPerDay as 1 | 2 | 3],
+    orders: subscription.orders.map((o) => ({ id: o.id, date: o.deliveryDate.toISOString().slice(0, 10), status: o.status })),
+    customer: subscription.customer,
+    menuItems: new Map(menuItems.map((m) => [m.id, m])),
+    dayItems,
+    today: londonToday().toISOString().slice(0, 10),
+  })
+  if (errors.length > 0) return res.status(400).json({ error: errors.join(" "), problems: errors })
+
+  await prisma.$transaction([
+    ...updates.flatMap((u) => [
+      prisma.orderItem.deleteMany({ where: { orderId: u.orderId } }),
+      prisma.orderItem.createMany({ data: u.items.map((i) => ({ orderId: u.orderId, menuItemId: i.menuItemId, slot: i.slot as never })) }),
+      // An explicit admin choice, so the day drops off the "hasn't chosen yet" list.
+      prisma.order.update({ where: { id: u.orderId }, data: { menuChosenAt: new Date() } }),
+    ]),
+    prisma.adminAuditLog.create({
+      data: { adminId: req.adminId!, action: "day-meals-edit", customerId: req.params.id as string, detail: `subscription ${subscription.id}: ${updates.map((u) => u.date).join(", ")}` },
+    }),
+  ])
+  res.json({ updatedDays: updates.map((u) => u.date), warnings })
 })
 
 // FR-A05: support tools — manual pause override (bypasses the 4/month cap)
