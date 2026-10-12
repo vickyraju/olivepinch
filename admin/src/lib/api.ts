@@ -10,9 +10,12 @@ export interface ApiIssue {
 export class ApiError extends Error {
   status: number
   details?: ApiIssue[]
-  constructor(status: number, message: string, details?: ApiIssue[]) {
+  // Plain-language reasons a request was refused (one per problem), when the server lists them.
+  problems?: string[]
+  constructor(status: number, message: string, details?: ApiIssue[], problems?: string[]) {
     super(message)
     this.details = details
+    this.problems = problems
     this.name = "ApiError"
     this.status = status
   }
@@ -50,7 +53,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const json = text ? JSON.parse(text) : undefined
 
   if (!res.ok) {
-    throw new ApiError(res.status, json?.error ?? `Request failed with status ${res.status}`, Array.isArray(json?.details) ? json.details : undefined)
+    throw new ApiError(res.status, json?.error ?? `Request failed with status ${res.status}`, Array.isArray(json?.details) ? json.details : undefined, Array.isArray(json?.problems) ? json.problems : undefined)
   }
   return json as T
 }

@@ -8,10 +8,11 @@ import { formatGBP } from "@/lib/currency"
 import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES, formatPhone } from "@/lib/status-styles"
 import { DIET_LABELS, GOAL_LABELS, ageFromDateOfBirth } from "@/lib/customer-labels"
 import { EditCustomerModal, type EditResult } from "@/components/edit-customer-modal"
+import { DeliveryModal, MealsModal } from "@/components/edit-subscription-modals"
 
 interface OrderItemRow {
   slot: string
-  menuItem: { name: string }
+  menuItem: { id: string; name: string }
 }
 
 interface OrderRow {
@@ -27,6 +28,8 @@ interface Subscription {
   planDuration: number
   startDate: string
   mealsPerDay: number
+  deliverySlot: string
+  deliveryTimeSlot: string
   status: string
   pausedDates: string[]
   createdAt: string
@@ -98,6 +101,8 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
   reactivate: "Reactivate",
   "cancel-subscription": "Cancel subscription",
   "customer-edit": "Details edited",
+  "subscription-edit": "Delivery edited",
+  "day-meals-edit": "Meals edited",
 }
 
 const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
@@ -345,6 +350,8 @@ function CustomerDetail() {
   const [pauseDate, setPauseDate] = useState("")
   const [refundingPayment, setRefundingPayment] = useState<Payment | null>(null)
   const [editing, setEditing] = useState(false)
+  const [editingDeliveryOf, setEditingDeliveryOf] = useState<Subscription | null>(null)
+  const [editingMealsOf, setEditingMealsOf] = useState<Subscription | null>(null)
   const [notice, setNotice] = useState("")
 
   const customerQuery = useQuery({
@@ -378,6 +385,13 @@ function CustomerDetail() {
   async function submitRefund(paymentId: string, mode: RefundMode, value?: number) {
     await api.post(`/customers/${id}/refund`, { paymentId, mode, value })
     setRefundingPayment(null)
+    await invalidate()
+  }
+
+  async function handleSubscriptionEdited(message: string) {
+    setEditingDeliveryOf(null)
+    setEditingMealsOf(null)
+    setNotice(message)
     await invalidate()
   }
 
@@ -610,6 +624,28 @@ function CustomerDetail() {
                     <td className="py-3 px-6 text-right">
                       {s.status === "ACTIVE" ? (
                         <button
+                          onClick={() => {
+                            setNotice("")
+                            setEditingDeliveryOf(s)
+                          }}
+                          className="inline-flex items-center gap-1 mr-4 text-xs font-semibold text-primary hover:underline cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">local_shipping</span> Delivery
+                        </button>
+                      ) : null}
+                      {s.status === "ACTIVE" ? (
+                        <button
+                          onClick={() => {
+                            setNotice("")
+                            setEditingMealsOf(s)
+                          }}
+                          className="inline-flex items-center gap-1 mr-4 text-xs font-semibold text-primary hover:underline cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">restaurant</span> Meals
+                        </button>
+                      ) : null}
+                      {s.status === "ACTIVE" ? (
+                        <button
                           onClick={() => cancelSubscription(s.id)}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
                         >
@@ -794,6 +830,18 @@ function CustomerDetail() {
           </div>
         )}
       </div>
+      {editingDeliveryOf ? (
+        <DeliveryModal customerId={customer.id} subscription={editingDeliveryOf} onClose={() => setEditingDeliveryOf(null)} onSaved={handleSubscriptionEdited} />
+      ) : null}
+      {editingMealsOf ? (
+        <MealsModal
+          customerId={customer.id}
+          customerAllergens={customer.allergens}
+          subscription={editingMealsOf}
+          onClose={() => setEditingMealsOf(null)}
+          onSaved={handleSubscriptionEdited}
+        />
+      ) : null}
       {editing ? <EditCustomerModal customer={customer} onClose={() => setEditing(false)} onSaved={handleEdited} /> : null}
       {refundingPayment ? (
         <RefundModal

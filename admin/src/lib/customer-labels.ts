@@ -26,3 +26,17 @@ export function ageFromDateOfBirth(dob: string | null | undefined): number | nul
   if (m < 0 || (m === 0 && now.getDate() < born.getUTCDate())) age--
   return age
 }
+
+export const DELIVERY_SLOT_LABELS: Record<string, string> = {
+  DAILY: "Daily",
+  WEEKLY: "Weekly",
+  ALTERNATE: "Alternate days",
+}
+
+// Boxes a plan fills each day, by meals per day (same mapping the server uses).
+export const BOXES_BY_MEALS_PER_DAY: Record<number, string[]> = {
+  1: ["LUNCH"],
+  2: ["BREAKFAST", "DINNER"],
+  3: ["BREAKFAST", "LUNCH", "DINNER"],
+}
+export const BOX_LABELS: Record<string, string> = { BREAKFAST: "Box 1", LUNCH: "Box 2", DINNER: "Box 3" }
