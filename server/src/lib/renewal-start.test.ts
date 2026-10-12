@@ -1,6 +1,6 @@
 // Run: npx tsx src/lib/renewal-start.test.ts
 import assert from "node:assert/strict"
-import { renewalStartDate } from "./subscription.js"
+import { renewalStartDate, earliestStartDate } from "./subscription.js"
 
 const d = (iso: string) => new Date(`${iso}T00:00:00.000Z`)
 const iso = (date: Date) => date.toISOString().slice(0, 10)
@@ -18,5 +18,9 @@ assert.equal(iso(renewalStartDate(d("2026-10-12"), d("2026-10-13"))), "2026-10-1
 assert.equal(iso(renewalStartDate(d("2026-10-12"), d("2026-10-17"))), "2026-10-18")
 // Month boundary: renewed Sat 31 Oct on last day -> Mon 2 Nov.
 assert.equal(iso(renewalStartDate(d("2026-10-31"), d("2026-10-31"))), "2026-11-02")
+
+// New subscriptions: Monday 12 Oct -> earliest Wednesday 14 Oct (so Tuesday 13 is not allowed).
+assert.equal(iso(earliestStartDate(d("2026-10-12"))), "2026-10-14")
+assert.equal(earliestStartDate(d("2026-10-12")).getTime() > d("2026-10-13").getTime(), true)
 
 console.log("renewal-start.test.ts passed")

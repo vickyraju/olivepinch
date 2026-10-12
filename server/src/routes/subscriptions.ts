@@ -5,7 +5,8 @@ import { requireAuth, requireSignupToken } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
-import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
+import { formatDate } from "../lib/email-templates.js"
+import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, earliestStartDate, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
 import { assertMonday, fridayCutoffFor, applyWeekSelection } from "../lib/menu-week.js"
 import { validatePromoCode } from "../lib/promo.js"
@@ -57,6 +58,17 @@ subscriptionsRouter.post(
 
   const slots = SLOTS_BY_MEALS_PER_DAY[body.mealsPerDay]
   const startDate = new Date(`${body.startDate}T00:00:00.000Z`)
+  if (Number.isNaN(startDate.getTime())) {
+    return res.status(400).json({ error: "Start date is not a valid date" })
+  }
+  // The date picker already enforces this, but a date picked a day or two ago can be stale by the
+  // time the customer pays, and the API shouldn't rely on the browser for the kitchen's lead time.
+  const earliest = earliestStartDate(londonToday())
+  if (startDate.getTime() < earliest.getTime()) {
+    return res.status(400).json({
+      error: `That start date is no longer available. Please go back and choose a start date from ${formatDate(earliest.toISOString().slice(0, 10))} onwards.`,
+    })
+  }
   const deliveryDates = buildDeliveryDates(startDate, body.planDuration, [])
 
   const customDayByDate = new Map((body.dayMenus ?? []).map((d) => [d.date, d.items]))
