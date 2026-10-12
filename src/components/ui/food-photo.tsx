@@ -8,11 +8,31 @@ const STYLES = [
   { radial: "circle at 75% 70%, var(--color-coral-50), var(--color-olive-50) 55%, var(--color-olive-100)", icon: Wheat },
 ]
 
-function FoodPhoto({ seed = 0, src, alt, className }: { seed?: number; src?: string; alt?: string; className?: string }) {
+// eager: skip lazy-loading for photos that sit in a dropdown or popover, where the browser's
+// viewport check delays them even when they're already cached.
+function FoodPhoto({
+  seed = 0,
+  src,
+  alt,
+  className,
+  eager = false,
+}: {
+  seed?: number
+  src?: string
+  alt?: string
+  className?: string
+  eager?: boolean
+}) {
   if (src) {
     return (
-      <div className={cn("relative overflow-hidden rounded-xl", className)}>
-        <img src={src} alt={alt ?? ""} className="h-full w-full object-cover" loading="lazy" />
+      <div className={cn("relative overflow-hidden rounded-xl bg-cream-100", className)}>
+        <img
+          src={src}
+          alt={alt ?? ""}
+          className="h-full w-full object-cover"
+          loading={eager ? "eager" : "lazy"}
+          decoding="async"
+        />
       </div>
     )
   }

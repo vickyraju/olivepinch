@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FoodPhoto } from "@/components/ui/food-photo"
 import { Badge } from "@/components/ui/badge"
 import type { PublishedMenuItem } from "@/types/menu"
+import { preloadImages } from "@/lib/preload-images"
 import { StepNav } from "./step-nav"
 
 function buildDeliveryDates(startDate: string, planDuration: number): string[] {
@@ -115,6 +116,15 @@ function Menu() {
 
   const canContinue = choosableDates.every(dayComplete)
 
+  // Warm every photo the pickers can show, so the dropdowns open with images already in place.
+  useEffect(() => {
+    if (!weeks) return
+    for (const date of choosableDates) {
+      for (const slot of slots) preloadImages(optionsFor(mondayOf(date), date, slot).map((o) => o.photoUrl))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weeks, choosableDates.join(","), state.dietTypes.join(","), state.allergens.join(",")])
+
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Choose your menu</h1>
@@ -164,7 +174,7 @@ function Menu() {
                                   {options.map((opt) => (
                                     <SelectItem key={opt.id} value={opt.id}>
                                       <span className="flex items-center gap-2">
-                                        <FoodPhoto src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
+                                        <FoodPhoto eager src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
                                         {opt.name}
                                       </span>
                                     </SelectItem>
@@ -173,7 +183,7 @@ function Menu() {
                               </Select>
                               {chosen && (
                                 <div className="mt-2 rounded-lg border border-border overflow-hidden">
-                                  <FoodPhoto src={chosen.photoUrl ?? undefined} alt={chosen.name} className="aspect-[16/9] rounded-none" />
+                                  <FoodPhoto eager src={chosen.photoUrl ?? undefined} alt={chosen.name} className="aspect-[16/9] rounded-none" />
                                   <div className="p-2 flex gap-1 flex-wrap">
                                     <Badge variant="olive">{chosen.kcal} kcal</Badge>
                                     <Badge variant="coral">{chosen.protein}g protein</Badge>

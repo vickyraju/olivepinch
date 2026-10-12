@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { FoodPhoto } from "@/components/ui/food-photo"
 import { Badge } from "@/components/ui/badge"
 import type { PublishedMenuItem } from "@/types/menu"
+import { preloadImages } from "@/lib/preload-images"
 
 function WeeklyMenu() {
   const { customer, chooseMenuWeek } = useDashboard()
@@ -92,6 +93,11 @@ function WeeklyMenu() {
       optionsByDateSlot.set(key, [...(optionsByDateSlot.get(key) ?? []), item])
     }
   }
+
+  // Warm the photos so the pickers open with images already loaded.
+  useEffect(() => {
+    if (Array.isArray(nextWeekItems)) preloadImages(nextWeekItems.map((item) => item.photoUrl))
+  }, [nextWeekItems])
 
   const canSave = nextWeekOrders.every((o) => (selections[o.date] ?? []).filter(Boolean).length === slots.length)
 
@@ -185,7 +191,7 @@ function WeeklyMenu() {
                                 {options.map((opt) => (
                                   <SelectItem key={opt.id} value={opt.id}>
                                     <span className="flex items-center gap-2">
-                                      <FoodPhoto src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
+                                      <FoodPhoto eager src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
                                       {opt.name}
                                     </span>
                                   </SelectItem>
@@ -194,7 +200,7 @@ function WeeklyMenu() {
                             </Select>
                             {chosen && (
                               <div className="mt-2 rounded-lg border border-border overflow-hidden">
-                                <FoodPhoto src={chosen.photoUrl ?? undefined} alt={chosen.name} className="aspect-[16/9] rounded-none" />
+                                <FoodPhoto eager src={chosen.photoUrl ?? undefined} alt={chosen.name} className="aspect-[16/9] rounded-none" />
                                 <div className="p-2 flex gap-1 flex-wrap">
                                   <Badge variant="olive">{chosen.kcal} kcal</Badge>
                                   <Badge variant="coral">{chosen.protein}g protein</Badge>
