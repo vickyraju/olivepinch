@@ -1,10 +1,4 @@
-export function Logo({ className = "text-xl" }: { className?: string }) {
-  return (
-    <span
-      className={`italic font-bold ${className}`}
-      style={{ fontFamily: "Georgia, 'Times New Roman', serif", color: "#1b2a0c" }}
-    >
-      OlivePinch
-    </span>
-  )
+// Intrinsic 512x112 (2x+ of the largest rendered size); size it with a height class.
+export function Logo({ className = "h-9" }: { className?: string }) {
+  return <img src="/logo.webp" alt="OlivePinch" width={512} height={112} className={`w-auto ${className}`} />
 }
