@@ -59,6 +59,8 @@ const emptyForm = {
   fat: "",
 }
 
+const MAX_PHOTO_BYTES = 20 * 1024 * 1024
+
 function MenuItemCard({
   item,
   onEdit,
@@ -225,8 +227,12 @@ function MenuControl() {
     e.target.value = ""
     if (!file) return
     setPhotoError(undefined)
-    if (!["image/png", "image/jpeg"].includes(file.type)) {
-      setPhotoError("Photo must be a PNG or JPEG file.")
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Photo must be an image file.")
+      return
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      setPhotoError("Photo is too large. Please use an image under 20 MB.")
       return
     }
     try {
@@ -241,7 +247,7 @@ function MenuControl() {
       })
       setForm((f) => ({ ...f, photoUrl: dataUrl }))
     } catch {
-      setPhotoError("Could not read photo. Please try another PNG or JPEG file.")
+      setPhotoError("Could not read photo. Please try another image file.")
       return
     }
   }
@@ -510,10 +516,10 @@ function MenuControl() {
                   <label className="flex flex-col items-center justify-center gap-1.5 w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer text-center hover:border-[#2E6B3E] hover:bg-green-50/40 transition-colors">
                     <span className="material-symbols-outlined text-[26px] text-gray-400">cloud_upload</span>
                     <span className="text-sm font-medium text-gray-700">Click to upload photo</span>
-                    <span className="text-xs text-gray-400">PNG or JPEG, any resolution</span>
+                    <span className="text-xs text-gray-400">Any image format or resolution, up to 20 MB</span>
                     <input
                       type="file"
-                      accept="image/png,image/jpeg"
+                      accept="image/*"
                       className="hidden"
                       onChange={handlePhotoChange}
                     />
