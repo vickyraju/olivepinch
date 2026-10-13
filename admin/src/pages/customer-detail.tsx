@@ -28,6 +28,7 @@ interface Subscription {
   planDuration: number
   startDate: string
   mealsPerDay: number
+  endDate: string
   deliverySlot: string
   deliveryTimeSlot: string
   status: string
@@ -85,6 +86,7 @@ interface CustomerDetail {
   subscriptions: Subscription[]
   payments: Payment[]
   renewals: Renewal[]
+  planEndDate: string | null
 }
 
 interface AuditLogEntry {
@@ -107,6 +109,14 @@ const AUDIT_ACTION_LABELS: Record<string, string> = {
 
 const SLOT_LABELS: Record<string, string> = { BREAKFAST: "Box1", LUNCH: "Box2", DINNER: "Box3" }
 const WEEKDAY_LABELS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+
+// "18/10/2026 (in 6 days)" / "(today)" / "(ended 3 days ago)", counting whole calendar days (UTC dates).
+function planEndLabel(iso: string): string {
+  const day = (d: Date) => Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+  const days = Math.round((day(new Date(iso)) - day(new Date())) / 86_400_000)
+  const when = days === 0 ? "today" : days > 0 ? `in ${days} day${days === 1 ? "" : "s"}` : `ended ${-days} day${days === -1 ? "" : "s"} ago`
+  return `${new Date(iso).toLocaleDateString("en-GB", { timeZone: "UTC" })} (${when})`
+}
 
 const planLabel = (p: PlanSummary) =>
   `${p.planDuration}-day ${p.tier.charAt(0)}${p.tier.slice(1).toLowerCase()}, ${p.mealsPerDay} meal${p.mealsPerDay === 1 ? "" : "s"}/day`
@@ -540,6 +550,7 @@ function CustomerDetail() {
           </div>
           <dl className="grid gap-x-6 gap-y-5 p-6 sm:grid-cols-3 text-sm">
             {[
+              ["Plan ends", customer.planEndDate ? planEndLabel(customer.planEndDate) : "No plan"],
               ["Date of birth", customer.dateOfBirth ? new Date(customer.dateOfBirth).toLocaleDateString("en-GB") : "—"],
               ["Gender", customer.gender ?? "—"],
               ["Height", customer.heightCm ? `${customer.heightCm} cm` : "—"],
@@ -596,6 +607,7 @@ function CustomerDetail() {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
                 <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Started</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Ends</th>
                 <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Length</th>
                 <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Meals/day</th>
                 <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -609,6 +621,7 @@ function CustomerDetail() {
                 return (
                   <tr key={s.id}>
                     <td className="py-3 px-6 text-gray-900">{new Date(s.startDate).toLocaleDateString("en-GB")}</td>
+                    <td className="py-3 px-6 text-gray-900">{new Date(s.endDate).toLocaleDateString("en-GB")}</td>
                     <td className="py-3 px-6 text-gray-600">{s.planDuration} days</td>
                     <td className="py-3 px-6 text-gray-600">{s.mealsPerDay}</td>
                     <td className="py-3 px-6">
