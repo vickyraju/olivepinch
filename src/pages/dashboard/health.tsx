@@ -9,12 +9,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sparkline } from "@/components/ui/sparkline"
 
-const FIELDS: { key: "heightCm" | "weightKg" | "chestCm" | "bicepCm" | "abdomenCm" | "waistCm"; label: string; unit: string }[] = [
+const FIELDS: { key: "heightCm" | "weightKg" | "chestCm" | "bicepCm" | "waistCm"; label: string; unit: string }[] = [
   { key: "heightCm", label: "Height", unit: "cm" },
   { key: "weightKg", label: "Weight", unit: "kg" },
   { key: "chestCm", label: "Chest", unit: "cm" },
   { key: "bicepCm", label: "Bicep", unit: "cm" },
-  { key: "abdomenCm", label: "Abdomen", unit: "cm" },
   { key: "waistCm", label: "Waist", unit: "cm" },
 ]
 
@@ -34,7 +33,6 @@ function Health() {
     weightKg: String(latest?.weightKg ?? ""),
     chestCm: String(latest?.chestCm ?? ""),
     bicepCm: String(latest?.bicepCm ?? ""),
-    abdomenCm: String(latest?.abdomenCm ?? ""),
     waistCm: String(latest?.waistCm ?? ""),
   }))
 
@@ -155,7 +153,6 @@ function Health() {
                   <th className="p-4 font-medium">Weight</th>
                   <th className="p-4 font-medium">Chest</th>
                   <th className="p-4 font-medium">Bicep</th>
-                  <th className="p-4 font-medium">Abdomen</th>
                   <th className="p-4 font-medium">Waist</th>
                   <th className="p-4 font-medium sr-only">Actions</th>
                 </tr>
@@ -167,7 +164,6 @@ function Health() {
                     <td className="p-4 text-ink">{log.weightKg} kg</td>
                     <td className="p-4 text-ink">{log.chestCm} cm</td>
                     <td className="p-4 text-ink">{log.bicepCm} cm</td>
-                    <td className="p-4 text-ink">{log.abdomenCm} cm</td>
                     <td className="p-4 text-ink">{log.waistCm} cm</td>
                     <td className="p-4 text-right">
                       {log.id === latest?.id && canDeleteLatest && (

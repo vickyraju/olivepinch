@@ -14,7 +14,6 @@ export interface HealthLog {
   weightKg: number
   chestCm: number
   bicepCm: number
-  abdomenCm: number
   waistCm: number
 }
 
@@ -344,7 +343,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         allergens: string[]
       }>("/customers/me"),
       api.get<RawSubscription>("/subscriptions/current"),
-      api.get<{ id: string; heightCm: number; weightKg: number; chestCm: number; bicepCm: number; abdomenCm: number; waistCm: number; loggedAt: string }[]>(
+      api.get<{ id: string; heightCm: number; weightKg: number; chestCm: number; bicepCm: number; waistCm: number; loggedAt: string }[]>(
         "/health-logs"
       ),
     ])
