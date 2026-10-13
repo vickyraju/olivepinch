@@ -59,7 +59,50 @@ What happens next:
 3. Pause, change your details or renew any time from your dashboard: ${p.dashboardUrl}
 
 — The OlivePinch team`
-  const html = `<!doctype html><html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>You're in — your OlivePinch plan is confirmed</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a{padding:0}body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}table, td{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt}img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}p{display:block;margin:13px 0}</style><!--[if mso]>
+  const html = `<!doctype html>
+<html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>You're in — your OlivePinch plan is confirmed</title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+  </style>
+  <!--[if mso]>
     <noscript>
     <xml>
     <o:OfficeDocumentSettings>
@@ -68,13 +111,349 @@ What happens next:
     </o:OfficeDocumentSettings>
     </xml>
     </noscript>
-    <![endif]--><!--[if lte mso 11]>
+    <![endif]-->
+  <!--[if lte mso 11]>
     <style type="text/css">
       .mj-outlook-group-fix { width:100% !important; }
     </style>
-    <![endif]--><style type="text/css">@media only screen and (min-width:480px){.mj-column-per-100{width:100%!important;max-width:100%}}</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100{width:100%!important;max-width:100%}</style></head><body style="word-spacing:normal;background-color:#f7f4ec"> <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">Payment confirmed. Here's what happens between now and your first delivery.</div> <div aria-label="You're in — your OlivePinch plan is confirmed" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec"> <!-- Masthead --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38">BIRMINGHAM · FRESHLY PREPARED, DAILY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-style:italic;font-weight:bold;line-height:1.6;text-align:center;color:#1b2a0c">OlivePinch</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Card --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">PAYMENT CONFIRMED</div> </td> </tr> <tr> <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f" role="heading" aria-level="1">Your first box lands ${formatDate(p.startDate)}, ${escapeHtml(p.name)}.</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">Payment received. Your ${escapeHtml(p.goalLabel)} plan is booked and the kitchen has you on the list.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><![endif]--> <!-- Plan detail panel --> <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#ebe3d2" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ebe3d2;background-color:#ebe3d2;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ebe3d2;background-color:#ebe3d2;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 22px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word"> <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#272c0f;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;table-layout:auto;width:100%;border:none"> <tr> <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0">PLAN</td> <td align="right" style="font-weight:bold;padding:8px 0">${escapeHtml(p.goalLabel)} · ${p.planDuration} days</td> </tr> <tr> <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0">MEALS PER DAY</td> <td align="right" style="font-weight:bold;padding:8px 0">${p.mealsPerDay}</td> </tr> <tr> <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0">DELIVERY WINDOW</td> <td align="right" style="font-weight:bold;padding:8px 0">${escapeHtml(p.deliveryTimeSlot)}</td> </tr> <tr> <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #dbd0b8">STARTS</td> <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #dbd0b8">${formatDate(p.startDate)}</td> </tr> <tr> <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:16px 8px 8px 0">TOTAL PAID</td> <td align="right" style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:bold;padding:14px 0 8px">£${p.total.toFixed(2)}</td> </tr> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%"> <tbody> <tr> <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c" valign="middle"> <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px" target="_blank"> View my plan </a> </td> </tr> </tbody> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- What happens next, on the cream --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 36px 8px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 18px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">WHAT HAPPENS NEXT</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word"> <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#4b4b3f;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;table-layout:auto;width:100%;border:none"> <tr> <td width="40" valign="top" style="padding:0 14px 18px 0"> <div style="width:26px;height:26px;line-height:26px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center">1</div> </td> <td valign="top" style="padding:3px 0 18px 0;line-height:1.6"> We cook your meals fresh the morning they go out. </td> </tr> <tr> <td width="40" valign="top" style="padding:0 14px 18px 0"> <div style="width:26px;height:26px;line-height:26px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center">2</div> </td> <td valign="top" style="padding:3px 0 18px 0;line-height:1.6"> Your first delivery arrives ${formatDate(p.startDate)}, between ${escapeHtml(p.deliveryTimeSlot)}. </td> </tr> <tr> <td width="40" valign="top" style="padding:0 14px 0 0"> <div style="width:26px;height:26px;line-height:26px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center">3</div> </td> <td valign="top" style="padding:3px 0 0 0;line-height:1.6"> Pause, change your details or renew any time from your dashboard. </td> </tr> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Footer --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:28px 36px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78">OlivePinch · Birmingham, UK<br> Questions? Just reply to this email.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85">Hand-delivered across Birmingham.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </div> </body></html>`
+    <![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#f7f4ec;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Payment confirmed. Here's what happens between now and your first delivery.</div>
+  <div aria-label="You're in — your OlivePinch plan is confirmed" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec;">
+    <!-- Masthead -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38;">BIRMINGHAM &middot; FRESHLY PREPARED, DAILY</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:200px;">
+                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Card -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
+        <tbody>
+          <tr>
+            <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">PAYMENT CONFIRMED</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Your first box lands ${formatDate(p.startDate)}, ${escapeHtml(p.name)}.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">Payment received. Your ${escapeHtml(p.goalLabel)} plan is booked and the kitchen has you on the list.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><![endif]-->
+              <!-- Plan detail panel -->
+              <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#ebe3d2" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="background:#ebe3d2;background-color:#ebe3d2;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ebe3d2;background-color:#ebe3d2;width:100%;border-collapse:separate;">
+                  <tbody>
+                    <tr>
+                      <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 22px;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                                  <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#272c0f;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:22px;table-layout:auto;width:100%;border:none;">
+                                    <tr>
+                                      <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0;">PLAN</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0;">${escapeHtml(p.goalLabel)} &middot; ${p.planDuration} days</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0;">MEALS PER DAY</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0;">${p.mealsPerDay}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0;">DELIVERY WINDOW</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0;">${escapeHtml(p.deliveryTimeSlot)}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #dbd0b8;">STARTS</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #dbd0b8;">${formatDate(p.startDate)}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:16px 8px 8px 0;">TOTAL PAID</td>
+                                      <td align="right" style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:bold;padding:14px 0 8px;">&pound;${p.total.toFixed(2)}</td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                                    <tbody>
+                                      <tr>
+                                        <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c;" valign="middle">
+                                          <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> View my plan </a>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- What happens next, on the cream -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:32px 36px 8px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:0 0 18px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">WHAT HAPPENS NEXT</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                        <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#4b4b3f;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:22px;table-layout:auto;width:100%;border:none;">
+                          <tr>
+                            <td width="40" valign="top" style="padding:0 14px 18px 0;">
+                              <div style="width:26px;height:26px;line-height:26px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">1</div>
+                            </td>
+                            <td valign="top" style="padding:3px 0 18px 0;line-height:1.6;"> We cook your meals fresh the morning they go out. </td>
+                          </tr>
+                          <tr>
+                            <td width="40" valign="top" style="padding:0 14px 18px 0;">
+                              <div style="width:26px;height:26px;line-height:26px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">2</div>
+                            </td>
+                            <td valign="top" style="padding:3px 0 18px 0;line-height:1.6;"> Your first delivery arrives ${formatDate(p.startDate)}, between ${escapeHtml(p.deliveryTimeSlot)}. </td>
+                          </tr>
+                          <tr>
+                            <td width="40" valign="top" style="padding:0 14px 0 0;">
+                              <div style="width:26px;height:26px;line-height:26px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">3</div>
+                            </td>
+                            <td valign="top" style="padding:3px 0 0 0;line-height:1.6;"> Pause, change your details or renew any time from your dashboard. </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Footer -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:28px 36px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78;">OlivePinch &middot; Birmingham, UK<br /> Questions? Just reply to this email.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div style="font-family:Georgia, 'Times New Roman', serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85;">Hand-delivered across Birmingham.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>`
   return { subject, text, html }
 }
 
@@ -99,7 +478,50 @@ Total paid: £${p.total.toFixed(2)}
 Your delivery details carry over. Change them any time from your dashboard: ${p.dashboardUrl}
 
 — The OlivePinch team`
-  const html = `<!doctype html><html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>Renewed — your OlivePinch plan continues</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a{padding:0}body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}table, td{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt}img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}p{display:block;margin:13px 0}</style><!--[if mso]>
+  const html = `<!doctype html>
+<html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>Renewed — your OlivePinch plan continues</title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+  </style>
+  <!--[if mso]>
     <noscript>
     <xml>
     <o:OfficeDocumentSettings>
@@ -108,13 +530,300 @@ Your delivery details carry over. Change them any time from your dashboard: ${p.
     </o:OfficeDocumentSettings>
     </xml>
     </noscript>
-    <![endif]--><!--[if lte mso 11]>
+    <![endif]-->
+  <!--[if lte mso 11]>
     <style type="text/css">
       .mj-outlook-group-fix { width:100% !important; }
     </style>
-    <![endif]--><style type="text/css">@media only screen and (min-width:480px){.mj-column-per-100{width:100%!important;max-width:100%}}</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100{width:100%!important;max-width:100%}</style></head><body style="word-spacing:normal;background-color:#f7f4ec"> <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">Payment received. Your next plan picks up with no gap in your deliveries.</div> <div aria-label="Renewed — your OlivePinch plan continues" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec"> <!-- Masthead --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38">BIRMINGHAM · FRESHLY PREPARED, DAILY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-style:italic;font-weight:bold;line-height:1.6;text-align:center;color:#1b2a0c">OlivePinch</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Card --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">RENEWAL CONFIRMED</div> </td> </tr> <tr> <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f" role="heading" aria-level="1">No break in your deliveries, ${escapeHtml(p.name)}.</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">Payment received. Your next ${p.planDuration} days of meals pick up straight after your current plan ends.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><![endif]--> <!-- Plan detail panel: olive tint, distinguishing a renewal from a first order --> <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#e2e8cb" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#e2e8cb;background-color:#e2e8cb;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#e2e8cb;background-color:#e2e8cb;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 22px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word"> <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#272c0f;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;table-layout:auto;width:100%;border:none"> <tr> <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0">NEXT PLAN STARTS</td> <td align="right" style="font-weight:bold;padding:8px 0">${formatDate(p.startDate)}</td> </tr> <tr> <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0">PLAN LENGTH</td> <td align="right" style="font-weight:bold;padding:8px 0">${p.planDuration} days</td> </tr> <tr> <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #cdd6b0">MEALS PER DAY</td> <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #cdd6b0">${p.mealsPerDay}</td> </tr> <tr> <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:16px 8px 8px 0">TOTAL PAID</td> <td align="right" style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:bold;padding:14px 0 8px">£${p.total.toFixed(2)}</td> </tr> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 16px;word-break:break-word"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%"> <tbody> <tr> <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c" valign="middle"> <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px" target="_blank"> View my plan </a> </td> </tr> </tbody> </table> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f">Your delivery details carry over. Change them any time from your dashboard.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Footer --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78">OlivePinch · Birmingham, UK<br> Questions? Just reply to this email.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85">Hand-delivered across Birmingham.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </div> </body></html>`
+    <![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#f7f4ec;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Payment received. Your next plan picks up with no gap in your deliveries.</div>
+  <div aria-label="Renewed — your OlivePinch plan continues" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec;">
+    <!-- Masthead -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38;">BIRMINGHAM &middot; FRESHLY PREPARED, DAILY</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:200px;">
+                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Card -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
+        <tbody>
+          <tr>
+            <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">RENEWAL CONFIRMED</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">No break in your deliveries, ${escapeHtml(p.name)}.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">Payment received. Your next ${p.planDuration} days of meals pick up straight after your current plan ends.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><![endif]-->
+              <!-- Plan detail panel: olive tint, distinguishing a renewal from a first order -->
+              <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#e2e8cb" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="background:#e2e8cb;background-color:#e2e8cb;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#e2e8cb;background-color:#e2e8cb;width:100%;border-collapse:separate;">
+                  <tbody>
+                    <tr>
+                      <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 22px;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                                  <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#272c0f;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:22px;table-layout:auto;width:100%;border:none;">
+                                    <tr>
+                                      <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0;">NEXT PLAN STARTS</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0;">${formatDate(p.startDate)}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 8px 0;">PLAN LENGTH</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0;">${p.planDuration} days</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #cdd6b0;">MEALS PER DAY</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #cdd6b0;">${p.mealsPerDay}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#5c6440;font-size:10px;letter-spacing:1px;font-weight:bold;padding:16px 8px 8px 0;">TOTAL PAID</td>
+                                      <td align="right" style="font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:bold;padding:14px 0 8px;">&pound;${p.total.toFixed(2)}</td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0 0 16px;word-break:break-word;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                                    <tbody>
+                                      <tr>
+                                        <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c;" valign="middle">
+                                          <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> View my plan </a>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f;">Your delivery details carry over. Change them any time from your dashboard.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Footer -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78;">OlivePinch &middot; Birmingham, UK<br /> Questions? Just reply to this email.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div style="font-family:Georgia, 'Times New Roman', serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85;">Hand-delivered across Birmingham.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>`
   return { subject, text, html }
 }
 
@@ -136,7 +845,50 @@ Renew here: ${p.dashboardUrl}
 Changing your style or meal count? You can adjust it as you renew.
 
 — The OlivePinch team`
-  const html = `<!doctype html><html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>Your OlivePinch plan ends ${formatDate(p.endDate)}</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a{padding:0}body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}table, td{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt}img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}p{display:block;margin:13px 0}</style><!--[if mso]>
+  const html = `<!doctype html>
+<html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>Your OlivePinch plan ends ${formatDate(p.endDate)}</title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+  </style>
+  <!--[if mso]>
     <noscript>
     <xml>
     <o:OfficeDocumentSettings>
@@ -145,14 +897,290 @@ Changing your style or meal count? You can adjust it as you renew.
     </o:OfficeDocumentSettings>
     </xml>
     </noscript>
-    <![endif]--><!--[if lte mso 11]>
+    <![endif]-->
+  <!--[if lte mso 11]>
     <style type="text/css">
       .mj-outlook-group-fix { width:100% !important; }
     </style>
-    <![endif]--><style type="text/css">@media only screen and (min-width:480px){.mj-column-per-100{width:100%!important;max-width:100%}}</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100{width:100%!important;max-width:100%}</style></head><body style="word-spacing:normal;background-color:#f7f4ec"> <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">Renew before then so there's no gap in your deliveries.</div> <div aria-label="Your OlivePinch plan ends ${formatDate(p.endDate)}" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec"> <!-- Masthead --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38">BIRMINGHAM · FRESHLY PREPARED, DAILY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-style:italic;font-weight:bold;line-height:1.6;text-align:center;color:#1b2a0c">OlivePinch</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Card --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">PLAN ENDING SOON</div> </td> </tr> <!-- Deliberately smaller than the other emails' headlines so the date panel below
-               stays the largest thing on the page — the deadline is the message. --> <tr> <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f" role="heading" aria-level="1">Your meals stop on ${formatDate(p.endDate)}, ${escapeHtml(p.name)}.</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">Your ${p.planDuration}-day plan runs out then. Renew before it does and your deliveries carry on without a gap — same style, same kitchen, no restart.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><![endif]--> <!-- Date panel: the hero. Pale coral marks this as the one time-pressured email. --> <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#fbeee7" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#fbeee7;background-color:#fbeee7;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fbeee7;background-color:#fbeee7;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:12px;direction:ltr;font-size:0px;padding:26px 22px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#a53e21">LAST DELIVERY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:bold;line-height:1.15;text-align:center;color:#272c0f">${formatDate(p.endDate)}</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 16px;word-break:break-word"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%"> <tbody> <tr> <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:16px 34px;background:#c9502c" valign="middle"> <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:16px 34px;mso-padding-alt:0px;border-radius:999px" target="_blank"> Renew my plan </a> </td> </tr> </tbody> </table> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f">Changing your style or meal count? You can adjust it as you renew.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Footer --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78">OlivePinch · Birmingham, UK<br> Questions? Just reply to this email.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85">Hand-delivered across Birmingham.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </div> </body></html>`
+    <![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#f7f4ec;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Renew before then so there's no gap in your deliveries.</div>
+  <div aria-label="Your OlivePinch plan ends ${formatDate(p.endDate)}" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec;">
+    <!-- Masthead -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38;">BIRMINGHAM &middot; FRESHLY PREPARED, DAILY</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:200px;">
+                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Card -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
+        <tbody>
+          <tr>
+            <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">PLAN ENDING SOON</div>
+                                </td>
+                              </tr>
+                              <!-- Deliberately smaller than the other emails' headlines so the date panel below
+               stays the largest thing on the page — the deadline is the message. -->
+                              <tr>
+                                <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:26px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Your meals stop on ${formatDate(p.endDate)}, ${escapeHtml(p.name)}.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">Your ${p.planDuration}-day plan runs out then. Renew before it does and your deliveries carry on without a gap &mdash; same style, same kitchen, no restart.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><![endif]-->
+              <!-- Date panel: the hero. Pale coral marks this as the one time-pressured email. -->
+              <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#fbeee7" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="background:#fbeee7;background-color:#fbeee7;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fbeee7;background-color:#fbeee7;width:100%;border-collapse:separate;">
+                  <tbody>
+                    <tr>
+                      <td style="border-radius:12px;direction:ltr;font-size:0px;padding:26px 22px;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:10px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#a53e21;">LAST DELIVERY</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:34px;font-weight:bold;line-height:1.15;text-align:center;color:#272c0f;">${formatDate(p.endDate)}</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0 0 16px;word-break:break-word;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                                    <tbody>
+                                      <tr>
+                                        <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:16px 34px;background:#c9502c;" valign="middle">
+                                          <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:16px 34px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> Renew my plan </a>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f;">Changing your style or meal count? You can adjust it as you renew.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Footer -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78;">OlivePinch &middot; Birmingham, UK<br /> Questions? Just reply to this email.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div style="font-family:Georgia, 'Times New Roman', serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85;">Hand-delivered across Birmingham.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>`
   return { subject, text, html }
 }
 
@@ -174,7 +1202,50 @@ Further charges: None
 Whenever you want to come back, you can start a new plan from your dashboard: ${p.dashboardUrl}
 
 — The OlivePinch team`
-  const html = `<!doctype html><html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>Your OlivePinch plan is cancelled</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a{padding:0}body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}table, td{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt}img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}p{display:block;margin:13px 0}</style><!--[if mso]>
+  const html = `<!doctype html>
+<html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>Your OlivePinch plan is cancelled</title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+  </style>
+  <!--[if mso]>
     <noscript>
     <xml>
     <o:OfficeDocumentSettings>
@@ -183,14 +1254,285 @@ Whenever you want to come back, you can start a new plan from your dashboard: ${
     </o:OfficeDocumentSettings>
     </xml>
     </noscript>
-    <![endif]--><!--[if lte mso 11]>
+    <![endif]-->
+  <!--[if lte mso 11]>
     <style type="text/css">
       .mj-outlook-group-fix { width:100% !important; }
     </style>
-    <![endif]--><style type="text/css">@media only screen and (min-width:480px){.mj-column-per-100{width:100%!important;max-width:100%}}</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100{width:100%!important;max-width:100%}</style></head><body style="word-spacing:normal;background-color:#f7f4ec"> <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">This confirms your subscription has been cancelled. Nothing further will be charged.</div> <div aria-label="Your OlivePinch plan is cancelled" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec"> <!-- Masthead --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38">BIRMINGHAM · FRESHLY PREPARED, DAILY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-style:italic;font-weight:bold;line-height:1.6;text-align:center;color:#1b2a0c">OlivePinch</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Card. No button anywhere: there is nothing to act on, and no coral in this email. --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">CANCELLATION CONFIRMED</div> </td> </tr> <tr> <td align="left" class="email-heading" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f" role="heading" aria-level="1">Your plan is cancelled, ${escapeHtml(p.name)}.</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">We've stopped your deliveries and you won't be charged again.</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">If a refund is due, our team will arrange it with you directly over the phone.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><![endif]--> <!-- Neutral cream inset, not the sand/olive/coral panels the other emails use — this one
-           is a record of fact, so it shouldn't read as a highlight. --> <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#f4f1e7" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#f4f1e7;background-color:#f4f1e7;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#f4f1e7;background-color:#f4f1e7;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 22px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word"> <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#272c0f;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:22px;table-layout:auto;width:100%;border:none"> <tr> <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #e6e0cf">NO DELIVERIES FROM</td> <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #e6e0cf">${formatDate(p.effectiveDate)}</td> </tr> <tr> <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:14px 8px 8px 0">FURTHER CHARGES</td> <td align="right" style="font-weight:bold;padding:14px 0 8px">None</td> </tr> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:24px 0 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">Whenever you want to come back, you can <a href="${p.dashboardUrl}" style="color:#646e38;font-weight:bold">start a new plan</a> from your dashboard.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Footer --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78">OlivePinch · Birmingham, UK<br> Questions? Just reply to this email.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85">Hand-delivered across Birmingham.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </div> </body></html>`
+    <![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#f7f4ec;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">This confirms your subscription has been cancelled. Nothing further will be charged.</div>
+  <div aria-label="Your OlivePinch plan is cancelled" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec;">
+    <!-- Masthead -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38;">BIRMINGHAM &middot; FRESHLY PREPARED, DAILY</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:200px;">
+                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Card. No button anywhere: there is nothing to act on, and no coral in this email. -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
+        <tbody>
+          <tr>
+            <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">CANCELLATION CONFIRMED</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" class="email-heading" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Your plan is cancelled, ${escapeHtml(p.name)}.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">We've stopped your deliveries and you won't be charged again.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">If a refund is due, our team will arrange it with you directly over the phone.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><![endif]-->
+              <!-- Neutral cream inset, not the sand/olive/coral panels the other emails use — this one
+           is a record of fact, so it shouldn't read as a highlight. -->
+              <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#f4f1e7" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="background:#f4f1e7;background-color:#f4f1e7;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#f4f1e7;background-color:#f4f1e7;width:100%;border-collapse:separate;">
+                  <tbody>
+                    <tr>
+                      <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 22px;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                                  <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#272c0f;font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:22px;table-layout:auto;width:100%;border:none;">
+                                    <tr>
+                                      <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:8px 8px 14px 0;border-bottom:1px solid #e6e0cf;">NO DELIVERIES FROM</td>
+                                      <td align="right" style="font-weight:bold;padding:8px 0 14px;border-bottom:1px solid #e6e0cf;">${formatDate(p.effectiveDate)}</td>
+                                    </tr>
+                                    <tr>
+                                      <td style="color:#6b6b5f;font-size:10px;letter-spacing:1px;font-weight:bold;padding:14px 8px 8px 0;">FURTHER CHARGES</td>
+                                      <td align="right" style="font-weight:bold;padding:14px 0 8px;">None</td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:24px 0 0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">Whenever you want to come back, you can <a href="${p.dashboardUrl}" style="color:#646e38;font-weight:bold;">start a new plan</a> from your dashboard.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Footer -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78;">OlivePinch &middot; Birmingham, UK<br /> Questions? Just reply to this email.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div style="font-family:Georgia, 'Times New Roman', serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85;">Hand-delivered across Birmingham.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>`
   return { subject, text, html }
 }
 
@@ -209,7 +1551,50 @@ We've got your payment, but we can't schedule your deliveries until your phone n
 Nothing else is needed — your plan and payment are already saved.
 
 — The OlivePinch team`
-  const html = `<!doctype html><html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>Finish setting up your OlivePinch account</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a{padding:0}body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}table, td{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt}img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}p{display:block;margin:13px 0}</style><!--[if mso]>
+  const html = `<!doctype html>
+<html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>Finish setting up your OlivePinch account</title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+  </style>
+  <!--[if mso]>
     <noscript>
     <xml>
     <o:OfficeDocumentSettings>
@@ -218,14 +1603,336 @@ Nothing else is needed — your plan and payment are already saved.
     </o:OfficeDocumentSettings>
     </xml>
     </noscript>
-    <![endif]--><!--[if lte mso 11]>
+    <![endif]-->
+  <!--[if lte mso 11]>
     <style type="text/css">
       .mj-outlook-group-fix { width:100% !important; }
     </style>
-    <![endif]--><style type="text/css">@media only screen and (min-width:480px){.mj-column-per-100{width:100%!important;max-width:100%}.mj-column-per-50{width:50%!important;max-width:50%}}</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100{width:100%!important;max-width:100%}.moz-text-html .mj-column-per-50{width:50%!important;max-width:50%}</style></head><body style="word-spacing:normal;background-color:#f7f4ec"> <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">Your payment went through — one step left before your first delivery.</div> <div aria-label="Finish setting up your OlivePinch account" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec"> <!-- Masthead --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38">BIRMINGHAM · FRESHLY PREPARED, DAILY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-style:italic;font-weight:bold;line-height:1.6;text-align:center;color:#1b2a0c">OlivePinch</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Card. Shortest of the family: the button sits directly under the copy so it's
-         reachable without scrolling on a phone. --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">ONE STEP LEFT</div> </td> </tr> <tr> <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f" role="heading" aria-level="1">Your payment went through. Your account didn't, ${escapeHtml(p.name)}.</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 28px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">We've got your payment, but we can't schedule your deliveries until your phone number is verified. It takes about a minute.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0 0 28px;word-break:break-word"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%"> <tbody> <tr> <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:16px 34px;background:#c9502c" valign="middle"> <a href="${p.link}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:16px 34px;mso-padding-alt:0px;border-radius:999px" target="_blank"> Verify my number </a> </td> </tr> </tbody> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><![endif]--> <!-- Two-step strip. Separate columns so it stacks on narrow screens. --> <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#ebe3d2" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ebe3d2;background-color:#ebe3d2;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ebe3d2;background-color:#ebe3d2;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 18px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:246px;" ><![endif]--> <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%"> <tbody> <tr> <td style="vertical-align:top;padding:0"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word"> <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#4b4b3f;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;table-layout:auto;width:100%;border:none"> <tr> <td width="34" valign="top" style="padding:0 10px 0 0"> <div style="width:24px;height:24px;line-height:24px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center">1</div> </td> <td valign="top" style="padding:2px 0 0 0;line-height:1.5">Tap the button above.</td> </tr> </table> </td> </tr> </tbody> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td><td class="" style="vertical-align:top;width:246px;" ><![endif]--> <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%"> <tbody> <tr> <td style="vertical-align:top;padding:0"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word"> <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#4b4b3f;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:22px;table-layout:auto;width:100%;border:none"> <tr> <td width="34" valign="top" style="padding:0 10px 0 0"> <div style="width:24px;height:24px;line-height:24px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center">2</div> </td> <td valign="top" style="padding:2px 0 0 0;line-height:1.5">Enter the 6-digit code we text you.</td> </tr> </table> </td> </tr> </tbody> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:22px 0 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f">Nothing else is needed — your plan and payment are already saved.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Footer --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78">OlivePinch · Birmingham, UK<br> Questions? Just reply to this email.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85">Hand-delivered across Birmingham.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </div> </body></html>`
+    <![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+
+      .mj-column-per-50 {
+        width: 50% !important;
+        max-width: 50%;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+
+    .moz-text-html .mj-column-per-50 {
+      width: 50% !important;
+      max-width: 50%;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#f7f4ec;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Your payment went through — one step left before your first delivery.</div>
+  <div aria-label="Finish setting up your OlivePinch account" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec;">
+    <!-- Masthead -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38;">BIRMINGHAM &middot; FRESHLY PREPARED, DAILY</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:200px;">
+                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Card. Shortest of the family: the button sits directly under the copy so it's
+         reachable without scrolling on a phone. -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
+        <tbody>
+          <tr>
+            <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">ONE STEP LEFT</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:26px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Your payment went through. Your account didn't, ${escapeHtml(p.name)}.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 28px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">We've got your payment, but we can't schedule your deliveries until your phone number is verified. It takes about a minute.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0 0 28px;word-break:break-word;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                                    <tbody>
+                                      <tr>
+                                        <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:16px 34px;background:#c9502c;" valign="middle">
+                                          <a href="${p.link}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:16px 34px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> Verify my number </a>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><![endif]-->
+              <!-- Two-step strip. Separate columns so it stacks on narrow screens. -->
+              <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#ebe3d2" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="background:#ebe3d2;background-color:#ebe3d2;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ebe3d2;background-color:#ebe3d2;width:100%;border-collapse:separate;">
+                  <tbody>
+                    <tr>
+                      <td style="border-radius:12px;direction:ltr;font-size:0px;padding:18px 18px;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:246px;" ><![endif]-->
+                        <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                            <tbody>
+                              <tr>
+                                <td style="vertical-align:top;padding:0;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                                    <tbody>
+                                      <tr>
+                                        <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                                          <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#4b4b3f;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:22px;table-layout:auto;width:100%;border:none;">
+                                            <tr>
+                                              <td width="34" valign="top" style="padding:0 10px 0 0;">
+                                                <div style="width:24px;height:24px;line-height:24px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">1</div>
+                                              </td>
+                                              <td valign="top" style="padding:2px 0 0 0;line-height:1.5;">Tap the button above.</td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td><td class="" style="vertical-align:top;width:246px;" ><![endif]-->
+                        <div class="mj-column-per-50 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                            <tbody>
+                              <tr>
+                                <td style="vertical-align:top;padding:0;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                                    <tbody>
+                                      <tr>
+                                        <td align="left" style="font-size:0px;padding:10px 25px;word-break:break-word;">
+                                          <table cellpadding="0" cellspacing="0" width="100%" border="0" style="color:#4b4b3f;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:22px;table-layout:auto;width:100%;border:none;">
+                                            <tr>
+                                              <td width="34" valign="top" style="padding:0 10px 0 0;">
+                                                <div style="width:24px;height:24px;line-height:24px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">2</div>
+                                              </td>
+                                              <td valign="top" style="padding:2px 0 0 0;line-height:1.5;">Enter the 6-digit code we text you.</td>
+                                            </tr>
+                                          </table>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:22px 0 0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f;">Nothing else is needed &mdash; your plan and payment are already saved.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Footer -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78;">OlivePinch &middot; Birmingham, UK<br /> Questions? Just reply to this email.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div style="font-family:Georgia, 'Times New Roman', serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85;">Hand-delivered across Birmingham.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>`
   return { subject, text, html }
 }
 
@@ -244,7 +1951,50 @@ Start a new plan: ${p.dashboardUrl}
 Or clear your data — if you'd rather we didn't keep your details, you can export or delete your data yourself, any time, no need to ask us: ${p.privacyUrl}
 
 — The OlivePinch team`
-  const html = `<!doctype html><html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>Still there? Your OlivePinch plan ended a while ago</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a{padding:0}body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}table, td{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt}img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}p{display:block;margin:13px 0}</style><!--[if mso]>
+  const html = `<!doctype html>
+<html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>Still there? Your OlivePinch plan ended a while ago</title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+  </style>
+  <!--[if mso]>
     <noscript>
     <xml>
     <o:OfficeDocumentSettings>
@@ -253,15 +2003,292 @@ Or clear your data — if you'd rather we didn't keep your details, you can expo
     </o:OfficeDocumentSettings>
     </xml>
     </noscript>
-    <![endif]--><!--[if lte mso 11]>
+    <![endif]-->
+  <!--[if lte mso 11]>
     <style type="text/css">
       .mj-outlook-group-fix { width:100% !important; }
     </style>
-    <![endif]--><style type="text/css">@media only screen and (min-width:480px){.mj-column-per-100{width:100%!important;max-width:100%}}</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100{width:100%!important;max-width:100%}</style></head><body style="word-spacing:normal;background-color:#f7f4ec"> <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">Start a new plan any time — or clear the details we still hold.</div> <div aria-label="Still there? Your OlivePinch plan ended a while ago" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec"> <!-- Masthead --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38">BIRMINGHAM · FRESHLY PREPARED, DAILY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-style:italic;font-weight:bold;line-height:1.6;text-align:center;color:#1b2a0c">OlivePinch</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Card: an invitation block, then the data choice as a clearly subordinate block. --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:16px;direction:ltr;font-size:0px;padding:44px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">IT'S BEEN A WHILE</div> </td> </tr> <tr> <td align="left" class="email-heading" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:30px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f" role="heading" aria-level="1">Still cooking for you, ${escapeHtml(p.name)}?</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 28px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;text-align:left;color:#4b4b3f">It's been over a year since your last OlivePinch plan ended. Same kitchen, same city, same fresh meals cooked the morning they go out. Pick a style and you can be back on a plan today.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%"> <tbody> <tr> <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c" valign="middle"> <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px" target="_blank"> Start a new plan </a> </td> </tr> </tbody> </table> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #ececdf;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #ececdf;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><![endif]--> <!-- Olive wash, lighter than the renewal email's olive tint, so the two don't read
-           as the same component. No button here: this must not compete with the CTA. --> <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#f2f4e9" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#f2f4e9;background-color:#f2f4e9;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#f2f4e9;background-color:#f2f4e9;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:12px;direction:ltr;font-size:0px;padding:20px 22px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#5c6440">OR CLEAR YOUR DATA</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;text-align:left;color:#4b4b3f">If you'd rather we didn't keep your details, you can <a href="${p.privacyUrl}" style="color:#646e38;font-weight:bold">export or delete your data</a> yourself, any time — no need to ask us.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Footer --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78">OlivePinch · Birmingham, UK<br> Questions? Just reply to this email.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85">Hand-delivered across Birmingham.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </div> </body></html>`
+    <![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#f7f4ec;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Start a new plan any time — or clear the details we still hold.</div>
+  <div aria-label="Still there? Your OlivePinch plan ended a while ago" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec;">
+    <!-- Masthead -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38;">BIRMINGHAM &middot; FRESHLY PREPARED, DAILY</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:200px;">
+                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Card: an invitation block, then the data choice as a clearly subordinate block. -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
+        <tbody>
+          <tr>
+            <td style="border-radius:16px;direction:ltr;font-size:0px;padding:44px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">IT'S BEEN A WHILE</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" class="email-heading" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:30px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Still cooking for you, ${escapeHtml(p.name)}?</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 28px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:16px;line-height:1.6;text-align:left;color:#4b4b3f;">It's been over a year since your last OlivePinch plan ended. Same kitchen, same city, same fresh meals cooked the morning they go out. Pick a style and you can be back on a plan today.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                                    <tbody>
+                                      <tr>
+                                        <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c;" valign="middle">
+                                          <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> Start a new plan </a>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:32px 0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <p style="border-top:solid 1px #ececdf;font-size:1px;margin:0px auto;width:100%;">
+                                  </p>
+                                  <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #ececdf;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><![endif]-->
+              <!-- Olive wash, lighter than the renewal email's olive tint, so the two don't read
+           as the same component. No button here: this must not compete with the CTA. -->
+              <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#f2f4e9" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="background:#f2f4e9;background-color:#f2f4e9;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#f2f4e9;background-color:#f2f4e9;width:100%;border-collapse:separate;">
+                  <tbody>
+                    <tr>
+                      <td style="border-radius:12px;direction:ltr;font-size:0px;padding:20px 22px;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:10px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#5c6440;">OR CLEAR YOUR DATA</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:1.6;text-align:left;color:#4b4b3f;">If you'd rather we didn't keep your details, you can <a href="${p.privacyUrl}" style="color:#646e38;font-weight:bold;">export or delete your data</a> yourself, any time &mdash; no need to ask us.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Footer -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78;">OlivePinch &middot; Birmingham, UK<br /> Questions? Just reply to this email.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div style="font-family:Georgia, 'Times New Roman', serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85;">Hand-delivered across Birmingham.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>`
   return { subject, text, html }
 }
 
@@ -283,7 +2310,50 @@ Choose your meals here: ${p.dashboardUrl}
 Don't fancy choosing? Leave it with us — we'll match your meals to your style automatically.
 
 — The OlivePinch team`
-  const html = `<!doctype html><html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office"><head><title>Next week's menu is open — choose your meals</title><!--[if !mso]><!--><meta http-equiv="X-UA-Compatible" content="IE=edge"><!--<![endif]--><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style type="text/css">#outlook a{padding:0}body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}table, td{border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt}img{border:0;height:auto;line-height:100%;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic}p{display:block;margin:13px 0}</style><!--[if mso]>
+  const html = `<!doctype html>
+<html lang="en" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <title>Next week's menu is open — choose your meals</title>
+  <!--[if !mso]><!-->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--<![endif]-->
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style type="text/css">
+    #outlook a {
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      border-collapse: collapse;
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+    }
+
+    img {
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+    }
+
+    p {
+      display: block;
+      margin: 13px 0;
+    }
+  </style>
+  <!--[if mso]>
     <noscript>
     <xml>
     <o:OfficeDocumentSettings>
@@ -292,14 +2362,289 @@ Don't fancy choosing? Leave it with us — we'll match your meals to your style 
     </o:OfficeDocumentSettings>
     </xml>
     </noscript>
-    <![endif]--><!--[if lte mso 11]>
+    <![endif]-->
+  <!--[if lte mso 11]>
     <style type="text/css">
       .mj-outlook-group-fix { width:100% !important; }
     </style>
-    <![endif]--><style type="text/css">@media only screen and (min-width:480px){.mj-column-per-100{width:100%!important;max-width:100%}}</style><style media="screen and (min-width:480px)">.moz-text-html .mj-column-per-100{width:100%!important;max-width:100%}</style></head><body style="word-spacing:normal;background-color:#f7f4ec"> <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden">Pick what you'd like for the week of ${formatDate(p.weekStart)}, or we'll match your goal for you.</div> <div aria-label="Next week's menu is open — choose your meals" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec"> <!-- Masthead --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38">BIRMINGHAM · FRESHLY PREPARED, DAILY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:34px;font-style:italic;font-weight:bold;line-height:1.6;text-align:center;color:#1b2a0c">OlivePinch</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Card --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38">NEXT WEEK'S MENU</div> </td> </tr> <tr> <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f" role="heading" aria-level="1">Choose next week's meals, ${escapeHtml(p.name)}.</div> </td> </tr> <tr> <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f">The menu for the week of ${formatDate(p.weekStart)} is now open. Pick what you'd like for each delivery day — it takes a couple of minutes.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><![endif]--> <!-- Deadline panel: coral like the renewal reminder, but at half the type size. Missing
+    <![endif]-->
+  <style type="text/css">
+    @media only screen and (min-width:480px) {
+      .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+  </style>
+  <style media="screen and (min-width:480px)">
+    .moz-text-html .mj-column-per-100 {
+      width: 100% !important;
+      max-width: 100%;
+    }
+  </style>
+  <style type="text/css">
+    @media only screen and (max-width:479px) {
+      table.mj-full-width-mobile {
+        width: 100% !important;
+      }
+
+      td.mj-full-width-mobile {
+        width: auto !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="word-spacing:normal;background-color:#f7f4ec;">
+  <div style="display:none;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">Pick what you'd like for the week of ${formatDate(p.weekStart)}, or we'll match your style for you.</div>
+  <div aria-label="Next week's menu is open — choose your meals" aria-roledescription="email" role="article" lang="en" dir="auto" style="word-spacing:normal;background-color:#f7f4ec;">
+    <!-- Masthead -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:40px 32px 12px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 10px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#646e38;">BIRMINGHAM &middot; FRESHLY PREPARED, DAILY</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;border-spacing:0px;">
+                          <tbody>
+                            <tr>
+                              <td style="width:200px;">
+                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                </a>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:0 32px 24px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:536px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 2px #646e38;font-size:1px;margin:0px auto;width:56px;" role="presentation" width="56px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Card -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" bgcolor="#ffffff" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="background:#ffffff;background-color:#ffffff;margin:0px auto;max-width:600px;border-radius:16px;overflow:hidden;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#ffffff;background-color:#ffffff;width:100%;border-collapse:separate;">
+        <tbody>
+          <tr>
+            <td style="border-radius:16px;direction:ltr;font-size:0px;padding:40px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 14px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:left;color:#646e38;">NEXT WEEK'S MENU</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:28px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Choose next week's meals, ${escapeHtml(p.name)}.</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="left" style="font-size:0px;padding:0 0 24px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">The menu for the week of ${formatDate(p.weekStart)} is now open. Pick what you'd like for each delivery day &mdash; it takes a couple of minutes.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><![endif]-->
+              <!-- Deadline panel: coral like the renewal reminder, but at half the type size. Missing
            this deadline isn't a failure state (the fallback below is a real one), so it must
-           not read with the same alarm as a plan about to lapse. --> <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#fbeee7" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="background:#fbeee7;background-color:#fbeee7;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fbeee7;background-color:#fbeee7;width:100%;border-collapse:separate"> <tbody> <tr> <td style="border-radius:12px;direction:ltr;font-size:0px;padding:20px 22px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 8px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#a53e21">CHOOSE BY</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:bold;line-height:1.2;text-align:center;color:#272c0f">${formatDate(p.cutoffDate)}</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:528px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 16px;word-break:break-word"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%"> <tbody> <tr> <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c" valign="middle"> <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px" target="_blank"> Choose my meals </a> </td> </tr> </tbody> </table> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f">Don't fancy choosing? Leave it with us — we'll match your meals to your style automatically.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> <!-- Footer --> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%"> </p> <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;">  
-</td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]--> <div style="margin:0px auto;max-width:600px"> <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%"> <tbody> <tr> <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center"> <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]--> <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%"> <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top" width="100%"> <tbody> <tr> <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word"> <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78">OlivePinch · Birmingham, UK<br> Questions? Just reply to this email.</div> </td> </tr> <tr> <td align="center" style="font-size:0px;padding:0;word-break:break-word"> <div style="font-family:Georgia,'Times New Roman',serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85">Hand-delivered across Birmingham.</div> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </td> </tr> </tbody> </table> </div> <!--[if mso | IE]></td></tr></table><![endif]--> </div> </body></html>`
+           not read with the same alarm as a plan about to lapse. -->
+              <!--[if mso | IE]><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" bgcolor="#fbeee7" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="background:#fbeee7;background-color:#fbeee7;margin:0px auto;max-width:528px;border-radius:12px;overflow:hidden;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#fbeee7;background-color:#fbeee7;width:100%;border-collapse:separate;">
+                  <tbody>
+                    <tr>
+                      <td style="border-radius:12px;direction:ltr;font-size:0px;padding:20px 22px;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:484px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0 0 8px;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:10px;font-weight:bold;letter-spacing:2px;line-height:1.6;text-align:center;color:#a53e21;">CHOOSE BY</div>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:24px;font-weight:bold;line-height:1.2;text-align:center;color:#272c0f;">${formatDate(p.cutoffDate)}</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr><tr><td class="" width="600px" ><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:528px;" width="528" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+              <div style="margin:0px auto;max-width:528px;">
+                <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+                  <tbody>
+                    <tr>
+                      <td style="direction:ltr;font-size:0px;padding:28px 0 0;text-align:center;">
+                        <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+                        <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                          <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                            <tbody>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0 0 16px;word-break:break-word;">
+                                  <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:separate;line-height:100%;">
+                                    <tbody>
+                                      <tr>
+                                        <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:14px 30px;background:#c9502c;" valign="middle">
+                                          <a href="${p.dashboardUrl}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:14px 30px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> Choose my meals </a>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:13px;line-height:1.6;text-align:center;color:#6b6b5f;">Don't fancy choosing? Leave it with us &mdash; we'll match your meals to your style automatically.</div>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <!--[if mso | IE]></td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+    <!-- Footer -->
+    <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:32px 36px 0;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:528px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <p style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:100%;">
+                        </p>
+                        <!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" style="border-top:solid 1px #e6dfcd;font-size:1px;margin:0px auto;width:528px;" role="presentation" width="528px" ><tr><td style="height:0;line-height:0;"> &nbsp;
+</td></tr></table><![endif]-->
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><table align="center" border="0" cellpadding="0" cellspacing="0" class="" role="presentation" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->
+    <div style="margin:0px auto;max-width:600px;">
+      <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+        <tbody>
+          <tr>
+            <td style="direction:ltr;font-size:0px;padding:20px 24px 36px;text-align:center;">
+              <!--[if mso | IE]><table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr><td class="" style="vertical-align:top;width:552px;" ><![endif]-->
+              <div class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+                <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="vertical-align:top;" width="100%">
+                  <tbody>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
+                        <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;line-height:1.6;text-align:center;color:#8a8a78;">OlivePinch &middot; Birmingham, UK<br /> Questions? Just reply to this email.</div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="font-size:0px;padding:0;word-break:break-word;">
+                        <div style="font-family:Georgia, 'Times New Roman', serif;font-size:13px;font-style:italic;line-height:1.6;text-align:center;color:#a09c85;">Hand-delivered across Birmingham.</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--[if mso | IE]></td></tr></table><![endif]-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--[if mso | IE]></td></tr></table><![endif]-->
+  </div>
+</body>
+
+</html>`
   return { subject, text, html }
 }
