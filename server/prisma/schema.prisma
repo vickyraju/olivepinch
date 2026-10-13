@@ -141,7 +141,7 @@ model HealthLog {
   weightKg   Float
   chestCm    Float
   bicepCm    Float
-  abdomenCm  Float
+  abdomenCm  Float? // no longer collected; kept for entries logged before
   waistCm    Float
   loggedAt   DateTime @default(now())
 }

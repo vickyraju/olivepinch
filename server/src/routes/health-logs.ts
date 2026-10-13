@@ -20,7 +20,6 @@ const logSchema = z.object({
   weightKg: z.number().positive(),
   chestCm: z.number().positive(),
   bicepCm: z.number().positive(),
-  abdomenCm: z.number().positive(),
   waistCm: z.number().positive(),
 })
 
