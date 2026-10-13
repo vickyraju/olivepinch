@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { api, ApiError } from "@/lib/api"
-import { BOXES_BY_MEALS_PER_DAY, BOX_LABELS, DELIVERY_SLOT_LABELS } from "@/lib/customer-labels"
+import { BOXES_BY_MEALS_PER_DAY, BOX_LABELS } from "@/lib/customer-labels"
 
 export interface EditableOrder {
   id: string
@@ -67,7 +67,7 @@ function ErrorList({ errors }: { errors: string[] }) {
 const reasons = (err: unknown, fallback: string) => (err instanceof ApiError ? (err.problems?.length ? err.problems : [err.message]) : [fallback])
 
 // ---------------------------------------------------------------------------------------------
-// Delivery: slot (daily / weekly / alternate days) and time window.
+// Delivery: time window only (every plan is delivered daily).
 // ---------------------------------------------------------------------------------------------
 export function DeliveryModal({
   customerId,
@@ -80,21 +80,19 @@ export function DeliveryModal({
   onClose: () => void
   onSaved: (message: string) => void | Promise<void>
 }) {
-  const [slot, setSlot] = useState(subscription.deliverySlot)
   const [windowLabel, setWindowLabel] = useState(subscription.deliveryTimeSlot)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
   const windowsQuery = useQuery({ queryKey: ["delivery-time-slots"], queryFn: () => api.get<TimeSlot[]>("/delivery-time-slots") })
   // Active windows, plus the plan's current one even if it has since been retired, so nothing is lost.
   const windows = [...new Set([...(windowsQuery.data ?? []).filter((w) => w.active).map((w) => w.label), subscription.deliveryTimeSlot])]
-  const unchanged = slot === subscription.deliverySlot && windowLabel === subscription.deliveryTimeSlot
+  const unchanged = windowLabel === subscription.deliveryTimeSlot
 
   async function save() {
     setSaving(true)
     setErrors([])
     try {
       const body: Record<string, string> = {}
-      if (slot !== subscription.deliverySlot) body.deliverySlot = slot
       if (windowLabel !== subscription.deliveryTimeSlot) body.deliveryTimeSlot = windowLabel
       await api.patch(`/customers/${customerId}/subscriptions/${subscription.id}`, body)
       await onSaved("Delivery settings saved.")
@@ -122,16 +120,6 @@ export function DeliveryModal({
       <p className="text-sm text-gray-500">
         {subscription.planDuration}-day plan. Length, tier and meals per day can't be changed here, because they decide what the customer paid.
       </p>
-      <div>
-        <label className={labelClass}>Delivery</label>
-        <select className={inputClass} value={slot} onChange={(e) => setSlot(e.target.value)}>
-          {Object.entries(DELIVERY_SLOT_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
       <div>
         <label className={labelClass}>Delivery time window</label>
         <select className={inputClass} value={windowLabel} onChange={(e) => setWindowLabel(e.target.value)}>
