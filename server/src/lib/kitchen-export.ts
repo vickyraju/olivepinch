@@ -42,6 +42,17 @@ async function buildRows(from: string, to: string): Promise<Row[]> {
   const rows: Row[] = []
   for (const order of orders) {
     const date = order.deliveryDate.toISOString().slice(0, 10)
+    // An order nobody has chosen meals for must show up, not silently drop out of the prep list.
+    if (order.items.length === 0) {
+      rows.push({
+        date,
+        slot: "-",
+        itemName: "NO MEAL CHOSEN - choose before prep",
+        customerName: order.subscription.customer.fullName,
+        type: TIER_LABELS[order.subscription.tier] ?? order.subscription.tier,
+        deliveryTime: order.subscription.deliveryTimeSlot,
+      })
+    }
     for (const item of order.items) {
       rows.push({
         date,

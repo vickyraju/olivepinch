@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js"
 import { requireAuth, requireSignupToken } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
-import { SLOTS_BY_MEALS_PER_DAY, defaultMenuItemFor, planPrice } from "../lib/pricing.js"
+import { SLOTS_BY_MEALS_PER_DAY, planPrice } from "../lib/pricing.js"
 import { formatDate } from "../lib/email-templates.js"
 import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, earliestStartDate, pickSubscriptions, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
 import { isPostcodeInActiveZone } from "../lib/postcode.js"
@@ -30,14 +30,14 @@ const createSchema = z.object({
   tier: z.enum(PLAN_TIER_VALUES as [string, ...string[]]).default("BASIC"),
   // Optional per-day menu customization from the "customize your menu" funnel step.
   // items are menuItem ids, positionally matched to SLOTS_BY_MEALS_PER_DAY[mealsPerDay].
-  // Falls back to the goal/diet-matched default when omitted.
+  // Days left out have no meals yet: the customer picks later, or an admin does.
   dayMenus: z.array(z.object({ date: z.string(), items: z.array(z.string()) })).optional(),
   promoCode: z.string().optional(),
 })
 
 // Builds every day's menu server-side (source of truth for FR-C10/FR-C12 pricing) — either
-// from the caller's day-by-day selections (validated against real MenuItem ids) or the
-// goal/diet-matched default — and creates the Subscription + Order + OrderItem rows in one
+// from the caller's day-by-day selections (validated against real MenuItem ids; days without
+// a selection stay empty, there are no default meals) — and creates the Subscription + Order + OrderItem rows in one
 // transaction.
 subscriptionsRouter.post(
   "/",
@@ -89,11 +89,7 @@ subscriptionsRouter.post(
           if (customItemId && (!customItem || customItem.slot !== slot)) {
             throw Object.assign(new Error(`Invalid menu selection for ${isoDate} (${slot})`), { status: 400 })
           }
-          return {
-            slot,
-            date,
-            item: customItem ?? (await defaultMenuItemFor(customer.goal as Goal, customer.dietTypes as DietType[], customer.allergens, slot)),
-          }
+          return { slot, date, item: customItem }
         })
       )
     })
@@ -127,7 +123,9 @@ subscriptionsRouter.post(
       orders: {
         create: dayItems.map((day) => ({
           deliveryDate: day[0].date,
-          items: { create: day.map((d) => ({ menuItemId: d.item.id, slot: d.slot })) },
+          // No default meals: a day is only filled once the customer (or an admin) picks.
+          items: { create: day.flatMap((d) => (d.item ? [{ menuItemId: d.item.id, slot: d.slot }] : [])) },
+          menuChosenAt: day.every((d) => d.item) ? new Date() : null,
         })),
       },
     },
@@ -292,11 +290,7 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
   const dayItems = await Promise.all(
     deliveryDates.map((date) =>
       Promise.all(
-        slots.map(async (slot: MealSlot) => ({
-          slot,
-          date,
-          item: await defaultMenuItemFor(body.goal as Goal, body.dietTypes as DietType[], body.allergens, slot),
-        }))
+        slots.map(async (slot: MealSlot) => ({ slot, date, item: undefined as { id: string } | undefined }))
       )
     )
   )
@@ -326,7 +320,9 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
       orders: {
         create: dayItems.map((day) => ({
           deliveryDate: day[0].date,
-          items: { create: day.map((d) => ({ menuItemId: d.item.id, slot: d.slot })) },
+          // No default meals: a day is only filled once the customer (or an admin) picks.
+          items: { create: day.flatMap((d) => (d.item ? [{ menuItemId: d.item.id, slot: d.slot }] : [])) },
+          menuChosenAt: day.every((d) => d.item) ? new Date() : null,
         })),
       },
     },
