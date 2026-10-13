@@ -1543,10 +1543,10 @@ export function accountRecoveryEmail(p: {
   const subject = "Finish setting up your OlivePinch account"
   const text = `Hi ${p.name},
 
-We've got your payment, but we can't schedule your deliveries until your phone number is verified. It takes about a minute.
+We've got your payment and your plan is saved. To see your deliveries and choose your meals, log in with this email address. We'll send you a 6-digit code.
 
 1. Open this link: ${p.link}
-2. Enter the 6-digit code we text you.
+2. Enter the 6-digit code we email you.
 
 Nothing else is needed — your plan and payment are already saved.
 
@@ -1742,12 +1742,12 @@ Nothing else is needed — your plan and payment are already saved.
                               </tr>
                               <tr>
                                 <td align="left" class="email-heading" style="font-size:0px;padding:0 0 12px;word-break:break-word;">
-                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:26px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Your payment went through. Your account didn't, ${escapeHtml(p.name)}.</div>
+                                  <div style="font-family:Georgia, 'Times New Roman', serif;font-size:26px;font-weight:bold;line-height:1.25;text-align:left;color:#272c0f;" role="heading" aria-level="1">Your payment went through. Your login didn't, ${escapeHtml(p.name)}.</div>
                                 </td>
                               </tr>
                               <tr>
                                 <td align="left" style="font-size:0px;padding:0 0 28px;word-break:break-word;">
-                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">We've got your payment, but we can't schedule your deliveries until your phone number is verified. It takes about a minute.</div>
+                                  <div style="font-family:Arial, Helvetica, sans-serif;font-size:15px;line-height:1.6;text-align:left;color:#4b4b3f;">We've got your payment and your plan is saved. To see your deliveries and choose your meals, log in with this email address. We'll send you a 6-digit code.</div>
                                 </td>
                               </tr>
                               <tr>
@@ -1756,7 +1756,7 @@ Nothing else is needed — your plan and payment are already saved.
                                     <tbody>
                                       <tr>
                                         <td align="center" bgcolor="#c9502c" role="presentation" style="border:none;border-radius:999px;cursor:auto;mso-padding-alt:16px 34px;background:#c9502c;" valign="middle">
-                                          <a href="${p.link}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:16px 34px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> Verify my number </a>
+                                          <a href="${p.link}" style="display:inline-block;background:#c9502c;color:#ffffff;font-family:Arial, Helvetica, sans-serif;font-size:14px;font-weight:bold;line-height:120%;margin:0;text-decoration:none;text-transform:none;padding:16px 34px;mso-padding-alt:0px;border-radius:999px;" target="_blank"> Log in </a>
                                         </td>
                                       </tr>
                                     </tbody>
@@ -1822,7 +1822,7 @@ Nothing else is needed — your plan and payment are already saved.
                                               <td width="34" valign="top" style="padding:0 10px 0 0;">
                                                 <div style="width:24px;height:24px;line-height:24px;border-radius:50%;background:#646e38;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-align:center;">2</div>
                                               </td>
-                                              <td valign="top" style="padding:2px 0 0 0;line-height:1.5;">Enter the 6-digit code we text you.</td>
+                                              <td valign="top" style="padding:2px 0 0 0;line-height:1.5;">Enter the 6-digit code we email you.</td>
                                             </tr>
                                           </table>
                                         </td>
