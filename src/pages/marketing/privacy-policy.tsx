@@ -145,6 +145,7 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
+    id: "cookies",
     heading: "9. Cookies",
     body: (
       <p>

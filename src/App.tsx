@@ -29,9 +29,12 @@ import DashboardDelivery from '@/pages/dashboard/delivery'
 import DashboardWeeklyMenu from '@/pages/dashboard/weekly-menu'
 import DashboardSubscription from '@/pages/dashboard/subscription'
 import DashboardPrivacy from '@/pages/dashboard/privacy'
+import { ScrollToTop } from '@/components/scroll-to-top'
 
 function App() {
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       <Route element={<MarketingLayout />}>
         <Route path="/" element={<Home />} />
@@ -68,6 +71,7 @@ function App() {
         </Route>
       </Route>
     </Routes>
+    </>
   )
 }
 

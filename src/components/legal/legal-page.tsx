@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-type LegalSection = { heading: string; body: ReactNode }
+type LegalSection = { heading: string; body: ReactNode; id?: string }
 
 function LegalPage({
   title,
@@ -23,7 +23,7 @@ function LegalPage({
 
         <div className="space-y-10">
           {sections.map((section) => (
-            <div key={section.heading}>
+            <div key={section.heading} id={section.id} className="scroll-mt-32">
               <h2 className="text-xl font-semibold text-ink mb-3">{section.heading}</h2>
               <div className="text-ink-muted leading-relaxed">{section.body}</div>
             </div>
