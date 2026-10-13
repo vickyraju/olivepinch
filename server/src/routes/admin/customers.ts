@@ -146,7 +146,20 @@ adminCustomersRouter.get("/:id", async (req, res) => {
     },
   })
   const { passwordHash: _passwordHash, ...safe } = customer
-  res.json({ ...safe, address: formatAddress(customer), renewals: renewalsFor(customer.subscriptions, customer.payments) })
+  // Last delivery day of each plan (start + length + paused days), computed once here so the page never re-derives it.
+  const subscriptions = customer.subscriptions.map((sub) => ({
+    ...sub,
+    endDate: computeEndDate(sub.startDate, sub.planDuration, sub.pausedDates),
+  }))
+  const current = pickSubscriptions(customer.subscriptions)?.current
+  const currentWithEnd = current ? subscriptions.find((sub) => sub.id === current.id) : undefined
+  res.json({
+    ...safe,
+    subscriptions,
+    planEndDate: currentWithEnd?.endDate ?? null,
+    address: formatAddress(customer),
+    renewals: renewalsFor(customer.subscriptions, customer.payments),
+  })
 })
 
 function logAction(adminId: string, action: string, customerId?: string, detail?: string) {
