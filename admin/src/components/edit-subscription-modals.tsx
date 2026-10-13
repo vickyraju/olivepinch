@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueries } from "@tanstack/react-query"
 import { api, ApiError } from "@/lib/api"
 import { BOXES_BY_MEALS_PER_DAY, BOX_LABELS } from "@/lib/customer-labels"
 
@@ -139,6 +139,13 @@ export function DeliveryModal({
 // ---------------------------------------------------------------------------------------------
 // Meals on specific upcoming days.
 // ---------------------------------------------------------------------------------------------
+// Monday of the week a YYYY-MM-DD date falls in (the key menu weeks are stored under).
+function mondayOf(date: string): string {
+  const d = new Date(`${date}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7))
+  return d.toISOString().slice(0, 10)
+}
+
 const londonToday = () => new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" })
 
 export function MealsModal({
@@ -166,10 +173,21 @@ export function MealsModal({
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
   const menuQuery = useQuery({ queryKey: ["menu-items"], queryFn: () => api.get<MenuItem[]>("/menu-items") })
+  // What each day's published menu offers, so those meals can be listed first. A week with no menu (404) just has none.
+  const weekStarts = [...new Set(days.map((d) => mondayOf(d.date)))]
+  const weekQueries = useQueries({
+    queries: weekStarts.map((w) => ({
+      queryKey: ["menu-week", w],
+      queryFn: () => api.get<{ published: boolean; items: { id: string; date: string }[] }>(`/menu-weeks/${w}`).catch(() => null),
+    })),
+  })
+  const onMenu = new Set(weekQueries.flatMap((q) => (q.data?.published ? q.data.items.map((i) => `${i.date}|${i.id}`) : [])))
   const avoided = new Set(customerAllergens.map((a) => a.trim().toLowerCase()))
   const clashes = (item: MenuItem) => item.allergenTags.filter((a) => avoided.has(a.trim().toLowerCase()))
 
   const changedDays = days.filter((d) => picks[d.date]?.some((id, i) => id !== d.current[i]))
+  // A day is saved whole, so a changed day needs a meal in every box.
+  const incomplete = changedDays.filter((d) => picks[d.date]!.some((id) => !id))
 
   async function save() {
     setSaving(true)
@@ -194,11 +212,11 @@ export function MealsModal({
       onClose={onClose}
       footer={
         <>
-          <span className="mr-auto text-xs text-gray-400">{changedDays.length === 0 ? "No changes yet." : `${changedDays.length} day${changedDays.length === 1 ? "" : "s"} changed.`}</span>
+          <span className="mr-auto text-xs text-gray-400">{incomplete.length > 0 ? "Choose a meal for every box on a changed day." : changedDays.length === 0 ? "No changes yet." : `${changedDays.length} day${changedDays.length === 1 ? "" : "s"} changed.`}</span>
           <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
             Cancel
           </button>
-          <button type="button" onClick={save} disabled={saving || changedDays.length === 0} className="px-6 py-2 bg-[#2E6B3E] text-white rounded-lg font-semibold text-sm cursor-pointer disabled:opacity-50">
+          <button type="button" onClick={save} disabled={saving || changedDays.length === 0 || incomplete.length > 0} className="px-6 py-2 bg-[#2E6B3E] text-white rounded-lg font-semibold text-sm cursor-pointer disabled:opacity-50">
             {saving ? "Saving…" : "Save changes"}
           </button>
         </>
@@ -221,6 +239,7 @@ export function MealsModal({
                 <p className="text-sm font-bold text-gray-900 mb-3">
                   {new Date(`${d.date}T00:00:00`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
                   {d.status === "PAUSED" ? <span className="ml-2 text-xs font-semibold text-gray-500">(paused)</span> : null}
+                  {d.current.some((id) => !id) ? <span className="ml-2 text-xs font-semibold text-amber-600">Not chosen yet</span> : null}
                 </p>
                 <div className={`grid gap-3 ${boxes.length === 2 ? "sm:grid-cols-2" : boxes.length >= 3 ? "sm:grid-cols-3" : ""}`}>
                   {boxes.map((box, i) => (
@@ -231,10 +250,12 @@ export function MealsModal({
                         value={picks[d.date]?.[i] ?? ""}
                         onChange={(e) => setPicks((p) => ({ ...p, [d.date]: (p[d.date] ?? []).map((id, j) => (j === i ? e.target.value : id)) }))}
                       >
-                        {(menuQuery.data ?? [])
-                          .filter((m) => m.slot === box || m.id === d.current[i])
-                          .sort((a, b) => a.name.localeCompare(b.name))
-                          .map((m) => {
+                        {!picks[d.date]?.[i] ? <option value="">Choose a meal…</option> : null}
+                        {(() => {
+                          const options = (menuQuery.data ?? [])
+                            .filter((m) => m.slot === box || m.id === d.current[i])
+                            .sort((a, b) => a.name.localeCompare(b.name))
+                          const render = (m: MenuItem) => {
                             const bad = clashes(m)
                             return (
                               <option key={m.id} value={m.id} disabled={bad.length > 0 && m.id !== picks[d.date]?.[i]}>
@@ -242,7 +263,16 @@ export function MealsModal({
                                 {bad.length ? ` — contains ${bad.join(", ")}` : ""}
                               </option>
                             )
-                          })}
+                          }
+                          const today = options.filter((m) => onMenu.has(`${d.date}|${m.id}`))
+                          if (today.length === 0) return options.map(render)
+                          return (
+                            <>
+                              <optgroup label="On this day's menu">{today.map(render)}</optgroup>
+                              <optgroup label="Other meals">{options.filter((m) => !today.includes(m)).map(render)}</optgroup>
+                            </>
+                          )
+                        })()}
                         {menuQuery.isLoading ? <option value={picks[d.date]?.[i] ?? ""}>Loading…</option> : null}
                       </select>
                     </div>
