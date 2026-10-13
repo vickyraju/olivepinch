@@ -135,7 +135,7 @@ function WeeklyMenu() {
                 <span className="text-sm font-medium text-ink">
                   {new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
                 </span>
-                <span className="text-xs text-ink-muted text-right">{day.items.map((i) => `${i.slot}: ${i.name}`).join(" · ")}</span>
+                <span className="text-xs text-ink-muted text-right">{day.items.length ? day.items.map((i) => `${i.slot}: ${i.name}`).join(" · ") : "Not chosen yet — we'll be in touch"}</span>
               </div>
             ))}
           </div>

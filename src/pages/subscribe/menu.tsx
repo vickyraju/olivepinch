@@ -59,7 +59,7 @@ function Menu() {
   }, [spannedWeeks.join(",")])
 
   // Choosable dates are a contiguous prefix — everything up to and including the first
-  // unpublished/errored week's start halts explicit choice; the rest default server-side.
+  // unpublished/errored week's start halts explicit choice; the rest are chosen later from the dashboard.
   const firstBlockedWeekIndex = weeks
     ? spannedWeeks.findIndex((w) => !Array.isArray(weeks[w]))
     : -1
@@ -107,7 +107,7 @@ function Menu() {
   }
 
   // A box with no options (nothing set for that day, or nothing that fits the diet) has nothing to
-  // choose, and the server falls back to a default meal for it, so it doesn't block continuing.
+  // choose, so it doesn't block continuing (an admin sets it later).
   function dayComplete(date: string): boolean {
     const weekStart = mondayOf(date)
     const items = state.dayMenus.find((d) => d.date === date)?.items ?? []

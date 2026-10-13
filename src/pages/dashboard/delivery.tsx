@@ -99,7 +99,7 @@ function Delivery() {
               {new Date(day.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}
             </div>
             <div className="text-xs text-ink-muted mt-0.5">
-              {day.items.map((i) => `${i.slot}: ${i.name}`).join(" · ")}
+              {day.items.length ? day.items.map((i) => `${i.slot}: ${i.name}`).join(" · ") : "Meals not chosen yet"}
             </div>
           </div>
         </div>
