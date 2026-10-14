@@ -96,7 +96,7 @@ const SECTIONS: LegalSection[] = [
       <>
         <p>We only share your information where we need to, with:</p>
         <ul className="list-disc pl-5 space-y-1 mt-2">
-          <li>our <strong>payment provider</strong> “TakePayment” for secure payments;</li>
+          <li>our <strong>payment provider</strong> “Worldpay” for secure payments;</li>
           <li>our <strong>delivery drivers</strong>, who receive your name, address, phone number and delivery instructions;</li>
           <li>our <strong>website host, order system and email provider</strong>, who store and process data on our behalf;</li>
           <li>
