@@ -78,7 +78,8 @@ function Delivery() {
     const withinCutoff = canPauseDate(day.date)
     // Previous-plan days can't be paused here: that would move the old plan's end date into the
     // first day of the renewed plan.
-    const pausable = !day.fromPreviousPlan
+    // A cancelled or ended plan can't be paused or resumed: resuming would put its deliveries back on the kitchen list.
+    const pausable = !day.fromPreviousPlan && sub.status === "active"
     const isFuture = pausable && (day.status === "Scheduled" || day.status === "Paused") && withinCutoff
     const isSelectable = pausable && selecting && day.status === "Scheduled" && withinCutoff
     return (

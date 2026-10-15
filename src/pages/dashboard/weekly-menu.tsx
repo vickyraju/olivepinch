@@ -49,7 +49,8 @@ function WeeklyMenu() {
   const allOrders = [...sub.earlierOrders, ...sub.orders]
   const inRange = (date: string, start: string) => date >= start && date < addWeeks(start, 1)
   const thisWeekOrders = allOrders.filter((o) => inRange(o.date, thisMonday))
-  const nextWeekOrders = allOrders.filter((o) => inRange(o.date, nextMonday))
+  // Nothing to choose once the plan is cancelled or has ended.
+  const nextWeekOrders = sub.status === "active" ? allOrders.filter((o) => inRange(o.date, nextMonday)) : []
   const needsChoice = nextWeekOrders.some((o) => !o.menuChosenAt)
   const cutoffPassed = today >= cutoff
   const showBanner = today >= wednesdayThisWeek && needsChoice && !cutoffPassed && nextWeekOrders.length > 0
