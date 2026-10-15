@@ -108,6 +108,9 @@ export function EditCustomerModal({
   const [form, setForm] = useState(initial)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
+  // Fields the save was refused on (by the client check or the server): they turn red until edited.
+  const [badFields, setBadFields] = useState<string[]>([])
+  const bad = (key: string) => badFields.includes(key)
 
   const allergenQuery = useQuery({ queryKey: ["allergens"], queryFn: () => api.get<Allergen[]>("/allergens") })
   // The configured allergens, plus anything this customer already has that isn't on the list any more,
@@ -116,7 +119,10 @@ export function EditCustomerModal({
     ...new Set([...(allergenQuery.data ?? []).filter((a) => a.active).map((a) => a.name), ...customer.allergens]),
   ]
 
-  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => setForm((f) => ({ ...f, [key]: value }))
+  const set = <K extends keyof typeof form>(key: K, value: (typeof form)[K]) => {
+    setBadFields((b) => b.filter((k) => k !== key))
+    setForm((f) => ({ ...f, [key]: value }))
+  }
   const toggle = (key: "dietTypes" | "allergens", value: string) =>
     setForm((f) => ({ ...f, [key]: f[key].includes(value) ? f[key].filter((v) => v !== value) : [...f[key], value] }))
 
@@ -158,15 +164,17 @@ export function EditCustomerModal({
     const changes = buildChanges()
     if (Object.keys(changes).length === 0) return setErrors(["No changes to save."])
     for (const key of ["heightCm", "weightKg"] as const) {
-      if (typeof changes[key] === "number" && Number.isNaN(changes[key])) return setErrors([`${FIELD_LABELS[key]}: enter a number.`])
+      if (typeof changes[key] === "number" && Number.isNaN(changes[key])) return (setBadFields([key]), setErrors([`${FIELD_LABELS[key]}: enter a number.`]))
     }
     setSaving(true)
     setErrors([])
+    setBadFields([])
     try {
       const result = await api.patch<EditResult>(`/customers/${customer.id}`, changes)
       await onSaved(result)
     } catch (err) {
       if (err instanceof ApiError && err.details?.length) {
+        setBadFields(err.details.map((d) => String(d.path[0] ?? "")))
         setErrors(err.details.map((d) => `${FIELD_LABELS[String(d.path[0])] ?? String(d.path[0] ?? "Field")}: ${d.message}`))
       } else {
         setErrors([err instanceof ApiError ? err.message : "Couldn't save these changes. Try again."])
@@ -190,13 +198,13 @@ export function EditCustomerModal({
         <div className="flex-1 overflow-y-auto p-6 space-y-7">
           <Section title="Contact">
             <Field label="Full name">
-              <input className={inputClass} value={form.fullName} onChange={(e) => set("fullName", e.target.value)} />
+              <input className={inputClass} value={form.fullName} aria-invalid={bad("fullName")} onChange={(e) => set("fullName", e.target.value)} />
             </Field>
             <Field label="Email">
-              <input className={inputClass} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} />
+              <input className={inputClass} type="email" value={form.email} aria-invalid={bad("email")} onChange={(e) => set("email", e.target.value)} />
             </Field>
             <Field label="Phone" hint="International format, e.g. +447123456789. Leave empty to remove.">
-              <input className={inputClass} type="tel" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
+              <input className={inputClass} type="tel" value={form.phone} aria-invalid={bad("phone")} onChange={(e) => set("phone", e.target.value)} />
             </Field>
             {emailChanging ? (
               <p className="sm:col-span-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
@@ -207,7 +215,7 @@ export function EditCustomerModal({
 
           <Section title="Personal & health">
             <Field label="Gender">
-              <select className={inputClass} value={form.gender} onChange={(e) => set("gender", e.target.value)}>
+              <select className={inputClass} value={form.gender} aria-invalid={bad("gender")} onChange={(e) => set("gender", e.target.value)}>
                 <option value="">Not set</option>
                 {[...new Set([...GENDER_OPTIONS, ...(initial.gender ? [initial.gender] : [])])].map((g) => (
                   <option key={g} value={g}>
@@ -217,13 +225,13 @@ export function EditCustomerModal({
               </select>
             </Field>
             <Field label="Date of birth" hint="Must be between 16 and 100 years old.">
-              <input className={inputClass} type="date" value={form.dateOfBirth} onChange={(e) => set("dateOfBirth", e.target.value)} />
+              <input className={inputClass} type="date" value={form.dateOfBirth} aria-invalid={bad("dateOfBirth")} onChange={(e) => set("dateOfBirth", e.target.value)} />
             </Field>
             <Field label="Height (cm)">
-              <input className={inputClass} type="number" min={50} max={260} step="0.1" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} />
+              <input className={inputClass} type="number" min={50} max={260} step="0.1" value={form.heightCm} aria-invalid={bad("heightCm")} onChange={(e) => set("heightCm", e.target.value)} />
             </Field>
             <Field label="Weight (kg)">
-              <input className={inputClass} type="number" min={20} max={500} step="0.1" value={form.weightKg} onChange={(e) => set("weightKg", e.target.value)} />
+              <input className={inputClass} type="number" min={20} max={500} step="0.1" value={form.weightKg} aria-invalid={bad("weightKg")} onChange={(e) => set("weightKg", e.target.value)} />
             </Field>
           </Section>
 
@@ -231,7 +239,7 @@ export function EditCustomerModal({
             <h4 className="text-[13px] font-bold text-gray-900 mb-3">Food preferences</h4>
             <div className="space-y-4">
               <Field label="Style">
-                <select className={inputClass} value={form.goal} onChange={(e) => set("goal", e.target.value)}>
+                <select className={inputClass} value={form.goal} aria-invalid={bad("goal")} onChange={(e) => set("goal", e.target.value)}>
                   {!initial.goal ? <option value="">Not set</option> : null}
                   {Object.entries(GOAL_LABELS).map(([value, label]) => (
                     <option key={value} value={value}>
@@ -266,25 +274,25 @@ export function EditCustomerModal({
 
           <Section title="Delivery address">
             <Field label="Door number">
-              <input className={inputClass} value={form.addressDoorNumber} onChange={(e) => set("addressDoorNumber", e.target.value)} />
+              <input className={inputClass} value={form.addressDoorNumber} aria-invalid={bad("addressDoorNumber")} onChange={(e) => set("addressDoorNumber", e.target.value)} />
             </Field>
             <Field label="Building name (optional)">
-              <input className={inputClass} value={form.addressBuildingName} onChange={(e) => set("addressBuildingName", e.target.value)} />
+              <input className={inputClass} value={form.addressBuildingName} aria-invalid={bad("addressBuildingName")} onChange={(e) => set("addressBuildingName", e.target.value)} />
             </Field>
             <Field label="Street">
-              <input className={inputClass} value={form.addressStreet} onChange={(e) => set("addressStreet", e.target.value)} />
+              <input className={inputClass} value={form.addressStreet} aria-invalid={bad("addressStreet")} onChange={(e) => set("addressStreet", e.target.value)} />
             </Field>
             <Field label="Area">
-              <input className={inputClass} value={form.addressArea} onChange={(e) => set("addressArea", e.target.value)} />
+              <input className={inputClass} value={form.addressArea} aria-invalid={bad("addressArea")} onChange={(e) => set("addressArea", e.target.value)} />
             </Field>
             <Field label="Postcode" hint="Must be inside an active delivery zone.">
-              <input className={inputClass} value={form.addressPostcode} onChange={(e) => set("addressPostcode", e.target.value)} />
+              <input className={inputClass} value={form.addressPostcode} aria-invalid={bad("addressPostcode")} onChange={(e) => set("addressPostcode", e.target.value)} />
             </Field>
           </Section>
 
           <Section title="Account">
             <Field label="Account status">
-              <select className={inputClass} value={form.accountStatus} onChange={(e) => set("accountStatus", e.target.value)}>
+              <select className={inputClass} value={form.accountStatus} aria-invalid={bad("accountStatus")} onChange={(e) => set("accountStatus", e.target.value)}>
                 {initial.accountStatus === "PROVISIONAL" ? <option value="PROVISIONAL">Provisional (signup in progress)</option> : null}
                 <option value="ACTIVE">Active</option>
                 <option value="READ_ONLY">Read-only</option>

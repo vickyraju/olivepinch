@@ -162,6 +162,7 @@ function DeliverySlots() {
                 <input
                   className="w-full h-10 border border-gray-200 rounded-lg px-3"
                   placeholder="6:00 – 7:00"
+                  required
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
                 />

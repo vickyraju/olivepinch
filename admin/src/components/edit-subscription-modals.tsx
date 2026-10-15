@@ -248,6 +248,7 @@ export function MealsModal({
                       <select
                         className={inputClass}
                         value={picks[d.date]?.[i] ?? ""}
+                        aria-invalid={dirty && !picks[d.date]?.[i]}
                         onChange={(e) => setPicks((p) => ({ ...p, [d.date]: (p[d.date] ?? []).map((id, j) => (j === i ? e.target.value : id)) }))}
                       >
                         {!picks[d.date]?.[i] ? <option value="">Choose a meal…</option> : null}

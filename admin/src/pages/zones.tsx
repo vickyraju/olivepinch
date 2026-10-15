@@ -188,6 +188,7 @@ function Zones() {
                 <input
                   className="w-full h-10 border border-gray-200 rounded-lg px-3"
                   placeholder="Birmingham"
+                  required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -213,6 +214,7 @@ function Zones() {
                 <textarea
                   className="w-full h-28 border border-gray-200 rounded-lg px-3 py-2 text-sm"
                   placeholder="B14, B15, B16"
+                  required
                   value={prefixes}
                   onChange={(e) => setPrefixes(e.target.value)}
                 />

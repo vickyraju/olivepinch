@@ -164,6 +164,7 @@ function Allergens() {
                 <input
                   className="w-full h-10 border border-gray-200 rounded-lg px-3"
                   placeholder="Peanuts"
+                  required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />

@@ -200,6 +200,7 @@ function PromoCodes() {
                 <input
                   className="w-full h-10 border border-gray-200 rounded-lg px-3"
                   placeholder="SUMMER20"
+                  required
                   value={form.code}
                   onChange={(e) => updateForm("code", e.target.value)}
                 />
@@ -223,7 +224,8 @@ function PromoCodes() {
                   <input
                     type="number"
                     step="0.01"
-                    min="0"
+                    min="0.01"
+                    required
                     className="w-full h-10 border border-gray-200 rounded-lg px-3"
                     value={form.discountValue}
                     onChange={(e) => updateForm("discountValue", e.target.value)}

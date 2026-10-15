@@ -146,6 +146,8 @@ function MenuControl() {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | undefined>()
+  // Set when a save is refused for having no diet tag: the tag row turns red until one is picked.
+  const [tagsTried, setTagsTried] = useState(false)
   const [photoError, setPhotoError] = useState<string | undefined>()
 
   const menuQuery = useQuery({ queryKey: ["menu-items"], queryFn: () => api.get<MenuItem[]>("/menu-items") })
@@ -172,6 +174,7 @@ function MenuControl() {
   }
 
   function openCreateModal() {
+    setTagsTried(false)
     setEditingItem(null)
     setForm(emptyForm)
     setPhotoError(undefined)
@@ -180,6 +183,7 @@ function MenuControl() {
   }
 
   function openEditModal(item: MenuItem) {
+    setTagsTried(false)
     setEditingItem(item)
     setForm({
       name: item.name,
@@ -262,6 +266,7 @@ function MenuControl() {
     setError(undefined)
     setSaving(true)
     try {
+      if (!form.dietTags.length) setTagsTried(true)
       if (!form.name.trim() || !form.dietTags.length || !form.kcal || !form.protein || !form.carbs || !form.fat) {
         throw new Error("Fill in name, at least one diet tag, kcal, protein, carbs, and fat.")
       }
@@ -407,7 +412,7 @@ function MenuControl() {
               </div>
               <div className="space-y-1.5">
                 <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Diet Tags</label>
-                <div className="flex gap-2 flex-wrap">
+                <div className={`flex gap-2 flex-wrap ${tagsTried && !form.dietTags.length ? "rounded-lg bg-red-50 p-2 ring-1 ring-red-600" : ""}`}>
                   {DIETS.map((d) => (
                     <button
                       type="button"
@@ -462,6 +467,7 @@ function MenuControl() {
                   <input
                     type="number"
                     min="0"
+                    required
                     className="w-full h-10 border border-gray-200 rounded-lg px-3"
                     value={form.kcal}
                     onChange={(e) => setForm((f) => ({ ...f, kcal: e.target.value }))}
@@ -472,6 +478,7 @@ function MenuControl() {
                   <input
                     type="number"
                     min="0"
+                    required
                     className="w-full h-10 border border-gray-200 rounded-lg px-3"
                     value={form.protein}
                     onChange={(e) => setForm((f) => ({ ...f, protein: e.target.value }))}
@@ -482,6 +489,7 @@ function MenuControl() {
                   <input
                     type="number"
                     min="0"
+                    required
                     className="w-full h-10 border border-gray-200 rounded-lg px-3"
                     value={form.carbs}
                     onChange={(e) => setForm((f) => ({ ...f, carbs: e.target.value }))}
@@ -492,6 +500,7 @@ function MenuControl() {
                   <input
                     type="number"
                     min="0"
+                    required
                     className="w-full h-10 border border-gray-200 rounded-lg px-3"
                     value={form.fat}
                     onChange={(e) => setForm((f) => ({ ...f, fat: e.target.value }))}

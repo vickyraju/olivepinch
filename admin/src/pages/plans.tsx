@@ -189,7 +189,8 @@ function Plans() {
                                   autoFocus
                                   type="number"
                                   step="0.01"
-                                  min="0"
+                                  min="0.01"
+                                  aria-invalid={error !== "" && !(Number(draftPrice) > 0)}
                                   value={draftPrice}
                                   onChange={(e) => setDraftPrice(e.target.value)}
                                   onKeyDown={(e) => {
