@@ -3,7 +3,7 @@ import { CalendarRange, Sparkles, CheckCircle2 } from "lucide-react"
 import { useDashboard, type OrderDay } from "@/lib/dashboard-context"
 import { SLOTS_BY_MEALS_PER_DAY } from "@/data/menu"
 import { mondayOf, addWeeks, toDateKey, fromDateKey } from "@/lib/subscription"
-import { mealSlotFromEnum } from "@/lib/enum-map"
+import { mealSlotFromEnum, DIET_TO_ENUM } from "@/lib/enum-map"
 import { api, ApiError } from "@/lib/api"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -62,7 +62,8 @@ function WeeklyMenu() {
         setNextWeekItems(res.items)
         // Pre-fill from whatever's currently assigned (empty until the customer chooses).
         const initial: Record<string, string[]> = {}
-        for (const order of nextWeekOrders) initial[order.date] = order.items.map((i) => i.id)
+        // Aligned to the box order: a day with only some boxes filled must not shift a dinner into the breakfast box.
+        for (const order of nextWeekOrders) initial[order.date] = slotsFor(order).map((slot) => order.items.find((i) => i.slot === slot)?.id ?? "")
         setSelections(initial)
       })
       .catch((err) => setNextWeekItems(err instanceof ApiError && err.status === 404 ? "unpublished" : null))
@@ -81,14 +82,15 @@ function WeeklyMenu() {
   async function handleSave() {
     if (!canSave) {
       setTried(true)
-      setOpenDay(nextWeekOrders.find((o) => (selections[o.date] ?? []).filter(Boolean).length < slotsFor(o).length)?.date ?? "")
+      setOpenDay(nextWeekOrders.find((o) => !isDone(o))?.date ?? "")
       scrollToFirstInvalid()
       return
     }
     setSaving(true)
     setError("")
     setSaved(false)
-    const dayItems = nextWeekOrders.map((o) => ({ date: o.date, items: selections[o.date] ?? [] }))
+    // A box with nothing to choose goes to the server as "", which it only accepts when truly nothing fits.
+    const dayItems = nextWeekOrders.map((o) => ({ date: o.date, items: slotsFor(o).map((_slot, i) => selections[o.date]?.[i] ?? "") }))
     const result = await chooseMenuWeek(nextMonday, dayItems)
     setSaving(false)
     if (result.ok) {
@@ -100,9 +102,13 @@ function WeeklyMenu() {
   }
 
   // Keyed by date + slot: the admin composes each day separately, so a day only offers its own items.
+  // Only meals that fit the customer's food types and avoid their allergens, as at signup.
+  const dietEnums = new Set(sub.dietTypes.map((d) => DIET_TO_ENUM[d]))
+  const avoided = new Set(sub.allergens)
   const optionsByDateSlot = new Map<string, PublishedMenuItem[]>()
   if (Array.isArray(nextWeekItems)) {
     for (const item of nextWeekItems) {
+      if (!item.dietTags.some((tag) => dietEnums.has(tag)) || item.allergenTags.some((a) => avoided.has(a))) continue
       const key = `${item.date}|${mealSlotFromEnum(item.slot)}`
       optionsByDateSlot.set(key, [...(optionsByDateSlot.get(key) ?? []), item])
     }
@@ -113,7 +119,9 @@ function WeeklyMenu() {
     if (Array.isArray(nextWeekItems)) preloadImages(nextWeekItems.map((item) => item.photoUrl))
   }, [nextWeekItems])
 
-  const canSave = nextWeekOrders.every((o) => (selections[o.date] ?? []).filter(Boolean).length === slotsFor(o).length)
+  // Boxes with no options at all do not need a pick.
+  const isDone = (o: OrderDay) => slotsFor(o).every((slot, i) => (optionsByDateSlot.get(`${o.date}|${slot}`) ?? []).length === 0 || Boolean(selections[o.date]?.[i]))
+  const canSave = nextWeekOrders.every(isDone)
 
   return (
     <div className="space-y-8">
