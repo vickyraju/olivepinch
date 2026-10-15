@@ -157,6 +157,8 @@ adminCustomersRouter.get("/:id", async (req, res) => {
     ...safe,
     subscriptions,
     planEndDate: currentWithEnd?.endDate ?? null,
+    planStatus: current?.status ?? null,
+    planCancelledAt: current?.cancelledAt ?? null,
     address: formatAddress(customer),
     renewals: renewalsFor(customer.subscriptions, customer.payments),
   })
