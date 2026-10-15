@@ -99,6 +99,7 @@ model Customer {
   notifications    Notification[]
   otps             Otp[]
   promoRedemptions PromoRedemption[]
+  activity         CustomerActivity[]
 }
 
 model ConsentLog {
@@ -127,6 +128,9 @@ model Subscription {
   promoCode      PromoCode?         @relation(fields: [promoCodeId], references: [id])
   discountAmount Decimal            @default(0) @db.Decimal(8, 2)
   createdAt      DateTime           @default(now())
+  // Set when an admin cancels the plan; the reason is whatever the admin typed (may be empty).
+  cancelledAt        DateTime?
+  cancellationReason String?
 
   orders     Order[]
   payments   Payment[]
@@ -352,6 +356,19 @@ model AdminUser {
   createdAt    DateTime @default(now())
 
   auditLogs AdminAuditLog[]
+}
+
+// What a customer did to their own account (address, pauses, menu choices...), so an admin can see
+// it. Separate from AdminAuditLog, which records admin actions and needs an admin id.
+model CustomerActivity {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  action     String
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  @@index([customerId, createdAt])
 }
 
 model AdminAuditLog {

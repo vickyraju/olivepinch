@@ -3,6 +3,7 @@ import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
 import { calculateAge } from "../lib/age.js"
+import { logCustomerActivity, describeChanges } from "../lib/customer-activity.js"
 import { requireAuth, requireSignupToken, verifySupabaseUser } from "../middleware/auth.js"
 import { checkEmailLimiter } from "../middleware/rate-limit.js"
 import { validateBody } from "../middleware/validate.js"
@@ -175,13 +176,26 @@ const updateMeSchema = z.object({
 })
 
 customersRouter.patch("/me", requireAuth, validateBody(updateMeSchema), async (req, res) => {
+  const before = await prisma.customer.findUniqueOrThrow({ where: { id: req.customerId } })
   const customer = await prisma.customer.update({
     where: { id: req.customerId },
     data: req.body,
   })
+  if (customer.marketingOptIn !== before.marketingOptIn) {
+    await logCustomerActivity(customer.id, "marketing-opt-in", customer.marketingOptIn ? "Opted in to marketing emails" : "Opted out of marketing emails")
+  }
   const { passwordHash: _passwordHash, ...safe } = customer
   res.json(safe)
 })
+
+const ADDRESS_LABELS = {
+  phone: "Phone",
+  addressDoorNumber: "Door number",
+  addressBuildingName: "Building name",
+  addressStreet: "Street",
+  addressArea: "Area",
+  addressPostcode: "Postcode",
+}
 
 const updateAddressSchema = z.object({
   phone: z.string().regex(PHONE_REGEX, "Enter a valid phone number"),
@@ -203,10 +217,13 @@ customersRouter.patch("/me/address", requireAuth, validateBody(updateAddressSche
   if (!(await isPostcodeInActiveZone(body.addressPostcode))) {
     return res.status(400).json({ error: "We don't currently deliver to that postcode" })
   }
+  const before = await prisma.customer.findUniqueOrThrow({ where: { id: req.customerId } })
   const customer = await prisma.customer.update({
     where: { id: req.customerId },
     data: body,
   })
+  const changes = describeChanges(ADDRESS_LABELS, before, customer)
+  if (changes) await logCustomerActivity(customer.id, "address-changed", changes)
   const { passwordHash: _passwordHash, ...safe } = customer
   res.json(safe)
 })
@@ -229,6 +246,8 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
     prisma.healthLog.deleteMany({ where: { customerId } }),
     prisma.consentLog.deleteMany({ where: { customerId } }),
     prisma.notification.deleteMany({ where: { customerId } }),
+    // Holds old/new address values: erased with the rest of their personal data.
+    prisma.customerActivity.deleteMany({ where: { customerId } }),
     prisma.otp.deleteMany({ where: { customerId } }),
     prisma.orderItem.deleteMany({ where: { order: { subscription: { customerId } } } }),
     prisma.order.deleteMany({ where: { subscription: { customerId } } }),

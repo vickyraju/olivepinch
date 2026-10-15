@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
+import { logCustomerActivity } from "../lib/customer-activity.js"
 import { requireAuth } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 
@@ -28,6 +29,7 @@ healthLogsRouter.post("/", validateBody(logSchema), async (req, res) => {
   const log = await prisma.healthLog.create({
     data: { customerId: req.customerId!, ...(req.body as z.infer<typeof logSchema>) },
   })
+  await logCustomerActivity(req.customerId!, "health-entry-added", "Added a health entry")
   res.status(201).json(log)
 })
 
@@ -52,5 +54,6 @@ healthLogsRouter.delete("/:id", async (req, res) => {
   }
 
   await prisma.healthLog.delete({ where: { id: log.id } })
+  await logCustomerActivity(req.customerId!, "health-entry-deleted", "Removed their latest health entry")
   res.status(204).send()
 })

@@ -496,7 +496,7 @@ adminCustomersRouter.patch("/:id/preferences", validateBody(preferencesSchema), 
 // left to stop by then (a 7-day plan can be cancelled through day 6, not day 7).
 adminCustomersRouter.post(
   "/:id/cancel-subscription",
-  validateBody(z.object({ subscriptionId: z.string(), reason: z.string().optional() })),
+  validateBody(z.object({ subscriptionId: z.string(), reason: z.string().trim().max(500).optional() })),
   async (req, res) => {
     const { subscriptionId, reason } = req.body as { subscriptionId: string; reason?: string }
     const subscription = await prisma.subscription.findFirstOrThrow({
@@ -513,7 +513,7 @@ adminCustomersRouter.post(
     }
     const updated = await prisma.subscription.update({
       where: { id: subscription.id },
-      data: { status: "CANCELLED" },
+      data: { status: "CANCELLED", cancelledAt: new Date(), cancellationReason: reason || null },
     })
     await prisma.order.updateMany({
       where: { subscriptionId: subscription.id, deliveryDate: { gte: today }, status: "SCHEDULED" },
@@ -523,7 +523,7 @@ adminCustomersRouter.post(
       req.adminId!,
       "cancel-subscription",
       req.params.id as string,
-      reason ? `subscription ${subscription.id}: ${reason}` : `subscription ${subscription.id}`
+      reason ? `subscription ${subscription.id}. Reason: ${reason}` : `subscription ${subscription.id}. No reason given`
     )
     if (subscription.customer.email) {
       try {
@@ -542,6 +542,16 @@ adminCustomersRouter.post(
     res.json({ id: updated.id, status: updated.status })
   }
 )
+
+// What the customer changed on their own account (address, pauses, menu choices...), newest first.
+adminCustomersRouter.get("/:id/activity", async (req, res) => {
+  const rows = await prisma.customerActivity.findMany({
+    where: { customerId: req.params.id as string },
+    orderBy: { createdAt: "desc" },
+    take: 200,
+  })
+  res.json(rows)
+})
 
 // Support-action history for this customer, shown in the admin detail view
 adminCustomersRouter.get("/:id/audit-log", async (req, res) => {

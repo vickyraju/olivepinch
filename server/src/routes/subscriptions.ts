@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js"
 import { requireAuth, requireSignupToken } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
+import { logCustomerActivity, describeChanges } from "../lib/customer-activity.js"
 import { SLOTS_BY_MEALS_PER_DAY, planPrice } from "../lib/pricing.js"
 import { formatDate } from "../lib/email-templates.js"
 import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, earliestStartDate, pickSubscriptions, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
@@ -212,6 +213,7 @@ subscriptionsRouter.post("/:id/pause", validateBody(pauseSchema), async (req, re
     data: { pausedDates: { push: date } },
   })
   await prisma.order.updateMany({ where: { subscriptionId: subscription.id, deliveryDate: date }, data: { status: "PAUSED" } })
+  await logCustomerActivity(req.customerId!, "pause", `Paused delivery on ${date.toISOString().slice(0, 10)}`)
   res.json({ pausedDates: updated.pausedDates })
 })
 
@@ -232,6 +234,7 @@ subscriptionsRouter.post("/:id/resume", validateBody(pauseSchema), async (req, r
     where: { subscriptionId: subscription.id, deliveryDate: target },
     data: { status: "SCHEDULED" },
   })
+  await logCustomerActivity(req.customerId!, "resume", `Resumed delivery on ${target.toISOString().slice(0, 10)}`)
   res.json({ pausedDates: updated.pausedDates })
 })
 
@@ -249,6 +252,7 @@ subscriptionsRouter.patch("/:id/menu-weeks/:weekStart", validateBody(weekSelecti
   }
   const { dayItems } = req.body as z.infer<typeof weekSelectionSchema>
   await applyWeekSelection(req.params.id as string, weekStart, dayItems)
+  await logCustomerActivity(req.customerId!, "menu-chosen", `Chose meals for ${dayItems.length} day${dayItems.length === 1 ? "" : "s"} in the week of ${weekStart.toISOString().slice(0, 10)}`)
   res.status(204).send()
 })
 
@@ -334,5 +338,6 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
   // Renewal goes through the same /payments/intent + /payments/confirm chain as initial
   // checkout (see payment.tsx) — that's the only place real-Worldpay-vs-dev-mode is
   // decided, so renewal must not shortcut it with its own auto-succeed logic.
+  await logCustomerActivity(req.customerId!, "renewal-started", `Started renewing: ${body.planDuration}-day ${body.tier.toLowerCase()}, ${body.mealsPerDay} meals/day`)
   res.status(201).json({ subscriptionId: subscription.id, total, status: subscription.status })
 })
