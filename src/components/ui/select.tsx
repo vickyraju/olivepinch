@@ -15,6 +15,7 @@ function SelectTrigger({ className, children, ...props }: React.ComponentProps<t
         "[&>span:first-child]:min-w-0 [&>span:first-child]:flex-1 [&>span:first-child]:overflow-hidden [&>span:first-child]:text-left [&>span:first-child]:whitespace-nowrap",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500",
         "data-[placeholder]:text-ink-muted disabled:cursor-not-allowed disabled:opacity-50",
+        "aria-[invalid=true]:border-destructive aria-[invalid=true]:bg-coral-50 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive",
         className
       )}
       {...props}

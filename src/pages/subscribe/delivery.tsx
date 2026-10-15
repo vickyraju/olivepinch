@@ -24,6 +24,8 @@ function Delivery() {
   const [area, setArea] = useState(state.deliveryAddress.area || "Birmingham")
   const [postcode, setPostcode] = useState(state.deliveryAddress.postcode || state.postcode)
   const [error, setError] = useState("")
+  // Set once the customer tries to pay with something missing: those fields turn red.
+  const [showErrors, setShowErrors] = useState(false)
   const [status, setStatus] = useState<"idle" | "checking" | "processing" | "failed">("idle")
   const [declineMessage, setDeclineMessage] = useState("")
   // A ref, not state — state updates are batched, so a fast double-click (or the button's
@@ -57,6 +59,16 @@ function Delivery() {
 
   async function handlePay() {
     if (payingRef.current) return
+    if (!canContinue) {
+      setShowErrors(true)
+      // Let the red state paint, then bring the first missed field into view.
+      setTimeout(() => {
+        const first = document.querySelector<HTMLElement>('[aria-invalid="true"]')
+        first?.scrollIntoView({ block: "center", behavior: "smooth" })
+        first?.focus({ preventScroll: true })
+      }, 50)
+      return
+    }
     payingRef.current = true
     setError("")
     setDeclineMessage("")
@@ -150,6 +162,7 @@ function Delivery() {
                 <Input
                   id="firstName"
                   autoComplete="given-name"
+                  aria-invalid={showErrors && !firstName.trim()}
                   value={firstName}
                   onChange={(e) => update({ profile: { ...p, fullName: joinFullName(e.target.value, lastName) } })}
                 />
@@ -159,6 +172,7 @@ function Delivery() {
                 <Input
                   id="lastName"
                   autoComplete="family-name"
+                  aria-invalid={showErrors && !lastName.trim()}
                   value={lastName}
                   onChange={(e) => update({ profile: { ...p, fullName: joinFullName(firstName, e.target.value) } })}
                 />
@@ -168,6 +182,7 @@ function Delivery() {
               <Label htmlFor="phone">Phone number <Required /></Label>
               <PhoneInput
                 id="phone"
+                invalid={showErrors && !p.phone.trim()}
                 value={p.phone}
                 onChange={(v) => update({ profile: { ...p, phone: v } })}
               />
@@ -179,7 +194,7 @@ function Delivery() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="doorNumber">Door number <Required /></Label>
-                <Input id="doorNumber" autoComplete="address-line1" placeholder="e.g. 12" value={doorNumber} onChange={(e) => setDoorNumber(e.target.value)} />
+                <Input id="doorNumber" autoComplete="address-line1" placeholder="e.g. 12" aria-invalid={showErrors && !doorNumber.trim()} value={doorNumber} onChange={(e) => setDoorNumber(e.target.value)} />
               </div>
               <div>
                 <Label htmlFor="buildingName">Building name <span className="text-ink-muted font-normal">(optional)</span></Label>
@@ -188,12 +203,12 @@ function Delivery() {
             </div>
             <div>
               <Label htmlFor="street">Street <Required /></Label>
-              <Input id="street" autoComplete="address-line1" value={street} onChange={(e) => setStreet(e.target.value)} />
+              <Input id="street" autoComplete="address-line1" aria-invalid={showErrors && !street.trim()} value={street} onChange={(e) => setStreet(e.target.value)} />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="area">Area <Required /></Label>
-                <Input id="area" autoComplete="address-level2" value={area} onChange={(e) => setArea(e.target.value)} />
+                <Input id="area" autoComplete="address-level2" aria-invalid={showErrors && !area.trim()} value={area} onChange={(e) => setArea(e.target.value)} />
               </div>
               <div>
                 <Label htmlFor="postcode">Postcode <Required /></Label>
@@ -205,7 +220,7 @@ function Delivery() {
                     setPostcode(e.target.value)
                     setError("")
                   }}
-                  aria-invalid={!!error}
+                  aria-invalid={!!error || (showErrors && !postcode.trim())}
                 />
               </div>
             </div>
@@ -217,7 +232,7 @@ function Delivery() {
               <h2 className="text-lg text-ink">Delivery time slot</h2>
               <p className="text-sm text-ink-muted">When should we drop your meals off each day?</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div aria-invalid={showErrors && !state.deliveryTimeSlot} className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 rounded-xl aria-[invalid=true]:bg-coral-50 aria-[invalid=true]:p-2 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive">
               {deliveryTimeSlots.map((slot) => (
                 <button
                   key={slot.id}
@@ -251,7 +266,7 @@ function Delivery() {
         <div className="lg:order-2">
           <OrderSummary
             onPay={handlePay}
-            payDisabled={!canContinue || status === "checking" || status === "processing"}
+            payDisabled={status === "checking" || status === "processing"}
             payLabel={status === "checking" ? "Checking postcode…" : status === "processing" ? "Processing…" : "Continue to Payment"}
           />
         </div>

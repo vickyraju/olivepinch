@@ -36,6 +36,8 @@ function Profile() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
   const [healthConsent, setHealthConsent] = useState(false)
+  // Set once the customer taps Continue with something missing: those fields turn red.
+  const [showErrors, setShowErrors] = useState(false)
   const p = state.profile
   const { firstName, lastName } = splitFullName(p.fullName)
 
@@ -75,6 +77,17 @@ function Profile() {
 
   const canContinue = missing.length === 0
 
+  function handleContinue() {
+    if (canContinue) return navigate("/subscribe/account-setup")
+    setShowErrors(true)
+    // Let the red state paint, then bring the first missed field into view.
+    setTimeout(() => {
+      const first = document.querySelector<HTMLElement>('[aria-invalid="true"]')
+      first?.scrollIntoView({ block: "center", behavior: "smooth" })
+      first?.focus({ preventScroll: true })
+    }, 50)
+  }
+
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Tell us about you</h1>
@@ -87,6 +100,7 @@ function Profile() {
             <Input
               id="firstName"
               autoComplete="given-name"
+              aria-invalid={showErrors && firstName.trim().length === 0}
               value={firstName}
               onChange={(e) => update({ profile: { ...p, fullName: joinFullName(e.target.value, lastName) } })}
             />
@@ -96,6 +110,7 @@ function Profile() {
             <Input
               id="lastName"
               autoComplete="family-name"
+              aria-invalid={showErrors && lastName.trim().length === 0}
               value={lastName}
               onChange={(e) => update({ profile: { ...p, fullName: joinFullName(firstName, e.target.value) } })}
             />
@@ -106,6 +121,7 @@ function Profile() {
           <Label htmlFor="phone">Phone number <Required /></Label>
           <PhoneInput
             id="phone"
+            invalid={showErrors && p.phone.trim().length === 0}
             value={p.phone}
             onChange={(v) => update({ profile: { ...p, phone: v } })}
           />
@@ -114,7 +130,7 @@ function Profile() {
         <div>
           <Label htmlFor="gender">Gender <Required /></Label>
           <Select value={p.gender} onValueChange={(v) => update({ profile: { ...p, gender: v as Gender } })}>
-            <SelectTrigger id="gender">
+            <SelectTrigger id="gender" aria-invalid={showErrors && p.gender === ""}>
               <SelectValue placeholder="Select" />
             </SelectTrigger>
             <SelectContent>
@@ -132,7 +148,7 @@ function Profile() {
               value={dobMonth ? String(dobMonth) : ""}
               onValueChange={(v) => updateBirthMonth(Number(v), dobYear)}
             >
-              <SelectTrigger id="dobMonth" aria-label="Month" aria-invalid={p.dateOfBirth !== "" && !dobValid}>
+              <SelectTrigger id="dobMonth" aria-label="Month" aria-invalid={(showErrors || p.dateOfBirth !== "") && (!dobMonth || !dobValid)}>
                 <SelectValue placeholder="Month" />
               </SelectTrigger>
               <SelectContent>
@@ -145,7 +161,7 @@ function Profile() {
               value={dobYear ? String(dobYear) : ""}
               onValueChange={(v) => updateBirthMonth(dobMonth, Number(v))}
             >
-              <SelectTrigger aria-label="Year" aria-invalid={p.dateOfBirth !== "" && !dobValid}>
+              <SelectTrigger aria-label="Year" aria-invalid={(showErrors || p.dateOfBirth !== "") && (!dobYear || !dobValid)}>
                 <SelectValue placeholder="Year" />
               </SelectTrigger>
               <SelectContent>
@@ -166,6 +182,7 @@ function Profile() {
             <Input
               id="height"
               type="number"
+              aria-invalid={showErrors && !(height > 0)}
               inputMode="decimal"
               onKeyDown={blockNonNumericKeys}
               value={p.heightCm}
@@ -177,6 +194,7 @@ function Profile() {
             <Input
               id="weight"
               type="number"
+              aria-invalid={showErrors && !(weight > 0)}
               inputMode="decimal"
               onKeyDown={blockNonNumericKeys}
               value={p.weightKg}
@@ -185,7 +203,7 @@ function Profile() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-border bg-cream-100 p-4">
+        <div className="rounded-lg border border-border bg-cream-100 p-4 aria-[invalid=true]:border-destructive aria-[invalid=true]:bg-coral-50 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive" aria-invalid={showErrors && !healthConsent}>
           <div className="flex gap-3">
             <Checkbox
               id="health-consent"
@@ -228,8 +246,7 @@ function Profile() {
 
       <StepNav
         backTo="/subscribe/menu"
-        continueDisabled={!canContinue}
-        onContinue={() => navigate("/subscribe/account-setup")}
+        onContinue={handleContinue}
       />
     </div>
   )

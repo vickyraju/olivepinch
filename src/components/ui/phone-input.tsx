@@ -87,11 +87,12 @@ interface PhoneInputProps {
   value: string
   onChange: (value: string) => void
   className?: string
+  invalid?: boolean
 }
 
 // Deliveries are Birmingham-only, but the number is what the customer logs in with over OTP,
 // so it has to accept whatever number actually reaches them — not just +44.
-function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
+function PhoneInput({ id, value, onChange, className, invalid }: PhoneInputProps) {
   // Seeded from the saved value so editing an existing non-UK number doesn't show a GB flag.
   const [country, setCountry] = useState<Country>(() => parsePhoneNumber(value)?.country ?? "GB")
 
@@ -100,7 +101,7 @@ function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
       className={cn(
         "flex h-12 w-full items-stretch rounded-md border border-border bg-surface",
         "focus-within:ring-2 focus-within:ring-olive-500 focus-within:border-olive-500",
-        "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:ring-destructive",
+        "has-[input[aria-invalid=true]]:border-destructive has-[input[aria-invalid=true]]:bg-coral-50 has-[input[aria-invalid=true]]:ring-1 has-[input[aria-invalid=true]]:ring-destructive",
         className
       )}
     >
@@ -117,6 +118,7 @@ function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
         value={value}
         onChange={(v) => onChange(v ?? "")}
         inputMode="tel"
+        aria-invalid={invalid || undefined}
         // UK only: the number is stored as +44<digits> and the field has no leading 0 shown, so
         // a typed trunk "0" just adds an 11th digit the library tolerates. Other countries are
         // left alone — a leading 0 is part of the number in some (e.g. Italy).
