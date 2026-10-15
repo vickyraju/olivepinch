@@ -203,6 +203,9 @@ subscriptionsRouter.post("/:id/pause", validateBody(pauseSchema), async (req, re
   const subscription = await prisma.subscription.findFirstOrThrow({
     where: { id: req.params.id as string, customerId: req.customerId },
   })
+  if (subscription.status !== "ACTIVE") {
+    return res.status(400).json({ error: "This plan is no longer active, so its deliveries can't be changed." })
+  }
   const date = new Date(`${(req.body as z.infer<typeof pauseSchema>).date}T00:00:00.000Z`)
   if (!canPauseDate(date)) {
     return res.status(400).json({ error: "Changes to this day must be made by noon the day before" })
@@ -224,6 +227,9 @@ subscriptionsRouter.post("/:id/resume", validateBody(pauseSchema), async (req, r
   const subscription = await prisma.subscription.findFirstOrThrow({
     where: { id: req.params.id as string, customerId: req.customerId },
   })
+  if (subscription.status !== "ACTIVE") {
+    return res.status(400).json({ error: "This plan is no longer active, so its deliveries can't be changed." })
+  }
   const target = new Date(`${(req.body as z.infer<typeof pauseSchema>).date}T00:00:00.000Z`)
   if (!canPauseDate(target)) {
     return res.status(400).json({ error: "Changes to this day must be made by noon the day before" })
@@ -248,7 +254,10 @@ const weekSelectionSchema = z.object({
 // Customer picks next week's menu from whatever the admin has published, up until the
 // Friday cutoff (locks out once Saturday starts) for that week.
 subscriptionsRouter.patch("/:id/menu-weeks/:weekStart", validateBody(weekSelectionSchema), async (req, res) => {
-  await prisma.subscription.findFirstOrThrow({ where: { id: req.params.id as string, customerId: req.customerId } })
+  const subscription = await prisma.subscription.findFirstOrThrow({ where: { id: req.params.id as string, customerId: req.customerId } })
+  if (subscription.status !== "ACTIVE") {
+    return res.status(400).json({ error: "This plan is no longer active, so its deliveries can't be changed." })
+  }
   const weekStart = assertMonday(req.params.weekStart as string)
   if (Date.now() >= fridayCutoffFor(weekStart).getTime()) {
     return res.status(400).json({ error: "Selection window has closed for this week" })
