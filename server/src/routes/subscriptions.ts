@@ -90,6 +90,9 @@ subscriptionsRouter.post(
           if (customItemId && (!customItem || customItem.slot !== slot)) {
             throw Object.assign(new Error(`Invalid menu selection for ${isoDate} (${slot})`), { status: 400 })
           }
+          if (customItem && customer.allergens.some((al) => customItem.allergenTags.some((t: string) => t.trim().toLowerCase() === al.trim().toLowerCase()))) {
+            throw Object.assign(new Error(`"${customItem.name}" contains an allergen you avoid. Choose another meal for ${isoDate}.`), { status: 400 })
+          }
           return { slot, date, item: customItem }
         })
       )

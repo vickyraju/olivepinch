@@ -63,7 +63,8 @@ export interface WeekDaySelection {
 // Shared by the customer-facing and admin-override endpoints — they differ only in whether
 // the Friday cutoff is enforced (checked by the caller) and how the change gets logged.
 export async function applyWeekSelection(subscriptionId: string, weekStart: Date, dayItems: WeekDaySelection[]) {
-  const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId } })
+  const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId }, include: { customer: { select: { allergens: true, dietTypes: true } } } })
+  const avoided = new Set(subscription.customer.allergens.map((a) => a.trim().toLowerCase()))
   const slots = SLOTS_BY_MEALS_PER_DAY[subscription.mealsPerDay as 1 | 2 | 3]
 
   const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart }, include: { items: { include: { menuItem: true } } } })
@@ -93,12 +94,24 @@ export async function applyWeekSelection(subscriptionId: string, weekStart: Date
     if (!itemIds || itemIds.length !== slots.length) {
       throw httpError(400, `Missing menu selection for ${date}`)
     }
-    const items = itemIds.map((id, i) => {
+    const items = itemIds.flatMap((id, i) => {
+      // An empty box is only fine when nothing on that day's menu fits this customer for it (the
+      // customer app shows "nothing to choose here"); otherwise a meal must be picked.
+      if (id === "") {
+        const fits = [...(availableByDate.get(date)?.values() ?? [])].some(
+          (m) => m.slot === slots[i] && m.dietTags.some((d) => subscription.customer.dietTypes.includes(d)) && !m.allergenTags.some((a) => avoided.has(a.trim().toLowerCase()))
+        )
+        if (fits) throw httpError(400, `Choose a meal for ${date} (${slots[i]}).`)
+        return []
+      }
       const item = availableByDate.get(date)?.get(id)
       if (!item || item.slot !== slots[i]) {
         throw httpError(400, `Invalid menu selection for ${date} (${slots[i]})`)
       }
-      return { menuItemId: item.id, slot: item.slot as MealSlot }
+      // Never put an allergen the customer avoids in their box, whatever the client sent.
+      const clash = item.allergenTags.filter((a) => avoided.has(a.trim().toLowerCase()))
+      if (clash.length > 0) throw httpError(400, `"${item.name}" contains ${clash.join(", ")}, which you avoid. Choose another meal for ${date}.`)
+      return [{ menuItemId: item.id, slot: item.slot as MealSlot }]
     })
     return { orderId: order.id, items }
   })
