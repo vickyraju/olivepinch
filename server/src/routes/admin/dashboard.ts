@@ -6,6 +6,31 @@ import { computeEndDate, londonToday, addDays } from "../../lib/subscription.js"
 export const adminDashboardRouter = Router()
 adminDashboardRouter.use(requireAdminAuth)
 
+// Customer self-service changes an admin should be told about on the dashboard (the rest, such as
+// pauses and menu picks, are routine and only appear in the customer's own activity list).
+const PROFILE_ACTIONS = ["address-changed", "marketing-opt-in"]
+
+// Unseen profile changes, oldest first, until an admin opens them. Not a history: seen ones drop off.
+adminDashboardRouter.get("/customer-changes", async (_req, res) => {
+  const rows = await prisma.customerActivity.findMany({
+    where: { action: { in: PROFILE_ACTIONS }, adminSeenAt: null },
+    include: { customer: { select: { id: true, fullName: true } } },
+    orderBy: { createdAt: "asc" },
+    take: 100,
+  })
+  res.json(rows.map((r) => ({ id: r.id, customerId: r.customer.id, customerName: r.customer.fullName, action: r.action, detail: r.detail, createdAt: r.createdAt })))
+})
+
+adminDashboardRouter.post("/customer-changes/seen-all", async (_req, res) => {
+  await prisma.customerActivity.updateMany({ where: { action: { in: PROFILE_ACTIONS }, adminSeenAt: null }, data: { adminSeenAt: new Date() } })
+  res.status(204).send()
+})
+
+adminDashboardRouter.post("/customer-changes/:id/seen", async (req, res) => {
+  await prisma.customerActivity.updateMany({ where: { id: req.params.id as string, adminSeenAt: null }, data: { adminSeenAt: new Date() } })
+  res.status(204).send()
+})
+
 function bucketBy<T>(rows: T[], key: (row: T) => string): { status: string; count: number }[] {
   const buckets = new Map<string, number>()
   for (const row of rows) {

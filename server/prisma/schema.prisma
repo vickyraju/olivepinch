@@ -367,6 +367,8 @@ model CustomerActivity {
   action     String
   detail     String?
   createdAt  DateTime @default(now())
+  // Set when an admin opens the change from the dashboard; unseen ones stay listed there.
+  adminSeenAt DateTime?
 
   @@index([customerId, createdAt])
 }
