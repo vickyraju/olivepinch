@@ -10,6 +10,10 @@ import { Logo } from "@/components/ui/logo"
 import { FoodPhoto } from "@/components/ui/food-photo"
 import { GoogleIcon } from "@/components/ui/social-icons"
 
+// Set when Google sign-in is started from this page, so the visit that follows the redirect knows
+// to show what went wrong instead of silently clearing it.
+const GOOGLE_LOGIN_KEY = "olivepinch.loginGoogle"
+
 function Login() {
   const { isAuthenticated, authError, accountNotFound, checkEmailHasAccount, sendOtp, verifyOtp, signInWithGoogle, clearAuthError } = useAuth()
   const navigate = useNavigate()
@@ -35,18 +39,28 @@ function Login() {
   }, [resendCooldown])
 
   useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard")
+    if (isAuthenticated) {
+      sessionStorage.removeItem(GOOGLE_LOGIN_KEY)
+      navigate("/dashboard")
+    }
   }, [isAuthenticated, navigate])
 
   // Skip the first run so a leftover authError from a previous visit (e.g. bouncing back
-  // from /subscribe) gets cleared silently instead of re-displaying/re-redirecting.
+  // from /subscribe) gets cleared silently instead of re-displaying/re-redirecting. Not when
+  // this very visit follows a Google sign-in started here: Google returns to a protected page,
+  // the failed account lookup (a new user) sets the error, and the guard then sends the person
+  // back to /login, so that error is the one to show.
   const isFirstRun = useRef(true)
   useEffect(() => {
     if (isFirstRun.current) {
       isFirstRun.current = false
-      if (authError) clearAuthError()
-      return
+      const fromGoogle = sessionStorage.getItem(GOOGLE_LOGIN_KEY) === "1"
+      if (authError && !fromGoogle) {
+        clearAuthError()
+        return
+      }
     }
+    if (authError) sessionStorage.removeItem(GOOGLE_LOGIN_KEY)
     if (!authError) return
     if (accountNotFound) {
       setError("Looks like you don't have a plan with us yet — taking you to get started…")
@@ -117,9 +131,11 @@ function Login() {
 
   async function handleGoogle() {
     setError("")
+    sessionStorage.setItem(GOOGLE_LOGIN_KEY, "1")
     try {
       await signInWithGoogle("/dashboard")
     } catch {
+      sessionStorage.removeItem(GOOGLE_LOGIN_KEY)
       setError("Couldn't start Google sign-in — try again.")
     }
   }
