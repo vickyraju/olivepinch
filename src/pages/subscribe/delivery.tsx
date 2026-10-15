@@ -45,7 +45,15 @@ function Delivery() {
   }, [searchParams])
 
   const p = state.profile
-  const { firstName, lastName } = splitFullName(p.fullName)
+  // Kept as two boxes' own text: re-splitting the joined full name on every keystroke moved a typed
+  // space from the end of the first name onto the start of the last name.
+  const [names, setNames] = useState(() => splitFullName(p.fullName))
+  const { firstName, lastName } = names
+  function setName(part: "firstName" | "lastName", value: string) {
+    const next = { ...names, [part]: value }
+    setNames(next)
+    update({ profile: { ...p, fullName: joinFullName(next.firstName.trim(), next.lastName.trim()) } })
+  }
   const canContinue = !!(
     firstName.trim() &&
     lastName.trim() &&
@@ -164,7 +172,7 @@ function Delivery() {
                   autoComplete="given-name"
                   aria-invalid={showErrors && !firstName.trim()}
                   value={firstName}
-                  onChange={(e) => update({ profile: { ...p, fullName: joinFullName(e.target.value, lastName) } })}
+                  onChange={(e) => setName("firstName", e.target.value)}
                 />
               </div>
               <div>
@@ -174,7 +182,7 @@ function Delivery() {
                   autoComplete="family-name"
                   aria-invalid={showErrors && !lastName.trim()}
                   value={lastName}
-                  onChange={(e) => update({ profile: { ...p, fullName: joinFullName(firstName, e.target.value) } })}
+                  onChange={(e) => setName("lastName", e.target.value)}
                 />
               </div>
             </div>

@@ -15,7 +15,7 @@ const TESTIMONIALS = [
   {
     name: "Freya Whitlock",
     role: "Vegetarian, Weight Maintenance",
-    quote: "I set my allergies once at signup and every default menu since has respected them without me having to double-check.",
+    quote: "I set my allergies once at signup and every menu since has respected them without me having to double-check.",
   },
   {
     name: "Marcus Ilie",

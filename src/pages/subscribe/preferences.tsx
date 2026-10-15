@@ -44,7 +44,7 @@ function Preferences() {
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Food preferences &amp; allergies</h1>
-      <p className="text-ink-muted mb-8">Every default menu we build will respect these choices.</p>
+      <p className="text-ink-muted mb-8">The meals we offer you will respect these choices.</p>
 
       <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft mb-6">
         <h2 className="text-lg text-ink mb-1">Preferred food category</h2>

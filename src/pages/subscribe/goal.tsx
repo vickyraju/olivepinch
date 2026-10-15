@@ -29,7 +29,7 @@ function Goal() {
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">What's your style?</h1>
-      <p className="text-ink-muted mb-8">This drives your default meal recommendations — you can fine-tune the menu later.</p>
+      <p className="text-ink-muted mb-8">This shapes the meals we recommend for you — you choose exactly what you eat from each day's menu.</p>
 
       <div aria-invalid={tried && !state.goal} className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", INVALID_BOX)}>
         {GOALS.map((goal) => {

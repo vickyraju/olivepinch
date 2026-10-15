@@ -60,7 +60,7 @@ function WeeklyMenu() {
       .get<{ weekStart: string; items: PublishedMenuItem[] }>(`/menu-weeks/${nextMonday}`)
       .then((res) => {
         setNextWeekItems(res.items)
-        // Pre-fill from whatever's currently assigned (defaults, until the customer changes them).
+        // Pre-fill from whatever's currently assigned (empty until the customer chooses).
         const initial: Record<string, string[]> = {}
         for (const order of nextWeekOrders) initial[order.date] = order.items.map((i) => i.id)
         setSelections(initial)

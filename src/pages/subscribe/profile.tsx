@@ -39,7 +39,15 @@ function Profile() {
   // Set once the customer taps Continue with something missing: those fields turn red.
   const [showErrors, setShowErrors] = useState(false)
   const p = state.profile
-  const { firstName, lastName } = splitFullName(p.fullName)
+  // Kept as two boxes' own text: re-splitting the joined full name on every keystroke moved a typed
+  // space from the end of the first name onto the start of the last name.
+  const [names, setNames] = useState(() => splitFullName(p.fullName))
+  const { firstName, lastName } = names
+  function setName(part: "firstName" | "lastName", value: string) {
+    const next = { ...names, [part]: value }
+    setNames(next)
+    update({ profile: { ...p, fullName: joinFullName(next.firstName.trim(), next.lastName.trim()) } })
+  }
 
   // Held locally as well as in context so a half-finished pick (month chosen, year not yet)
   // still shows in the dropdowns — dateOfBirth stays empty until both are set.
@@ -102,7 +110,7 @@ function Profile() {
               autoComplete="given-name"
               aria-invalid={showErrors && firstName.trim().length === 0}
               value={firstName}
-              onChange={(e) => update({ profile: { ...p, fullName: joinFullName(e.target.value, lastName) } })}
+              onChange={(e) => setName("firstName", e.target.value)}
             />
           </div>
           <div>
@@ -112,7 +120,7 @@ function Profile() {
               autoComplete="family-name"
               aria-invalid={showErrors && lastName.trim().length === 0}
               value={lastName}
-              onChange={(e) => update({ profile: { ...p, fullName: joinFullName(firstName, e.target.value) } })}
+              onChange={(e) => setName("lastName", e.target.value)}
             />
           </div>
         </div>
