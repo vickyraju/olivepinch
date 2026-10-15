@@ -8,7 +8,7 @@ import { formatGBP } from "@/lib/currency"
 import { ACCOUNT_STATUS_STYLES, ORDER_STATUS_STYLES, SUBSCRIPTION_STATUS_STYLES, formatPhone } from "@/lib/status-styles"
 import { DIET_LABELS, GOAL_LABELS, ageFromDateOfBirth } from "@/lib/customer-labels"
 import { EditCustomerModal, type EditResult } from "@/components/edit-customer-modal"
-import { DeliveryModal, MealsModal } from "@/components/edit-subscription-modals"
+import { CancelModal, DeliveryModal, MealsModal } from "@/components/edit-subscription-modals"
 
 interface OrderItemRow {
   slot: string
@@ -34,6 +34,8 @@ interface Subscription {
   status: string
   pausedDates: string[]
   createdAt: string
+  cancelledAt: string | null
+  cancellationReason: string | null
   orders: OrderRow[]
 }
 
@@ -95,6 +97,24 @@ interface AuditLogEntry {
   detail: string | null
   createdAt: string
   admin: { name: string; email: string }
+}
+
+interface ActivityEntry {
+  id: string
+  action: string
+  detail: string | null
+  createdAt: string
+}
+
+const ACTIVITY_LABELS: Record<string, string> = {
+  "address-changed": "Changed address / phone",
+  pause: "Paused a delivery",
+  resume: "Resumed a delivery",
+  "menu-chosen": "Chose meals",
+  "renewal-started": "Started a renewal",
+  "marketing-opt-in": "Marketing preference",
+  "health-entry-added": "Added health entry",
+  "health-entry-deleted": "Removed health entry",
 }
 
 const AUDIT_ACTION_LABELS: Record<string, string> = {
@@ -362,6 +382,7 @@ function CustomerDetail() {
   const [editing, setEditing] = useState(false)
   const [editingDeliveryOf, setEditingDeliveryOf] = useState<Subscription | null>(null)
   const [editingMealsOf, setEditingMealsOf] = useState<Subscription | null>(null)
+  const [cancellingOf, setCancellingOf] = useState<Subscription | null>(null)
   const [notice, setNotice] = useState("")
 
   const customerQuery = useQuery({
@@ -370,6 +391,10 @@ function CustomerDetail() {
   })
   const customer = customerQuery.data
 
+  const activityQuery = useQuery({
+    queryKey: ["customer", id, "activity"],
+    queryFn: () => api.get<ActivityEntry[]>(`/customers/${id}/activity`),
+  })
   const auditLogQuery = useQuery({
     queryKey: ["customer", id, "audit-log"],
     queryFn: () => api.get<AuditLogEntry[]>(`/customers/${id}/audit-log`),
@@ -420,18 +445,6 @@ function CustomerDetail() {
   async function reactivate() {
     await api.post(`/customers/${id}/reactivate`)
     await invalidate()
-  }
-
-  async function cancelSubscription(subscriptionId: string) {
-    if (!confirm("Cancel this subscription? Any refund must be issued separately in Worldpay.")) return
-    const reason = prompt("Reason (optional):") ?? undefined
-    setError("")
-    try {
-      await api.post(`/customers/${id}/cancel-subscription`, { subscriptionId, reason })
-      await invalidate()
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not cancel that subscription.")
-    }
   }
 
   if (customerQuery.isError) {
@@ -632,6 +645,12 @@ function CustomerDetail() {
                       ) : (
                         s.status
                       )}
+                      {s.status === "CANCELLED" && (s.cancelledAt || s.cancellationReason) ? (
+                        <p className="mt-1 max-w-[260px] text-xs text-gray-500">
+                          {s.cancelledAt ? `Cancelled ${new Date(s.cancelledAt).toLocaleDateString("en-GB")}. ` : ""}
+                          {s.cancellationReason ? `Reason: ${s.cancellationReason}` : "No reason given."}
+                        </p>
+                      ) : null}
                     </td>
                     <td className="py-3 px-6 text-gray-600">{s.pausedDates.length}</td>
                     <td className="py-3 px-6 text-right">
@@ -659,7 +678,10 @@ function CustomerDetail() {
                       ) : null}
                       {s.status === "ACTIVE" ? (
                         <button
-                          onClick={() => cancelSubscription(s.id)}
+                          onClick={() => {
+                            setNotice("")
+                            setCancellingOf(s)
+                          }}
                           className="inline-flex items-center gap-1 text-xs font-semibold text-status-red hover:text-red-700 transition-colors cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[16px]">cancel</span> Cancel
@@ -807,6 +829,38 @@ function CustomerDetail() {
           </table>
         </div>
 
+        <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-[16px] font-bold text-gray-900">Customer activity</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Changes the customer made themselves, newest first.</p>
+          </div>
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-200">
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">When</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">What</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Detail</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {(activityQuery.data ?? []).map((entry) => (
+                <tr key={entry.id}>
+                  <td className="py-3 px-6 text-gray-900 whitespace-nowrap">{new Date(entry.createdAt).toLocaleString("en-GB")}</td>
+                  <td className="py-3 px-6 text-gray-900 font-semibold">{ACTIVITY_LABELS[entry.action] ?? entry.action}</td>
+                  <td className="py-3 px-6 text-gray-600">{entry.detail ?? "—"}</td>
+                </tr>
+              ))}
+              {(activityQuery.data ?? []).length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="py-8 text-center text-sm text-gray-400">
+                    Nothing yet. Changes the customer makes from now on will show here.
+                  </td>
+                </tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
+
         {/* Hidden for now — not needed yet. Set to true to bring back. */}
         {false && (
           <div className="bg-white border border-gray-200 rounded-[12px] overflow-hidden">
@@ -843,6 +897,17 @@ function CustomerDetail() {
           </div>
         )}
       </div>
+      {cancellingOf ? (
+        <CancelModal
+          customerId={customer.id}
+          subscription={cancellingOf}
+          onClose={() => setCancellingOf(null)}
+          onSaved={async (message) => {
+            setCancellingOf(null)
+            await handleSubscriptionEdited(message)
+          }}
+        />
+      ) : null}
       {editingDeliveryOf ? (
         <DeliveryModal customerId={customer.id} subscription={editingDeliveryOf} onClose={() => setEditingDeliveryOf(null)} onSaved={handleSubscriptionEdited} />
       ) : null}

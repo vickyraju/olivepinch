@@ -288,3 +288,67 @@ export function MealsModal({
     </Shell>
   )
 }
+
+// ---------------------------------------------------------------------------------------------
+// Cancel a plan, with the reason kept on the subscription (shown on the customer's page).
+// ---------------------------------------------------------------------------------------------
+export function CancelModal({
+  customerId,
+  subscription,
+  onClose,
+  onSaved,
+}: {
+  customerId: string
+  subscription: EditableSubscription
+  onClose: () => void
+  onSaved: (message: string) => void | Promise<void>
+}) {
+  const [reason, setReason] = useState("")
+  const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState<string[]>([])
+
+  async function cancel() {
+    setSaving(true)
+    setErrors([])
+    try {
+      await api.post(`/customers/${customerId}/cancel-subscription`, { subscriptionId: subscription.id, reason: reason.trim() || undefined })
+      await onSaved("Subscription cancelled.")
+    } catch (err) {
+      setErrors(reasons(err, "Couldn't cancel that subscription. Try again."))
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Shell
+      title="Cancel subscription"
+      onClose={onClose}
+      footer={
+        <>
+          <button type="button" onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
+            Keep plan
+          </button>
+          <button type="button" onClick={cancel} disabled={saving} className="px-6 py-2 bg-status-red text-white rounded-lg font-semibold text-sm cursor-pointer disabled:opacity-50">
+            {saving ? "Cancelling…" : "Cancel subscription"}
+          </button>
+        </>
+      }
+    >
+      <p className="text-sm text-gray-500">
+        This stops the {subscription.planDuration}-day plan and pauses its remaining deliveries. Any refund must be issued separately in Worldpay.
+      </p>
+      <div>
+        <label className={labelClass}>Reason for cancelling</label>
+        <textarea
+          className="w-full min-h-24 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-primary bg-white"
+          maxLength={500}
+          placeholder="e.g. Customer is moving away, asked by phone on 16 Oct"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+        />
+        <p className="mt-1 text-xs text-gray-400">Saved on the plan so you can see it later. The customer isn't shown this.</p>
+      </div>
+      <ErrorList errors={errors} />
+    </Shell>
+  )
+}
