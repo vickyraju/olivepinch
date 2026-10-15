@@ -28,7 +28,7 @@ function HeaderActions({ className, buttonClassName }: { className?: string; but
       {isAuthenticated ? (
         <Button asChild variant="outline" size="sm" className={buttonClassName}>
           <Link to="/dashboard">
-            <User className="h-3.5 w-3.5" /> Hi, {firstName}
+            <User className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Hi, {firstName}</span>
           </Link>
         </Button>
       ) : (
@@ -45,7 +45,7 @@ function HeaderActions({ className, buttonClassName }: { className?: string; but
 function MobileActionsBar() {
   return (
     <div className="md:hidden border-t border-border">
-      <HeaderActions className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-5 py-2" buttonClassName="h-10 w-full" />
+      <HeaderActions className="mx-auto grid max-w-7xl grid-cols-[repeat(2,minmax(0,1fr))] gap-3 px-5 py-2" buttonClassName="h-10 w-full" />
     </div>
   )
 }
