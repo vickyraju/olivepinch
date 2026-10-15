@@ -24,6 +24,9 @@ function Login() {
   const [resendCooldown, setResendCooldown] = useState(0)
   const [codeFocused, setCodeFocused] = useState(false)
   const [noAccount, setNoAccount] = useState(false)
+  // Set once the customer submits with a field empty/invalid: that field turns red.
+  const [tried, setTried] = useState(false)
+  const emailValid = /\S+@\S+\.\S+/.test(email)
 
   useEffect(() => {
     if (resendCooldown <= 0) return
@@ -55,6 +58,7 @@ function Login() {
 
   async function handleSendCode(e: React.FormEvent) {
     e.preventDefault()
+    if (!emailValid) return setTried(true)
     setError("")
     setNoAccount(false)
     setSending(true)
@@ -102,6 +106,7 @@ function Login() {
 
   function handleVerify(e: React.FormEvent) {
     e.preventDefault()
+    if (code.length !== 6) return setTried(true)
     verifyCode()
   }
 
@@ -134,10 +139,10 @@ function Login() {
           </p>
 
           {stage === "email" && (
-            <form onSubmit={handleSendCode} className="space-y-4">
+            <form onSubmit={handleSendCode} noValidate className="space-y-4">
               <div>
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <Input id="email" type="email" autoComplete="email" aria-invalid={tried && !emailValid} value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <FieldError>{error}</FieldError>
 
@@ -153,7 +158,7 @@ function Login() {
                 </div>
               )}
 
-              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending || noAccount || !email.trim()}>
+              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={sending || noAccount}>
                 <Mail className="h-4 w-4" />
                 {noAccount ? "Taking you to get started…" : sending ? "Sending code…" : "Send code"}
               </Button>
@@ -161,7 +166,7 @@ function Login() {
           )}
 
           {stage === "otp" && (
-            <form onSubmit={handleVerify} className="space-y-4">
+            <form onSubmit={handleVerify} noValidate className="space-y-4">
               <div>
                 <Label htmlFor="code">6-digit code</Label>
                 <Input
@@ -170,6 +175,7 @@ function Login() {
                   maxLength={6}
                   placeholder={codeFocused ? "" : "123456"}
                   autoComplete="one-time-code"
+                  aria-invalid={tried && code.length !== 6}
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                   onFocus={() => setCodeFocused(true)}
@@ -178,7 +184,7 @@ function Login() {
                 />
               </div>
               <FieldError>{error}</FieldError>
-              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={verifying || code.length !== 6}>
+              <Button type="submit" variant="primary" size="lg" className="w-full" disabled={verifying}>
                 <Lock className="h-4 w-4" />
                 {verifying ? "Verifying…" : "Verify code"}
               </Button>

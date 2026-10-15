@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Flame, TrendingDown, TrendingUp, Dumbbell } from "lucide-react"
 import { GOALS, type Goal as GoalId } from "@/data/menu"
 import { useSubscribe } from "@/lib/subscribe-context"
+import { INVALID_BOX, scrollToFirstInvalid } from "@/lib/invalid"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
@@ -22,13 +24,14 @@ const ICONS: Record<GoalId, typeof Flame> = {
 function Goal() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
+  const [tried, setTried] = useState(false)
 
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">What's your style?</h1>
       <p className="text-ink-muted mb-8">This drives your default meal recommendations — you can fine-tune the menu later.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div aria-invalid={tried && !state.goal} className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", INVALID_BOX)}>
         {GOALS.map((goal) => {
           const Icon = ICONS[goal.id]
           const active = state.goal === goal.id
@@ -55,8 +58,7 @@ function Goal() {
 
       <StepNav
         backTo="/subscribe"
-        continueDisabled={!state.goal}
-        onContinue={() => navigate("/subscribe/tier")}
+        onContinue={() => (state.goal ? navigate("/subscribe/tier") : (setTried(true), scrollToFirstInvalid()))}
       />
     </div>
   )

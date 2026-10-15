@@ -19,6 +19,8 @@ function Account() {
   // a redundant email OTP.
   const [stage, setStage] = useState<"sending" | "otp" | "verifying" | "done">(isAuthenticated ? "done" : "sending")
   const [otp, setOtp] = useState("")
+  // Set once the customer submits an incomplete code: the box turns red.
+  const [tried, setTried] = useState(false)
   const [error, setError] = useState("")
   const [resendCooldown, setResendCooldown] = useState(0)
 
@@ -79,6 +81,7 @@ function Account() {
 
   function handleVerify(e: React.FormEvent) {
     e.preventDefault()
+    if (otp.length !== 6) return setTried(true)
     verifyCode()
   }
 
@@ -107,7 +110,7 @@ function Account() {
       </div>
 
       {(stage === "otp" || stage === "verifying") && (
-        <form onSubmit={handleVerify} className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
+        <form onSubmit={handleVerify} noValidate className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
           <Label htmlFor="otp">6-digit code</Label>
           <Input
             id="otp"
@@ -115,12 +118,13 @@ function Account() {
             maxLength={6}
             placeholder="123456"
             autoComplete="one-time-code"
+            aria-invalid={tried && otp.length !== 6}
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
             className="tracking-[0.5em] text-center text-lg"
           />
           <FieldError>{error}</FieldError>
-          <Button type="submit" variant="accent" size="lg" className="w-full mt-5" disabled={stage === "verifying" || otp.length !== 6}>
+          <Button type="submit" variant="accent" size="lg" className="w-full mt-5" disabled={stage === "verifying"}>
             <Lock className="h-4 w-4" />
             {stage === "verifying" ? "Verifying…" : "Verify code"}
           </Button>

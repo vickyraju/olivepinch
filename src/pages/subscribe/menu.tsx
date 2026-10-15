@@ -12,6 +12,7 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import { Badge } from "@/components/ui/badge"
 import type { PublishedMenuItem } from "@/types/menu"
 import { preloadImages } from "@/lib/preload-images"
+import { scrollToFirstInvalid } from "@/lib/invalid"
 import { StepNav } from "./step-nav"
 
 function buildDeliveryDates(startDate: string, planDuration: number): string[] {
@@ -115,6 +116,15 @@ function Menu() {
   }
 
   const canContinue = choosableDates.every(dayComplete)
+  // Set once Continue is tapped with a day unfinished: its empty boxes turn red and the first such day opens.
+  const [tried, setTried] = useState(false)
+  const [openDay, setOpenDay] = useState("")
+  function handleContinue() {
+    if (canContinue) return navigate("/subscribe/profile")
+    setTried(true)
+    setOpenDay(choosableDates.find((d) => !dayComplete(d)) ?? "")
+    scrollToFirstInvalid()
+  }
 
   // Warm every photo the pickers can show, so the dropdowns open with images already in place.
   useEffect(() => {
@@ -138,7 +148,7 @@ function Menu() {
       ) : (
         <>
           {choosableDates.length > 0 && (
-            <Accordion type="single" collapsible className="rounded-2xl bg-surface border border-border px-6">
+            <Accordion type="single" collapsible value={openDay} onValueChange={setOpenDay} className="rounded-2xl bg-surface border border-border px-6">
               {choosableDates.map((date) => {
                 const weekStart = mondayOf(date)
                 const dayItems = state.dayMenus.find((d) => d.date === date)?.items ?? []
@@ -162,12 +172,12 @@ function Menu() {
                               <span className="text-xs font-semibold text-coral-600">{slot}</span>
                               {options.length === 0 ? (
                                 <p className="mt-1 rounded-lg border border-dashed border-border bg-cream-100 px-3 py-2.5 text-sm text-ink-muted">
-                                  Nothing to choose here for this day — we'll pick a meal that fits your style and diet.
+                                  Nothing to choose here for this day yet — you'll be able to pick once the menu is updated.
                                 </p>
                               ) : (
                               <>
                               <Select value={value || undefined} onValueChange={(v) => setItem(date, slotIndex, v)}>
-                                <SelectTrigger className="mt-1">
+                                <SelectTrigger className="mt-1" aria-invalid={tried && !value}>
                                   <SelectValue placeholder="Choose…" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -219,15 +229,15 @@ function Menu() {
               <p className="text-sm text-ink-muted">
                 {defaultDates.length} day{defaultDates.length === 1 ? "" : "s"} from{" "}
                 {new Date(defaultDates[0]).toLocaleDateString("en-GB", { day: "numeric", month: "long" })} onward
-                {" "}aren't plannable yet — they'll start on recommended defaults, and you'll choose exact meals
-                from your dashboard once that menu is published.
+                {" "}aren't plannable yet — you'll choose your meals for them from your dashboard once that
+                menu is published.
               </p>
             </div>
           )}
         </>
       )}
 
-      <StepNav backTo="/subscribe/preferences" continueDisabled={!weeks || !canContinue} onContinue={() => navigate("/subscribe/profile")} />
+      <StepNav backTo="/subscribe/preferences" continueDisabled={!weeks} onContinue={handleContinue} />
     </div>
   )
 }

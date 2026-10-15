@@ -92,7 +92,7 @@ function Contact() {
                     required
                     maxLength={3000}
                     rows={4}
-                    className="flex w-full rounded-md border border-border bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500"
+                    className="flex w-full rounded-md border border-border bg-surface px-4 py-3 text-base text-ink placeholder:text-ink-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500 user-invalid:border-destructive user-invalid:bg-coral-50 user-invalid:ring-1 user-invalid:ring-destructive"
                   />
                 </div>
                 {error && (

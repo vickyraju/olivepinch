@@ -18,6 +18,7 @@ function Postcode() {
   const [error, setError] = useState("")
   const [notifyEmail, setNotifyEmail] = useState("")
   const [notifySent, setNotifySent] = useState(false)
+  const [notifyTried, setNotifyTried] = useState(false)
 
   async function handleCheck(e: React.FormEvent) {
     e.preventDefault()
@@ -43,6 +44,7 @@ function Postcode() {
   }
 
   async function handleNotifyMe() {
+    if (!/\S+@\S+\.\S+/.test(notifyEmail)) return setNotifyTried(true)
     try {
       await api.post("/postcode/leads", { email: notifyEmail, postcode: formatPostcode(postcode) })
       setNotifySent(true)
@@ -117,11 +119,11 @@ function Postcode() {
                   onChange={(e) => setNotifyEmail(e.target.value)}
                   className="w-full sm:flex-1"
                   aria-label="Email for launch notification"
+                  aria-invalid={notifyTried && !/\S+@\S+\.\S+/.test(notifyEmail)}
                 />
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={!notifyEmail.includes("@")}
                   onClick={handleNotifyMe}
                 >
                   Notify me

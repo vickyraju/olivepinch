@@ -1,15 +1,20 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { DIET_TYPES, type DietType } from "@/data/menu"
 import { useAllergens } from "@/lib/allergens"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { INVALID_BOX, scrollToFirstInvalid } from "@/lib/invalid"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
 function Preferences() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
+  const [tried, setTried] = useState(false)
+  const dietMissing = state.dietTypes.length === 0
+  const allergensMissing = !state.noAllergies && state.allergens.length === 0
   const allergenOptions = useAllergens()
 
   function toggleDietType(diet: DietType, checked: boolean) {
@@ -44,7 +49,7 @@ function Preferences() {
       <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft mb-6">
         <h2 className="text-lg text-ink mb-1">Preferred food category</h2>
         <p className="text-sm text-ink-muted mb-4">Select as many as you like — we'll build your menu from all of them.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div aria-invalid={tried && dietMissing} className={cn("grid grid-cols-2 sm:grid-cols-5 gap-3", INVALID_BOX)}>
           {DIET_TYPES.map((diet: DietType) => {
             const active = state.dietTypes.includes(diet)
             return (
@@ -79,7 +84,7 @@ function Preferences() {
       <div className="rounded-2xl bg-surface border border-border p-6 sm:p-8 shadow-soft">
         <h2 className="text-lg text-ink mb-1">Any allergens to avoid?</h2>
         <p className="text-sm text-ink-muted mb-4">Select anything you need us to keep out of your meals.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        <div aria-invalid={tried && allergensMissing} className={cn("grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4", INVALID_BOX)}>
           {allergenOptions.map((allergen) => (
             <div key={allergen} className="flex items-center gap-2.5">
               <Checkbox
@@ -108,11 +113,7 @@ function Preferences() {
 
       <StepNav
         backTo="/subscribe/plan"
-        continueDisabled={
-          state.dietTypes.length === 0 ||
-          (!state.noAllergies && state.allergens.length === 0)
-        }
-        onContinue={() => navigate("/subscribe/menu")}
+        onContinue={() => (dietMissing || allergensMissing ? (setTried(true), scrollToFirstInvalid()) : navigate("/subscribe/menu"))}
       />
     </div>
   )

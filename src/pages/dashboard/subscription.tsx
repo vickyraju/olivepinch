@@ -41,6 +41,8 @@ function Subscription() {
   const [editingPreferences, setEditingPreferences] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const [renewing, setRenewing] = useState(false)
+  // Set once Confirm is tapped with a section unanswered: that section turns red.
+  const [tried, setTried] = useState(false)
   const [error, setError] = useState("")
   // See the same guard in subscribe/delivery.tsx — a ref closes the double-click/double-Enter
   // window that a state-driven `disabled` prop alone can't, since state updates are batched.
@@ -115,6 +117,11 @@ function Subscription() {
   async function handleRenew(e: React.FormEvent) {
     e.preventDefault()
     if (renewingRef.current) return
+    if (dietTypes.length === 0 || (!noAllergies && allergens.length === 0)) {
+      setTried(true)
+      setTimeout(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.scrollIntoView({ block: "center", behavior: "smooth" }), 50)
+      return
+    }
     renewingRef.current = true
     setError("")
     setRenewing(true)
@@ -305,7 +312,7 @@ function Subscription() {
               <div>
                 <Label id="diet-label">Preferred food category</Label>
                 <p className="text-xs text-ink-muted -mt-1 mb-3">Select as many as apply — we'll draw your menu from all of them.</p>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" role="group" aria-labelledby="diet-label">
+                <div aria-invalid={tried && dietTypes.length === 0} className="grid grid-cols-2 sm:grid-cols-5 gap-3 aria-[invalid=true]:rounded-lg aria-[invalid=true]:bg-coral-50 aria-[invalid=true]:p-2 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive" role="group" aria-labelledby="diet-label">
                   {DIET_TYPES.map((d) => {
                     const active = dietTypes.includes(d)
                     return (
@@ -339,7 +346,7 @@ function Subscription() {
 
               <div>
                 <Label>Any allergens to avoid?</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div aria-invalid={tried && !noAllergies && allergens.length === 0} className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 aria-[invalid=true]:rounded-lg aria-[invalid=true]:bg-coral-50 aria-[invalid=true]:p-2 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive">
                   {allergenOptions.map((allergen) => (
                     <div key={allergen} className="flex items-center gap-2.5">
                       <Checkbox
@@ -437,7 +444,7 @@ function Subscription() {
                   variant="accent"
                   size="lg"
                   className="flex-1 sm:flex-none"
-                  disabled={renewing || total === null || dietTypes.length === 0 || (!noAllergies && allergens.length === 0)}
+                  disabled={renewing || total === null}
                 >
                   {renewing
                     ? "Renewing…"

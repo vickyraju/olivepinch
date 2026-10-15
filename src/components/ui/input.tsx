@@ -12,6 +12,7 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive-500 focus-visible:border-olive-500",
           "disabled:cursor-not-allowed disabled:opacity-50",
           "aria-[invalid=true]:border-destructive aria-[invalid=true]:bg-coral-50 aria-[invalid=true]:ring-1 aria-[invalid=true]:ring-destructive",
+          "user-invalid:border-destructive user-invalid:bg-coral-50 user-invalid:ring-1 user-invalid:ring-destructive",
           className
         )}
         {...props}

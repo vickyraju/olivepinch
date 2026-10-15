@@ -28,13 +28,15 @@ function Profile() {
   const [phoneInput, setPhoneInput] = useState(customer.phone)
   const [savingAddress, setSavingAddress] = useState(false)
   const [addressError, setAddressError] = useState("")
+  // Set once Save is tapped with something missing: those boxes turn red.
+  const [tried, setTried] = useState(false)
 
   const canSaveAddress = !!(
     phoneInput.trim() && addressInput.doorNumber.trim() && addressInput.street.trim() && addressInput.area.trim() && addressInput.postcode.trim()
   )
 
   async function handleSaveAddress() {
-    if (!canSaveAddress) return
+    if (!canSaveAddress) return setTried(true)
     setSavingAddress(true)
     setAddressError("")
     try {
@@ -63,6 +65,7 @@ function Profile() {
     setPhoneInput(customer.phone)
     setEditingAddress(false)
     setAddressError("")
+    setTried(false)
   }
 
   return (
@@ -166,6 +169,7 @@ function Profile() {
               <Label htmlFor="phone">Phone number</Label>
               <PhoneInput
                 id="phone"
+                invalid={tried && !phoneInput.trim()}
                 value={phoneInput}
                 onChange={setPhoneInput}
               />
@@ -175,6 +179,7 @@ function Profile() {
                 <Label htmlFor="doorNumber">Door number</Label>
                 <Input
                   id="doorNumber"
+                  aria-invalid={tried && !addressInput.doorNumber.trim()}
                   value={addressInput.doorNumber}
                   onChange={(e) => setAddressInput((a) => ({ ...a, doorNumber: e.target.value }))}
                 />
@@ -192,6 +197,7 @@ function Profile() {
               <Label htmlFor="street">Street</Label>
               <Input
                 id="street"
+                aria-invalid={tried && !addressInput.street.trim()}
                 value={addressInput.street}
                 onChange={(e) => setAddressInput((a) => ({ ...a, street: e.target.value }))}
               />
@@ -201,6 +207,7 @@ function Profile() {
                 <Label htmlFor="area">Area</Label>
                 <Input
                   id="area"
+                  aria-invalid={tried && !addressInput.area.trim()}
                   value={addressInput.area}
                   onChange={(e) => setAddressInput((a) => ({ ...a, area: e.target.value }))}
                 />
@@ -214,13 +221,13 @@ function Profile() {
                     setAddressInput((a) => ({ ...a, postcode: e.target.value }))
                     setAddressError("")
                   }}
-                  aria-invalid={!!addressError}
+                  aria-invalid={!!addressError || (tried && !addressInput.postcode.trim())}
                 />
               </div>
             </div>
             <FieldError>{addressError}</FieldError>
             <div className="flex gap-2">
-              <Button type="button" variant="primary" size="sm" disabled={savingAddress || !canSaveAddress} onClick={handleSaveAddress}>
+              <Button type="button" variant="primary" size="sm" disabled={savingAddress} onClick={handleSaveAddress}>
                 {savingAddress ? "Saving…" : "Save"}
               </Button>
               <Button type="button" variant="ghost" size="sm" onClick={cancelEditingAddress} disabled={savingAddress}>

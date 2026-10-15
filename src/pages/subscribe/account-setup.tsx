@@ -44,6 +44,8 @@ function AccountSetup() {
   })
 
   const canContinue = /\S+@\S+\.\S+/.test(email)
+  // Set once the customer taps Continue with a missing/invalid email: the box turns red.
+  const [tried, setTried] = useState(false)
 
   // Landed back here after a Google OAuth redirect. Reads sessionStorage directly rather than
   // this funnel's own React state, since that state can lag a render behind — auth.tsx's
@@ -103,6 +105,7 @@ function AccountSetup() {
   }, [authError])
 
   async function handleContinue() {
+    if (!canContinue) return setTried(true)
     if (!state.goal || state.dietTypes.length === 0) return
     setError("")
     setSaving(true)
@@ -186,7 +189,7 @@ function AccountSetup() {
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          aria-invalid={!!error}
+          aria-invalid={!!error || (tried && !canContinue)}
         />
         <FieldError>{error}</FieldError>
 
@@ -195,7 +198,7 @@ function AccountSetup() {
           variant="accent"
           size="lg"
           className="w-full mt-5"
-          disabled={!canContinue || saving}
+          disabled={saving}
           onClick={handleContinue}
         >
           {saving ? "Saving…" : "Continue"}

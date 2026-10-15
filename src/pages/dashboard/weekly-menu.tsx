@@ -13,6 +13,7 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import { Badge } from "@/components/ui/badge"
 import type { PublishedMenuItem } from "@/types/menu"
 import { preloadImages } from "@/lib/preload-images"
+import { scrollToFirstInvalid } from "@/lib/invalid"
 
 function WeeklyMenu() {
   const { customer, chooseMenuWeek } = useDashboard()
@@ -37,6 +38,9 @@ function WeeklyMenu() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState("")
   const [saved, setSaved] = useState(false)
+  // Set once Save is tapped with a day unfinished: its empty boxes turn red and the first such day opens.
+  const [tried, setTried] = useState(false)
+  const [openDay, setOpenDay] = useState("")
 
   // Days still coming from the plan this one renewed sit alongside this plan's own days. They have
   // their own meals per day (a renewal can change it), so the boxes to fill depend on the day.
@@ -75,6 +79,12 @@ function WeeklyMenu() {
   }
 
   async function handleSave() {
+    if (!canSave) {
+      setTried(true)
+      setOpenDay(nextWeekOrders.find((o) => (selections[o.date] ?? []).filter(Boolean).length < slotsFor(o).length)?.date ?? "")
+      scrollToFirstInvalid()
+      return
+    }
     setSaving(true)
     setError("")
     setSaved(false)
@@ -166,7 +176,7 @@ function WeeklyMenu() {
         {nextWeekOrders.length > 0 && Array.isArray(nextWeekItems) && !cutoffPassed && (
           <>
             <p className="text-sm text-ink-muted mb-4 mt-1">Choose by Friday — otherwise we'll keep what's already set below.</p>
-            <Accordion type="single" collapsible className="rounded-xl border border-border px-6">
+            <Accordion type="single" collapsible value={openDay} onValueChange={setOpenDay} className="rounded-xl border border-border px-6">
               {nextWeekOrders.map((day) => (
                 <AccordionItem key={day.id} value={day.date}>
                   <AccordionTrigger>
@@ -188,7 +198,7 @@ function WeeklyMenu() {
                             ) : (
                             <>
                             <Select value={value} onValueChange={(v) => setItem(day.date, slotIndex, v)}>
-                              <SelectTrigger className="mt-1">
+                              <SelectTrigger className="mt-1" aria-invalid={tried && !value}>
                                 <SelectValue placeholder="Choose…" />
                               </SelectTrigger>
                               <SelectContent>
@@ -232,7 +242,7 @@ function WeeklyMenu() {
               </div>
             )}
 
-            <Button type="button" variant="primary" className="mt-4" disabled={!canSave || saving} onClick={handleSave}>
+            <Button type="button" variant="primary" className="mt-4" disabled={saving} onClick={handleSave}>
               <Sparkles className="h-4 w-4" />
               {saving ? "Saving…" : "Save my choices"}
             </Button>

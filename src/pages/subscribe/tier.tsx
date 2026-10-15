@@ -1,7 +1,9 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Sparkles, Star } from "lucide-react"
 import { useSubscribe, type PlanTier } from "@/lib/subscribe-context"
 import { cn } from "@/lib/utils"
+import { INVALID_BOX, scrollToFirstInvalid } from "@/lib/invalid"
 import { StepNav } from "./step-nav"
 
 const TIER_COPY: Record<PlanTier, { icon: typeof Sparkles; blurb: string }> = {
@@ -14,13 +16,14 @@ const OPTIONS: PlanTier[] = ["Basic", "Advanced"]
 function Tier() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
+  const [tried, setTried] = useState(false)
 
   return (
     <div>
       <h1 className="text-3xl sm:text-4xl text-ink mb-2">Choose your tier</h1>
       <p className="text-ink-muted mb-8">One flat price for your whole plan — no per-meal charges.</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div aria-invalid={tried && !state.tier} className={cn("grid grid-cols-1 sm:grid-cols-2 gap-4", INVALID_BOX)}>
         {OPTIONS.map((tier) => {
           const { icon: Icon, blurb } = TIER_COPY[tier]
           const active = state.tier === tier
@@ -47,8 +50,7 @@ function Tier() {
 
       <StepNav
         backTo="/subscribe/goal"
-        continueDisabled={!state.tier}
-        onContinue={() => navigate("/subscribe/plan")}
+        onContinue={() => (state.tier ? navigate("/subscribe/plan") : (setTried(true), scrollToFirstInvalid()))}
       />
     </div>
   )

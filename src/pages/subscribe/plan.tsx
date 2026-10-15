@@ -1,8 +1,10 @@
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Calendar } from "@/components/ui/calendar"
 import { useSubscribe, type PlanDuration, type MealsPerDay } from "@/lib/subscribe-context"
 import { toDateKey, fromDateKey } from "@/lib/subscription"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
+import { INVALID_BOX, scrollToFirstInvalid } from "@/lib/invalid"
 import { StepNav } from "./step-nav"
 import { cn } from "@/lib/utils"
 
@@ -36,6 +38,7 @@ function maxStartDate(): Date {
 function Plan() {
   const { state, update } = useSubscribe()
   const navigate = useNavigate()
+  const [tried, setTried] = useState(false)
   const min = minStartDate()
   const max = maxStartDate()
   const minDateKey = toDateKey(min)
@@ -53,7 +56,7 @@ function Plan() {
 
       <h2 className="text-xl text-ink mb-1">How many meals a day?</h2>
       <p className="text-sm text-ink-muted mb-4">This sets how many meal slots we fill for every day of your plan.</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
+      <div aria-invalid={tried && !state.mealsPerDay} className={cn("grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10", INVALID_BOX)}>
         {MEALS_OPTIONS.map((opt) => {
           const active = state.mealsPerDay === opt.value
           return (
@@ -75,7 +78,7 @@ function Plan() {
 
       <h2 className="text-xl text-ink mb-1">Choose your plan length</h2>
       <p className="text-sm text-ink-muted mb-4">Prices reflect the meal count you picked above.</p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
+      <div aria-invalid={tried && !state.planDuration} className={cn("grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10", INVALID_BOX)}>
         {DURATIONS.map((d) => {
           const active = state.planDuration === d.value
           const total = priceFor(plans, state.goal, d.value, state.tier, state.mealsPerDay)
@@ -109,17 +112,20 @@ function Plan() {
       <p className="text-sm text-ink-muted mb-4">
         Earliest available start is {min.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} — our kitchen needs two days to prepare your first delivery.
       </p>
+      <div aria-invalid={tried && !selectedStartDate} className={cn(INVALID_BOX)}>
       <Calendar
         minDate={min}
         maxDate={max}
         selected={selectedStartDate}
         onSelect={(date) => update({ startDate: toDateKey(date) })}
       />
+      </div>
 
       <StepNav
         backTo="/subscribe/tier"
-        continueDisabled={!state.planDuration || !selectedStartDate || !state.mealsPerDay}
-        onContinue={() => navigate("/subscribe/preferences")}
+        onContinue={() =>
+          state.planDuration && selectedStartDate && state.mealsPerDay ? navigate("/subscribe/preferences") : (setTried(true), scrollToFirstInvalid())
+        }
       />
     </div>
   )
