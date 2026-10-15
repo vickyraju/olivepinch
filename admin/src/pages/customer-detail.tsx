@@ -89,6 +89,8 @@ interface CustomerDetail {
   payments: Payment[]
   renewals: Renewal[]
   planEndDate: string | null
+  planStatus: string | null
+  planCancelledAt: string | null
 }
 
 interface AuditLogEntry {
@@ -201,7 +203,7 @@ function WeekMenuCard({ title, weekStart, orders }: { title: string; weekStart: 
                   o.menuChosenAt ? "bg-[#F0F7F3] text-[#2E6B3E] border-[#cfe6d7]" : "bg-gray-100 text-gray-600 border-gray-200"
                 }`}
               >
-                {o.menuChosenAt ? "Chosen" : "Default"}
+                {o.menuChosenAt ? "Chosen" : "Not chosen"}
               </span>
             </li>
           ))}
@@ -476,8 +478,10 @@ function CustomerDetail() {
   const orderHistory = [...allOrders].sort((a, b) => b.deliveryDate.localeCompare(a.deliveryDate))
   const thisWeekStart = mondayOf(new Date())
   const nextWeekStart = addDays(thisWeekStart, 7)
-  const thisWeekOrders = ordersInWeek(allOrders, thisWeekStart)
-  const nextWeekOrders = ordersInWeek(allOrders, nextWeekStart)
+  // A cancelled plan has nothing left to cook, so its days stay out of the weekly menu cards (they remain in Order History).
+  const liveOrders = customer.subscriptions.filter((s) => s.status !== "CANCELLED").flatMap((s) => s.orders)
+  const thisWeekOrders = ordersInWeek(liveOrders, thisWeekStart)
+  const nextWeekOrders = ordersInWeek(liveOrders, nextWeekStart)
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden ml-[260px]">
@@ -494,6 +498,9 @@ function CustomerDetail() {
           </div>
           <div className="flex items-center gap-3">
             <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold border ${style.className}`}>{style.label}</span>
+            {customer.planStatus === "CANCELLED" ? (
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold border bg-red-50 text-red-700 border-red-100">Plan cancelled</span>
+            ) : null}
             {customer.accountStatus !== "DELETED" ? (
               <button
                 onClick={() => {
@@ -563,7 +570,14 @@ function CustomerDetail() {
           </div>
           <dl className="grid gap-x-6 gap-y-5 p-6 sm:grid-cols-3 text-sm">
             {[
-              ["Plan ends", customer.planEndDate ? planEndLabel(customer.planEndDate) : "No plan"],
+              [
+                customer.planStatus === "CANCELLED" ? "Plan" : "Plan ends",
+                customer.planStatus === "CANCELLED"
+                  ? `Cancelled${customer.planCancelledAt ? ` on ${new Date(customer.planCancelledAt).toLocaleDateString("en-GB")}` : ""}`
+                  : customer.planEndDate
+                    ? planEndLabel(customer.planEndDate)
+                    : "No plan",
+              ],
               ["Date of birth", customer.dateOfBirth ? new Date(customer.dateOfBirth).toLocaleDateString("en-GB") : "—"],
               ["Gender", customer.gender ?? "—"],
               ["Height", customer.heightCm ? `${customer.heightCm} cm` : "—"],
@@ -738,7 +752,7 @@ function CustomerDetail() {
                         o.status
                       )}
                     </td>
-                    <td className="py-3 px-6 text-gray-600">{o.menuChosenAt ? "Chosen" : "Default"}</td>
+                    <td className="py-3 px-6 text-gray-600">{o.menuChosenAt ? "Chosen" : "Not chosen"}</td>
                   </tr>
                 )
               })}
