@@ -94,7 +94,6 @@ interface PhoneInputProps {
 function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
   // Seeded from the saved value so editing an existing non-UK number doesn't show a GB flag.
   const [country, setCountry] = useState<Country>(() => parsePhoneNumber(value)?.country ?? "GB")
-  const [focused, setFocused] = useState(false)
 
   return (
     <div
@@ -117,11 +116,8 @@ function PhoneInput({ id, value, onChange, className }: PhoneInputProps) {
         country={country}
         value={value}
         onChange={(v) => onChange(v ?? "")}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholder={focused ? "" : "7911 123456"}
         inputMode="tel"
-        // UK only: the number is stored as +44<digits> and the placeholder shows no leading 0, so
+        // UK only: the number is stored as +44<digits> and the field has no leading 0 shown, so
         // a typed trunk "0" just adds an 11th digit the library tolerates. Other countries are
         // left alone — a leading 0 is part of the number in some (e.g. Italy).
         onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
