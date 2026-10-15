@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { Link } from "react-router-dom"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { Link, useNavigate } from "react-router-dom"
 import { Header } from "@/components/header"
 import { Skeleton } from "@/components/skeleton"
 import { QueryError } from "@/components/query-error"
@@ -8,6 +8,20 @@ import { TrendBarChart } from "@/components/trend-bar-chart"
 import { api, BASE_URL, getToken } from "@/lib/api"
 import { formatGBP } from "@/lib/currency"
 import { ACCOUNT_STATUS_STYLES } from "@/lib/status-styles"
+
+interface CustomerChange {
+  id: string
+  customerId: string
+  customerName: string
+  action: string
+  detail: string | null
+  createdAt: string
+}
+
+const CHANGE_LABELS: Record<string, string> = {
+  "address-changed": "changed their address / phone",
+  "marketing-opt-in": "changed their marketing preference",
+}
 
 interface RevenueResponse {
   series: { date: string; total: number }[]
@@ -143,6 +157,24 @@ function Dashboard() {
     }
   }
 
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const changesQuery = useQuery({
+    queryKey: ["customer-changes"],
+    queryFn: () => api.get<CustomerChange[]>("/dashboard/customer-changes"),
+    refetchInterval: 60_000,
+  })
+  const changes = changesQuery.data ?? []
+  async function openChange(change: CustomerChange) {
+    await api.post(`/dashboard/customer-changes/${change.id}/seen`)
+    await queryClient.invalidateQueries({ queryKey: ["customer-changes"] })
+    navigate(`/customers/${change.customerId}`)
+  }
+  async function markAllSeen() {
+    await api.post("/dashboard/customer-changes/seen-all")
+    await queryClient.invalidateQueries({ queryKey: ["customer-changes"] })
+  }
+
   const revenueQuery = useQuery({
     queryKey: ["revenue", "daily"],
     queryFn: () => api.get<RevenueResponse>("/revenue?range=daily"),
@@ -195,6 +227,31 @@ function Dashboard() {
               revenueQuery.refetch()
             }}
           />
+        ) : null}
+        {changes.length > 0 ? (
+          <div className="bg-white border border-amber-200 rounded-[12px] overflow-hidden">
+            <div className="px-6 py-4 border-b border-amber-100 bg-amber-50 flex items-center justify-between">
+              <h2 className="text-[16px] font-bold text-gray-900">
+                Customer profile changes <span className="ml-1 px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-xs font-semibold">{changes.length}</span>
+              </h2>
+              <button type="button" onClick={markAllSeen} className="text-xs font-semibold text-primary hover:underline cursor-pointer">
+                Mark all as seen
+              </button>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              {changes.map((c) => (
+                <li key={c.id}>
+                  <button type="button" onClick={() => openChange(c)} className="w-full text-left px-6 py-3 hover:bg-gray-50 cursor-pointer">
+                    <p className="text-sm text-gray-900">
+                      <span className="font-semibold">{c.customerName}</span> {CHANGE_LABELS[c.action] ?? c.action}
+                      <span className="ml-2 text-xs text-gray-400">{new Date(c.createdAt).toLocaleString("en-GB")}</span>
+                    </p>
+                    {c.detail ? <p className="text-xs text-gray-500 mt-0.5">{c.detail}</p> : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-[16px]">
           <KpiCard icon="payments" iconBg="bg-green-50" iconColor="text-primary" label="Revenue (30d)" value={data ? formatGBP(data.grandTotal) : "—"} loading={revenueQuery.isLoading} />
