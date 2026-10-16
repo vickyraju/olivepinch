@@ -63,7 +63,9 @@ function Login() {
     if (authError) sessionStorage.removeItem(GOOGLE_LOGIN_KEY)
     if (!authError) return
     if (accountNotFound) {
-      setError("Looks like you don't have a plan with us yet — taking you to get started…")
+      // Same notice as the email path ("Looks like you're new here"), so both sign-in routes read alike.
+      setError("")
+      setNoAccount(true)
       const timer = setTimeout(() => navigate("/subscribe"), 2500)
       return () => clearTimeout(timer)
     }
