@@ -73,12 +73,18 @@ const SECTIONS: LegalSection[] = [
     ),
   },
   {
-    heading: "6. Allergies and safety",
+    heading: "6. Food Allergy & Bone Warning",
     body: (
-      <p>
-        If you have an allergic reaction or become unwell after eating our food, seek medical help first, then contact
-        us as soon as you can. Keep the packaging and label so that we can investigate. We take every report seriously.
-      </p>
+      <>
+        <p>
+          If you have a severe food allergy, please be advised that, despite our best efforts, the risk of
+          cross-contamination cannot be completely eliminated. We strongly recommend contacting us before consumption to
+          discuss any potential allergen risks and obtain further information.
+        </p>
+        <p>
+          Although every care is taken to remove all bones, some small bones may remain. Please exercise caution
+        </p>
+      </>
     ),
   },
   {
