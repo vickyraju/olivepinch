@@ -43,7 +43,10 @@ export function createApp() {
       : ["*"]
   // credentials: the customer login session is a cookie, which browsers only send cross-origin when this is on
   // (and then the origin must be named, so a "*" setting reflects the caller's origin instead; dev only).
-  app.use(cors({ origin: allowedOrigins.includes("*") ? true : allowedOrigins, credentials: true }))
+  const reflectAll = allowedOrigins.includes("*")
+  // Reflecting any origin while cookies are allowed would let any website act as a signed-in customer.
+  if (reflectAll && process.env.NODE_ENV === "production") throw new Error('CORS_ORIGIN must list the real site addresses in production, not "*"')
+  app.use(cors({ origin: reflectAll ? true : allowedOrigins, credentials: true }))
 
   // Login (Better Auth). Must come before the JSON body parser, which would consume the request body first.
   app.use("/api/auth", rateLimit({ windowMs: 60 * 1000, max: 60 }))
