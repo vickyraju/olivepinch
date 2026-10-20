@@ -1,0 +1,8 @@
+[Unit]
+Description=OlivePinch daily sweep (reminder emails, plan expiry)
+After=olivepinch-api.service
+[Service]
+Type=oneshot
+User=olivepinch-app
+EnvironmentFile=/opt/olivepinch/.env
+ExecStart=/bin/sh -c 'curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" http://127.0.0.1:4000/api/internal/daily-sweep'

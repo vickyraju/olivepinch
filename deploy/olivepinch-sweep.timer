@@ -1,0 +1,7 @@
+[Unit]
+Description=Daily OlivePinch sweep at 07:00 UK time
+[Timer]
+OnCalendar=*-*-* 07:00:00 Europe/London
+Persistent=true
+[Install]
+WantedBy=timers.target

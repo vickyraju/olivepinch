@@ -1,0 +1,21 @@
+# Filled in by setup-server.sh. Caddy gets and renews the HTTPS certificates by itself.
+__DOMAIN__ {
+	root * /var/www/olivepinch/customer
+	encode gzip zstd
+	try_files {path} /index.html
+	file_server
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+}
+
+__ADMIN_DOMAIN__ {
+	root * /var/www/olivepinch/admin
+	encode gzip zstd
+	try_files {path} /index.html
+	file_server
+	header /assets/* Cache-Control "public, max-age=31536000, immutable"
+}
+
+__API_DOMAIN__ {
+	encode gzip
+	reverse_proxy 127.0.0.1:4000
+}

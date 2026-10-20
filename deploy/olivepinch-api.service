@@ -1,0 +1,18 @@
+[Unit]
+Description=OlivePinch API
+After=network.target postgresql.service
+
+[Service]
+User=olivepinch-app
+WorkingDirectory=/opt/olivepinch/server
+EnvironmentFile=/opt/olivepinch/.env
+Environment=NODE_ENV=production
+# Keeps Node inside the 1 GB box.
+Environment=NODE_OPTIONS=--max-old-space-size=300
+ExecStart=/usr/bin/node dist/server.js
+Restart=always
+RestartSec=3
+MemoryMax=600M
+
+[Install]
+WantedBy=multi-user.target

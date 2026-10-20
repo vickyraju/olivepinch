@@ -1,0 +1,6 @@
+[Unit]
+Description=OlivePinch database backup
+[Service]
+Type=oneshot
+User=olivepinch-app
+ExecStart=/opt/olivepinch/backup.sh
