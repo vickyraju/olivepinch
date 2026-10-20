@@ -101,7 +101,7 @@ export function diffCustomerEdit(existing: CustomerLike, edit: CustomerEdit) {
 
   const emailChanged = changed.includes("email")
   // The login account is matched by email, so a new address must be linked afresh on the next login.
-  if (emailChanged) data.supabaseUserId = null
+  if (emailChanged) data.authUserId = null
 
   const detail = [`Changed: ${changed.join(", ")}`, ...detailParts].join(" · ")
   return { data, changed, detail, emailChanged }

@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js"
 import { calculateBmi, bmiCategory } from "../lib/bmi.js"
 import { calculateAge } from "../lib/age.js"
 import { logCustomerActivity, describeChanges } from "../lib/customer-activity.js"
-import { requireAuth, requireSignupToken, verifySupabaseUser } from "../middleware/auth.js"
+import { requireAuth, requireSignupToken, verifyAuthUser } from "../middleware/auth.js"
 import { checkEmailLimiter } from "../middleware/rate-limit.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES } from "../lib/enums.js"
@@ -13,27 +13,27 @@ import { signSignupToken } from "../lib/auth.js"
 
 export const customersRouter = Router()
 
-// Called right after a Supabase sign-in (OTP or Google OAuth) succeeds, whether that's
+// Called right after a sign-in (OTP or Google OAuth) succeeds, whether that's
 // finishing signup or a returning login — both cases just need "find the Customer for this
-// verified email and attach this Supabase user id to it". Doesn't use requireAuth: there's
+// verified email and attach this login user id to it". Doesn't use requireAuth: there's
 // no linked Customer to resolve to yet, that's exactly what this endpoint creates.
 customersRouter.post("/link-account", async (req, res) => {
-  const supaUser = await verifySupabaseUser(req.headers.authorization)
-  const customer = await prisma.customer.findUnique({ where: { email: supaUser.email } })
+  const authUser = await verifyAuthUser(req.headers)
+  const customer = await prisma.customer.findFirst({ where: { email: { equals: authUser.email, mode: "insensitive" } } })
   if (!customer) {
     return res.status(404).json({ error: "No OlivePinch account found for this email — start your plan first." })
   }
-  // Already linked to a *different* Supabase user than the one making this call — never
+  // Already linked to a *different* login user than the one making this call — never
   // fall through and hand back someone else's profile just because the emails happen to
   // match right now (e.g. after an email change on either side). Refuse instead of guessing.
-  if (customer.supabaseUserId && customer.supabaseUserId !== supaUser.id) {
+  if (customer.authUserId && customer.authUserId !== authUser.id) {
     return res.status(409).json({ error: "This email is already linked to a different account." })
   }
-  if (!customer.supabaseUserId) {
+  if (!customer.authUserId) {
     await prisma.customer.update({
       where: { id: customer.id },
       data: {
-        supabaseUserId: supaUser.id,
+        authUserId: authUser.id,
         ...(customer.accountStatus === "PROVISIONAL" ? { accountStatus: "ACTIVE" as const } : {}),
       },
     })
@@ -258,7 +258,7 @@ customersRouter.delete("/me", requireAuth, async (req, res) => {
         fullName: "Deleted customer",
         email: `deleted-${customerId}@olivepinch.invalid`,
         phone: null,
-        supabaseUserId: null,
+        authUserId: null,
         passwordHash: null,
         gender: null,
         dateOfBirth: null,

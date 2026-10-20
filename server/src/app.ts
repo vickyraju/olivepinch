@@ -1,6 +1,9 @@
 import { contactRouter } from "./routes/contact.js"
 import express from "express"
 import cors from "cors"
+import { toNodeHandler } from "better-auth/node"
+import { auth } from "./lib/better-auth.js"
+import { UPLOAD_DIR } from "./lib/menu-photos.js"
 import rateLimit from "express-rate-limit"
 import { postcodeRouter } from "./routes/postcode.js"
 import { customersRouter } from "./routes/customers.js"
@@ -22,6 +25,7 @@ import { errorHandler } from "./middleware/error.js"
 // the wildcard this used to fall back to, which would accept requests from any origin.
 const DEFAULT_PRODUCTION_ORIGINS = ["https://olivepinch.vercel.app", "https://olivepinch-admin.vercel.app"]
 
+
 export function createApp() {
   const app = express()
 
@@ -37,7 +41,13 @@ export function createApp() {
     : process.env.NODE_ENV === "production"
       ? DEFAULT_PRODUCTION_ORIGINS
       : ["*"]
-  app.use(cors({ origin: allowedOrigins.includes("*") ? "*" : allowedOrigins }))
+  // credentials: the customer login session is a cookie, which browsers only send cross-origin when this is on
+  // (and then the origin must be named, so a "*" setting reflects the caller's origin instead; dev only).
+  app.use(cors({ origin: allowedOrigins.includes("*") ? true : allowedOrigins, credentials: true }))
+
+  // Login (Better Auth). Must come before the JSON body parser, which would consume the request body first.
+  app.use("/api/auth", rateLimit({ windowMs: 60 * 1000, max: 60 }))
+  app.all("/api/auth/*splat", toNodeHandler(auth))
 
   // Webhook signature verification needs raw body — keep this ahead of the global
   // JSON parser regardless of provider (currently a stub; see routes/payments.ts).
@@ -46,6 +56,7 @@ export function createApp() {
   app.use(express.json({ limit: "30mb" }))
 
   app.use("/api", rateLimit({ windowMs: 60 * 1000, max: 120 }))
+  app.use("/uploads", express.static(UPLOAD_DIR, { maxAge: "365d", immutable: true, index: false }))
 
   app.get("/api/health", (_req, res) => res.json({ ok: true }))
 

@@ -22,7 +22,7 @@ assert.deepEqual(
   assert.deepEqual(r.changed, ["fullName", "heightCm"])
   assert.deepEqual(r.data, { fullName: "Ada King", heightCm: 171 })
   assert.equal(r.emailChanged, false)
-  assert.equal(r.data.supabaseUserId, undefined)
+  assert.equal(r.data.authUserId, undefined)
 }
 
 // Email change detaches the login account so the new address can be linked on next login.
@@ -30,7 +30,7 @@ assert.deepEqual(
   const r = diffCustomerEdit(base, { email: "ada.new@example.com" })
   assert.equal(r.emailChanged, true)
   assert.equal(r.data.email, "ada.new@example.com")
-  assert.equal(r.data.supabaseUserId, null)
+  assert.equal(r.data.authUserId, null)
 }
 
 // Clearing optional fields.

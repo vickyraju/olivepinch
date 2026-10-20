@@ -17,6 +17,10 @@ const steps: [string, () => Promise<{ count: number }>][] = [
   ["Notification", () => prisma.notification.deleteMany()],
   ["Otp", () => prisma.otp.deleteMany()],
   ["Customer", () => prisma.customer.deleteMany()],
+  ["Session", () => prisma.session.deleteMany()],
+  ["Account", () => prisma.account.deleteMany()],
+  ["Verification", () => prisma.verification.deleteMany()],
+  ["User", () => prisma.user.deleteMany()],
   ["Lead", () => prisma.lead.deleteMany()],
   ["AdminAuditLog", () => prisma.adminAuditLog.deleteMany()],
 ]
@@ -26,19 +30,11 @@ const counts = {
   ConsentLog: await prisma.consentLog.count(), Notification: await prisma.notification.count(), Otp: await prisma.otp.count(),
   Customer: await prisma.customer.count(), Lead: await prisma.lead.count(), AdminAuditLog: await prisma.adminAuditLog.count(),
 }
-const authIds = (await prisma.customer.findMany({ where: { supabaseUserId: { not: null } }, select: { supabaseUserId: true } })).map((c) => c.supabaseUserId!)
-console.log(counts, `\nSupabase login accounts linked to customers: ${authIds.length}`)
+console.log(counts)
 console.log("Kept:", { admins: await prisma.adminUser.count(), menuItems: await prisma.menuItem.count(), plans: await prisma.plan.count(), promoCodes: await prisma.promoCode.count() })
 
 if (apply) {
   await prisma.$transaction(steps.map(([, run]) => run()) as never)
-  const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  let removed = 0
-  for (const id of authIds) {
-    const r = await fetch(`${url}/auth/v1/admin/users/${id}`, { method: "DELETE", headers: { apikey: key!, Authorization: `Bearer ${key}` } })
-    if (r.ok) removed++
-    else console.log("auth delete failed", r.status)
-  }
-  console.log(`Wiped. Removed ${removed}/${authIds.length} Supabase login accounts.`)
+  console.log("Wiped (customer data, login users and sessions).")
 }
 await prisma.$disconnect()
