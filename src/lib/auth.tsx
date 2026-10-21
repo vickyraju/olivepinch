@@ -8,7 +8,12 @@ export interface CustomerActor {
   id: string
   fullName: string
   email: string
+  /** Has a succeeded payment: the same test the email login uses for "has an account". */
+  hasPaid?: boolean
 }
+
+// Set by the login page right before it starts Google sign-in (see login.tsx).
+const GOOGLE_LOGIN_KEY = "olivepinch.loginGoogle"
 
 interface AuthContextValue {
   isLoading: boolean
@@ -130,6 +135,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
           me = await api.get<CustomerActor>("/customers/me")
+        }
+        // Google sign-in started from the login page, but this email never completed a purchase (a half-finished signup
+        // leaves a customer record behind): same outcome as an unknown email, not a dashboard with no plan.
+        if (sessionStorage.getItem(GOOGLE_LOGIN_KEY) === "1" && sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) !== "1" && me.hasPaid === false) {
+          throw new ApiError(404, "No OlivePinch plan found for this email.")
         }
         setCustomer(me)
         // Cleared only now that the customer is set: account-setup keeps showing "Signing you in…" until then.
