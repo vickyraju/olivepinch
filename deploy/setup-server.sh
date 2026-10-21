@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
-# One-off bootstrap for a fresh Ubuntu 24.04 VM (Vultr 1 vCPU / 1 GB). Run as root:
-#   DOMAIN=example.com ADMIN_DOMAIN=admin.example.com API_DOMAIN=api.example.com DB_PASSWORD='...' bash setup-server.sh
+# One-off bootstrap for a fresh Ubuntu 24.04 VM (1 vCPU / 1 GB, e.g. DigitalOcean or Vultr). Run as root:
+#   [DOMAIN=example.com ADMIN_DOMAIN=admin.example.com API_DOMAIN=api.example.com] bash setup-server.sh
 set -euo pipefail
-: "${DOMAIN:?}" "${ADMIN_DOMAIN:?}" "${API_DOMAIN:?}" "${DB_PASSWORD:?}"
+# Domains are optional on the first run (before DNS exists): without them Caddy is left unconfigured.
+# DB_PASSWORD is generated when not given and kept root-only in /opt/olivepinch/.db-password.
+DOMAIN=${DOMAIN:-}; ADMIN_DOMAIN=${ADMIN_DOMAIN:-}; API_DOMAIN=${API_DOMAIN:-}
+mkdir -p /opt/olivepinch
+if [ -z "${DB_PASSWORD:-}" ]; then
+  [ -f /opt/olivepinch/.db-password ] || ( umask 077; openssl rand -hex 24 > /opt/olivepinch/.db-password )
+  DB_PASSWORD=$(cat /opt/olivepinch/.db-password)
+fi
 
 apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -y upgrade
-DEBIAN_FRONTEND=noninteractive apt-get -y install ufw unattended-upgrades curl rsync postgresql debian-keyring debian-archive-keyring apt-transport-https gpg
+DEBIAN_FRONTEND=noninteractive apt-get -y install ufw unattended-upgrades curl rsync openssl postgresql debian-keyring debian-archive-keyring apt-transport-https gpg
 
 # 2 GB swap: the 1 GB box needs it for builds and photo resizing.
 if ! swapon --show | grep -q /swapfile; then
@@ -21,8 +28,9 @@ ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw --force enable
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get -y install nodejs
 
 # Caddy (automatic HTTPS)
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --batch --yes --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
 curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
+chmod o+r /usr/share/keyrings/caddy-stable-archive-keyring.gpg /etc/apt/sources.list.d/caddy-stable.list
 apt-get update && apt-get -y install caddy
 
 # Postgres, tuned for 1 GB and listening on localhost only
@@ -47,7 +55,11 @@ chown -R www-data:www-data /var/www/olivepinch
 
 # Config files shipped next to this script
 HERE=$(cd "$(dirname "$0")" && pwd)
-sed "s/__DOMAIN__/${DOMAIN}/g; s/__ADMIN_DOMAIN__/${ADMIN_DOMAIN}/g; s/__API_DOMAIN__/${API_DOMAIN}/g" "$HERE/Caddyfile" > /etc/caddy/Caddyfile
+if [ -n "$DOMAIN" ] && [ -n "$ADMIN_DOMAIN" ] && [ -n "$API_DOMAIN" ]; then
+  sed "s/__DOMAIN__/${DOMAIN}/g; s/__ADMIN_DOMAIN__/${ADMIN_DOMAIN}/g; s/__API_DOMAIN__/${API_DOMAIN}/g" "$HERE/Caddyfile" > /etc/caddy/Caddyfile
+else
+  echo "No domains given: Caddy left with its default config. Re-run with DOMAIN/ADMIN_DOMAIN/API_DOMAIN once DNS points here."
+fi
 cp "$HERE/olivepinch-api.service" /etc/systemd/system/
 cp "$HERE/olivepinch-backup.service" "$HERE/olivepinch-backup.timer" "$HERE/olivepinch-sweep.service" "$HERE/olivepinch-sweep.timer" /etc/systemd/system/
 install -m 750 -o olivepinch-app "$HERE/backup.sh" /opt/olivepinch/backup.sh
