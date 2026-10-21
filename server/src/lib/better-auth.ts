@@ -44,7 +44,11 @@ export const auth = betterAuth({
       otpLength: 6,
       expiresIn: LOGIN_CODE_EXPIRY_MINUTES * 60,
       allowedAttempts: 5,
-      storeOTP: "hashed",
+      // Encrypted (not hashed) so that asking again within the validity window re-sends the SAME code: two quick
+      // requests (double click, the page loading twice) then give two identical emails instead of the first
+      // email's code silently stopping working.
+      storeOTP: "encrypted",
+      resendStrategy: "reuse",
       async sendVerificationOTP({ email, otp }) {
         const address = email.trim().toLowerCase()
         if (!underEmailLimit(address)) return
