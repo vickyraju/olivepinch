@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-off bootstrap for a fresh Ubuntu 24.04 VM (1 vCPU / 1 GB, e.g. DigitalOcean or Vultr). Run as root:
-#   [DOMAIN=example.com ADMIN_DOMAIN=admin.example.com API_DOMAIN=api.example.com] bash setup-server.sh
+#   [APEX_DOMAIN=example.com] [DOMAIN=www.example.com ADMIN_DOMAIN=admin.example.com API_DOMAIN=api.example.com] bash setup-server.sh
 set -euo pipefail
 # Domains are optional on the first run (before DNS exists): without them Caddy is left unconfigured.
 # DB_PASSWORD is generated when not given and kept root-only in /opt/olivepinch/.db-password.
@@ -56,7 +56,10 @@ chown -R www-data:www-data /var/www/olivepinch
 # Config files shipped next to this script
 HERE=$(cd "$(dirname "$0")" && pwd)
 if [ -n "$DOMAIN" ] && [ -n "$ADMIN_DOMAIN" ] && [ -n "$API_DOMAIN" ]; then
-  sed "s/__DOMAIN__/${DOMAIN}/g; s/__ADMIN_DOMAIN__/${ADMIN_DOMAIN}/g; s/__API_DOMAIN__/${API_DOMAIN}/g" "$HERE/Caddyfile" > /etc/caddy/Caddyfile
+  # APEX_DOMAIN (e.g. example.com) is added only when its DNS already points here, otherwise Caddy cannot get its certificate.
+  CADDY=$(cat "$HERE/Caddyfile")
+  if [ -z "${APEX_DOMAIN:-}" ]; then CADDY=$(printf '%s\n' "$CADDY" | sed '/^# Bare domain/,$d'); fi
+  printf '%s\n' "$CADDY" | sed "s/__DOMAIN__/${DOMAIN}/g; s/__ADMIN_DOMAIN__/${ADMIN_DOMAIN}/g; s/__API_DOMAIN__/${API_DOMAIN}/g; s/__APEX__/${APEX_DOMAIN:-}/g" > /etc/caddy/Caddyfile
 else
   echo "No domains given: Caddy left with its default config. Re-run with DOMAIN/ADMIN_DOMAIN/API_DOMAIN once DNS points here."
 fi

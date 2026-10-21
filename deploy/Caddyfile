@@ -19,3 +19,8 @@ __API_DOMAIN__ {
 	encode gzip
 	reverse_proxy 127.0.0.1:4000
 }
+
+# Bare domain -> www (only included once the bare domain's DNS points at this server).
+__APEX__ {
+	redir https://__DOMAIN__{uri} permanent
+}

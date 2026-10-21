@@ -8,6 +8,13 @@ const apiUrl = process.env.WORLDPAY_API_URL ?? "https://try.access.worldpay.com"
 // credentials (issued by a Worldpay Implementation Manager, not self-serve)
 export const worldpayConfig = username && password && entity ? { username, password, entity, apiUrl } : null
 
+// In production a missing credential would silently mark every checkout as paid without taking a card, so refuse to
+// start. ALLOW_DEV_PAYMENTS=1 is the explicit, temporary opt-out for testing a server before the live credentials exist.
+if (!worldpayConfig && process.env.NODE_ENV === "production" && process.env.ALLOW_DEV_PAYMENTS !== "1") {
+  throw new Error("Worldpay credentials are not set: refusing to start in production (checkouts would be marked paid without a card)")
+}
+if (!worldpayConfig && process.env.ALLOW_DEV_PAYMENTS === "1") console.warn("WARNING: ALLOW_DEV_PAYMENTS=1, checkouts are NOT charged. Remove before going live.")
+
 function authHeader(): string {
   return `Basic ${Buffer.from(`${worldpayConfig!.username}:${worldpayConfig!.password}`).toString("base64")}`
 }
