@@ -168,7 +168,10 @@ customersRouter.post("/me/signup-session", requireAuth, (req, res) => {
 customersRouter.get("/me", requireAuth, async (req, res) => {
   const customer = await prisma.customer.findUniqueOrThrow({ where: { id: req.customerId } })
   const { passwordHash: _passwordHash, ...safe } = customer
-  res.json(safe)
+  // Same meaning as /check-email's "has an account": they have paid at some point. The login page uses it to turn away a
+  // Google sign-in from someone who only started signing up and never completed payment.
+  const hasPaid = (await prisma.payment.count({ where: { customerId: customer.id, status: "succeeded" } })) > 0
+  res.json({ ...safe, hasPaid })
 })
 
 const updateMeSchema = z.object({

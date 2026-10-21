@@ -51,7 +51,9 @@ sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='olivepinch'"
 id olivepinch-app >/dev/null 2>&1 || useradd --system --create-home --shell /usr/sbin/nologin olivepinch-app
 mkdir -p /opt/olivepinch/server /var/www/olivepinch/customer /var/www/olivepinch/admin /var/backups/olivepinch
 chown -R olivepinch-app:olivepinch-app /opt/olivepinch /var/backups/olivepinch
-chown -R www-data:www-data /var/www/olivepinch
+chown -R www-data:www-data /var/www/olivepinch/customer /var/www/olivepinch/admin
+# Menu photos are written by the API (app user) and served by it at /uploads.
+mkdir -p /var/www/olivepinch/uploads && chown olivepinch-app:olivepinch-app /var/www/olivepinch/uploads && chmod 755 /var/www/olivepinch/uploads
 
 # Config files shipped next to this script
 HERE=$(cd "$(dirname "$0")" && pwd)
