@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
-import { supabase } from "./supabase"
+import { authClient } from "./auth-client"
 import { api, ApiError } from "./api"
 import { GOAL_TO_ENUM, DIET_TO_ENUM } from "./enum-map"
 import { SUBSCRIBE_STORAGE_KEY } from "./subscribe-storage"
@@ -14,7 +14,7 @@ interface AuthContextValue {
   isLoading: boolean
   isAuthenticated: boolean
   customer: CustomerActor | null
-  /** Set when a sign-in succeeded at the Supabase level but linking to an OlivePinch
+  /** Set when a sign-in succeeded but linking to an OlivePinch
    * account failed (e.g. no account exists yet for this email) — surface it, don't hang. */
   authError: string | null
   /** True specifically when a Google sign-in verified but no OlivePinch account exists for
@@ -87,53 +87,54 @@ async function completePendingSubscribeSignup(email: string): Promise<void> {
   sessionStorage.setItem(SUBSCRIBE_STORAGE_KEY, JSON.stringify({ ...state, profile: { ...p, email }, customerId, signupToken }))
 }
 
+// One bootstrap at a time: React StrictMode mounts effects twice in dev, and a second concurrent run
+// could finish a pending signup twice.
+let bootstrapping: Promise<CustomerActor | null> | null = null
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [customer, setCustomer] = useState<CustomerActor | null>(null)
   const [authError, setAuthError] = useState<string | null>(null)
   const [accountNotFound, setAccountNotFound] = useState(false)
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!session) {
+  // Works out who is signed in. The login cookie (set by the API) is the only source of truth: no session -> signed out;
+  // a session -> find the linked customer, linking it by email on the very first sign-in.
+  const bootstrap = useCallback(async () => {
+    if (bootstrapping) return bootstrapping
+    bootstrapping = (async () => {
+      const { data } = await authClient.getSession()
+      if (!data?.session) {
         setCustomer(null)
-        setIsLoading(false)
-        return
+        return null
       }
       setAuthError(null)
       setAccountNotFound(false)
-      if (event !== "SIGNED_IN" && sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) === "1") {
-        // A Google sign-in mid-subscribe-funnel is in flight — onAuthStateChange can fire a
-        // non-SIGNED_IN event (e.g. INITIAL_SESSION) for this same session before the real
-        // SIGNED_IN event arrives. Calling /customers/me here would 401 (not linked yet) and
-        // trigger a destructive sign-out that races the SIGNED_IN handler doing the real work
-        // below — just wait for that one instead.
-        setIsLoading(false)
-        return
-      }
       try {
-        if (event === "SIGNED_IN") {
+        let me: CustomerActor
+        try {
+          me = await api.get<CustomerActor>("/customers/me")
+        } catch (err) {
+          // 401 = signed in but not linked to a customer yet (first sign-in): link by email, then load.
+          if (!(err instanceof ApiError && err.status === 401)) throw err
           try {
             await api.post("/customers/link-account")
-          } catch (err) {
-            // Read fresh (don't clear until used) — onAuthStateChange can fire more than once
-            // for the same sign-in, and clearing this eagerly on the first firing meant a
-            // second firing would see it already gone and treat a genuine new signup as a
-            // plain "no account" error instead of completing it.
+          } catch (linkErr) {
+            // A Google sign-in from the subscribe funnel that finds no customer is a brand-new signup: finish it
+            // with the details already held in the funnel. From the login page it just means "no account yet".
             const isPendingSubscribeSignup = sessionStorage.getItem(PENDING_SOCIAL_SIGNUP_KEY) === "1"
-            if (err instanceof ApiError && err.status === 404 && isPendingSubscribeSignup && session.user.email) {
-              await completePendingSubscribeSignup(session.user.email)
+            if (linkErr instanceof ApiError && linkErr.status === 404 && isPendingSubscribeSignup && data.user.email) {
+              await completePendingSubscribeSignup(data.user.email)
               await api.post("/customers/link-account")
             } else {
-              throw err
+              throw linkErr
             }
           }
+          me = await api.get<CustomerActor>("/customers/me")
         }
-        setCustomer(await api.get<CustomerActor>("/customers/me"))
-        // Cleared only now that the customer is set (not when the SIGNED_IN branch finishes):
-        // account-setup uses this flag to keep showing "Signing you in…" until then, and
-        // clearing it earlier lets the sign-in form flash back during the /customers/me fetch.
+        setCustomer(me)
+        // Cleared only now that the customer is set: account-setup keeps showing "Signing you in…" until then.
         sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
+        return me
       } catch (err) {
         sessionStorage.removeItem(PENDING_SOCIAL_SIGNUP_KEY)
         setCustomer(null)
@@ -143,12 +144,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setAuthError(err instanceof Error ? err.message : "Couldn't sign you in — try again.")
         }
-        await supabase.auth.signOut()
+        await authClient.signOut()
+        return null
       }
-      setIsLoading(false)
+    })().finally(() => {
+      bootstrapping = null
     })
-    return () => subscription.unsubscribe()
+    return bootstrapping
   }, [])
+
+  useEffect(() => {
+    bootstrap().finally(() => setIsLoading(false))
+  }, [bootstrap])
 
   const checkEmailHasAccount = useCallback(async (email: string) => {
     const { hasAccount } = await api.post<{ hasAccount: boolean }>("/customers/check-email", { email })
@@ -156,23 +163,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const sendOtp = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
+    const { error } = await authClient.emailOtp.sendVerificationOtp({ email, type: "sign-in" })
     if (error) throw error
   }, [])
 
   const verifyOtp = useCallback(async (email: string, code: string) => {
-    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: "email" })
+    const { error } = await authClient.signIn.emailOtp({ email, otp: code })
     if (error) throw error
-    // onAuthStateChange's SIGNED_IN handler above does the link-account + profile load.
-  }, [])
+    await bootstrap()
+  }, [bootstrap])
 
   const signInWithGoogle = useCallback(async (redirectPath = "/dashboard") => {
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}${redirectPath}` } })
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: `${window.location.origin}${redirectPath}`,
+      errorCallbackURL: `${window.location.origin}/login`,
+    })
     if (error) throw error
   }, [])
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut()
+    await authClient.signOut()
     setCustomer(null)
   }, [])
 

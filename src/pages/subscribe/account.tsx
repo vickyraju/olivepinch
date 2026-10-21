@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { CheckCircle2, Mail, Lock } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
@@ -19,6 +19,8 @@ function Account() {
   // a redundant email OTP.
   const [stage, setStage] = useState<"sending" | "otp" | "verifying" | "done">(isAuthenticated ? "done" : "sending")
   const [otp, setOtp] = useState("")
+  // React runs mount effects twice in development; the code must be requested once only.
+  const sentRef = useRef(false)
   // Set once the customer submits an incomplete code: the box turns red.
   const [tried, setTried] = useState(false)
   const [error, setError] = useState("")
@@ -35,6 +37,8 @@ function Account() {
       setStage("done")
       return
     }
+    if (sentRef.current) return
+    sentRef.current = true
     sendOtp(email)
       .then(() => { setStage("otp"); setResendCooldown(30) })
       .catch(() => {
