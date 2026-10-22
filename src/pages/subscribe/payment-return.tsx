@@ -23,19 +23,35 @@ function PaymentReturn() {
       return
     }
 
-    api
-      .post("/payments/confirm", { subscriptionId })
-      .then(() => navigate("/subscribe/account"))
-      .catch((err) => {
+    // Worldpay can take a little while to report the result of a payment that has really gone through. The server answers
+    // 202 "still confirming" until it knows, so keep asking (up to ~90s) instead of treating the wait as a decline.
+    let cancelled = false
+    async function confirm(attempt: number) {
+      try {
+        await api.post("/payments/confirm", { subscriptionId })
+        if (!cancelled) navigate("/subscribe/account")
+      } catch (err) {
+        if (cancelled) return
         console.error(err instanceof ApiError ? err.message : err)
+        if (err instanceof ApiError && err.status === 202) {
+          if (attempt < 18) setTimeout(() => confirm(attempt + 1), 5000)
+          else navigate("/subscribe/delivery?pending=1")
+          return
+        }
         navigate("/subscribe/delivery?declined=1")
-      })
+      }
+    }
+    confirm(0)
+    return () => {
+      cancelled = true
+    }
   }, [searchParams, state.subscriptionId, navigate])
 
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="h-8 w-8 rounded-full border-2 border-olive-600 border-t-transparent animate-spin mb-4" />
       <p className="text-ink-muted">Confirming your payment…</p>
+      <p className="mt-2 text-sm text-ink-muted">This can take a minute. Please don't pay again or close this page.</p>
     </div>
   )
 }

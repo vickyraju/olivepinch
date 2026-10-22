@@ -43,6 +43,8 @@ function Delivery() {
       setStatus("failed")
     }
   }, [searchParams])
+  // Worldpay has not reported the result yet (see payment-return.tsx): the payment may well have gone through.
+  const stillConfirming = !!searchParams.get("pending")
 
   const p = state.profile
   // Kept as two boxes' own text: re-splitting the joined full name on every keystroke moved a typed
@@ -257,6 +259,21 @@ function Delivery() {
               ))}
             </div>
           </section>
+
+          {stillConfirming && status !== "failed" && (
+            <div className="mt-8 pt-8 border-t border-border">
+              <div role="status" className="rounded-lg bg-olive-50 p-4 flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-olive-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-olive-700">We're still confirming your payment</p>
+                  <p className="text-sm text-ink-muted mt-0.5">
+                    If your card was charged, your plan will be set up automatically and we'll email you. Please don't pay again. If you
+                    haven't heard from us within an hour, contact hello@olivepinch.com.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {status === "failed" && (
             <div className="mt-8 pt-8 border-t border-border">
