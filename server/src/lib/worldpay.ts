@@ -98,7 +98,11 @@ async function fetchPaymentStatus(statusQueryUrl: string): Promise<{ lastEvent: 
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succeeded: boolean; raw: unknown }> {
+// "pending" means Worldpay has not reported a final outcome yet (not indexed yet, or still in 3-D Secure). That is NOT a
+// failure: a customer can be charged while we are still waiting to hear, so only an explicit failure event may fail a payment.
+export type PaymentOutcome = "succeeded" | "failed" | "pending"
+
+export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ outcome: PaymentOutcome; raw: unknown }> {
   // Right after the HPP redirect, Worldpay's Payment Queries index can briefly lag behind the
   // actual payment outcome — confirmed against a real sandbox payment where the query returned
   // an empty payments list moments before the transaction was indexed. Retry until we see a
@@ -109,7 +113,8 @@ export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ succ
     if (SUCCESS_EVENTS.includes(result.lastEvent) || FAILURE_EVENTS.includes(result.lastEvent)) break
     if (attempt < 4) await sleep(1500)
   }
-  return { succeeded: SUCCESS_EVENTS.includes(result.lastEvent), raw: result.raw }
+  const outcome: PaymentOutcome = SUCCESS_EVENTS.includes(result.lastEvent) ? "succeeded" : FAILURE_EVENTS.includes(result.lastEvent) ? "failed" : "pending"
+  return { outcome, raw: result.raw }
 }
 
 // Looks up the refund action links currently available on a settled payment. No retry loop

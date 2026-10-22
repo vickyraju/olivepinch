@@ -130,8 +130,13 @@ async function confirmPayment(subscriptionId: string): Promise<ConfirmResult> {
     if (!pending?.providerRef) {
       return { ok: false, httpStatus: 402, error: "No pending payment found for this subscription" }
     }
-    const { succeeded } = await queryPaymentStatus(pending.providerRef)
-    if (!succeeded) {
+    const { outcome } = await queryPaymentStatus(pending.providerRef)
+    if (outcome === "pending") {
+      // Worldpay has not reported a final result yet. Leave the payment pending: the page asks again, and the daily
+      // sweep re-checks it. Marking it failed here could strand a customer who has actually been charged.
+      return { ok: false, httpStatus: 202, error: "Still confirming your payment" }
+    }
+    if (outcome === "failed") {
       await prisma.payment.update({ where: { id: pending.id }, data: { status: "failed" } })
       return { ok: false, httpStatus: 402, error: "Payment has not succeeded" }
     }
