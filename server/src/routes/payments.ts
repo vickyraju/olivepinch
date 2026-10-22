@@ -50,7 +50,9 @@ paymentsRouter.post(
     const path = returnPath ?? `/subscribe/payment/return?subscriptionId=${subscriptionId}`
     const resultUrl = `${process.env.APP_URL ?? "http://localhost:5173"}${path}`
     const { redirectUrl, statusQueryUrl } = await createHostedPayment({
-      transactionReference: subscriptionId,
+      // Worldpay wants a reference that is unique per payment (max 64 chars). A retry after a decline or an expired page is
+      // a new payment, so it gets its own; the status link saved below is what identifies the attempt from here on.
+      transactionReference: `${subscriptionId}-${Date.now().toString(36)}`,
       amountMinorUnits: Math.round(total * 100),
       currency: "GBP",
       narrativeLine1: "OlivePinch",
