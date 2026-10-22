@@ -123,24 +123,40 @@ async function confirmPayment(subscriptionId: string): Promise<ConfirmResult> {
   }
 
   if (worldpayConfig) {
-    const pending = await prisma.payment.findFirst({
-      where: { subscriptionId, status: "pending" },
+    // A plan has one subscription however many times the customer retries, so every payment attempt made for it (the
+    // newest first) is checked: an earlier attempt that Worldpay did take money for must still activate the plan.
+    const attempts = await prisma.payment.findMany({
+      where: { subscriptionId, status: { in: ["pending", "failed", "superseded"] }, providerRef: { not: null } },
       orderBy: { createdAt: "desc" },
+      take: 8,
     })
-    if (!pending?.providerRef) {
-      return { ok: false, httpStatus: 402, error: "No pending payment found for this subscription" }
+    if (attempts.length === 0) {
+      return { ok: false, httpStatus: 402, error: "No payment found for this subscription" }
     }
-    const { outcome } = await queryPaymentStatus(pending.providerRef)
-    if (outcome === "pending") {
-      // Worldpay has not reported a final result yet. Leave the payment pending: the page asks again, and the daily
-      // sweep re-checks it. Marking it failed here could strand a customer who has actually been charged.
-      return { ok: false, httpStatus: 202, error: "Still confirming your payment" }
+    const outcomes: { payment: (typeof attempts)[number]; outcome: Awaited<ReturnType<typeof queryPaymentStatus>>["outcome"] }[] = []
+    for (const [i, payment] of attempts.entries()) {
+      // Only the newest attempt is worth waiting on; older ones get a single look.
+      const { outcome } = await queryPaymentStatus(payment.providerRef!, { retry: i === 0 })
+      outcomes.push({ payment, outcome })
     }
-    if (outcome === "failed") {
-      await prisma.payment.update({ where: { id: pending.id }, data: { status: "failed" } })
+    const paid = outcomes.filter((o) => o.outcome === "succeeded")
+    if (paid.length === 0) {
+      if (outcomes[0]!.outcome === "pending") {
+        // Worldpay has not reported a final result yet. Leave the payment pending: the page asks again, and the daily
+        // sweep re-checks it. Marking it failed here could strand a customer who has actually been charged.
+        return { ok: false, httpStatus: 202, error: "Still confirming your payment" }
+      }
+      for (const o of outcomes) if (o.outcome === "failed" && o.payment.status === "pending") await prisma.payment.update({ where: { id: o.payment.id }, data: { status: "failed" } })
       return { ok: false, httpStatus: 402, error: "Payment has not succeeded" }
     }
-    await prisma.payment.update({ where: { id: pending.id }, data: { status: "succeeded", paidAt: new Date() } })
+    // Every attempt Worldpay took money for is recorded as paid (a double charge then shows in the admin, where it can be refunded).
+    for (const o of paid) await prisma.payment.update({ where: { id: o.payment.id }, data: { status: "succeeded", paidAt: new Date() } })
+    // The plan can be edited between attempts, so an old attempt may have charged a different amount than the plan costs now.
+    // Money taken is always recorded (so it can be refunded), but only a payment for the current price activates the plan.
+    const total = await subscriptionTotal(subscriptionId)
+    if (!paid.some((o) => Math.abs(Number(o.payment.amount) - total) < 0.005)) {
+      return { ok: false, httpStatus: 409, error: "A payment was taken, but not for this plan's current price. Please contact hello@olivepinch.com and we'll sort it out." }
+    }
   } else {
     const total = await subscriptionTotal(subscriptionId)
     await prisma.payment.create({

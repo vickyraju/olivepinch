@@ -5,6 +5,7 @@ import { requireAuth, requireSignupToken } from "../middleware/auth.js"
 import { validateBody } from "../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, DELIVERY_SLOT_VALUES, PLAN_TIER_VALUES } from "../lib/enums.js"
 import { logCustomerActivity, describeChanges } from "../lib/customer-activity.js"
+import { saveUnpaidPlan } from "../lib/pending-plan.js"
 import { SLOTS_BY_MEALS_PER_DAY, planPrice } from "../lib/pricing.js"
 import { formatDate } from "../lib/email-templates.js"
 import { computeEndDate, pausesUsedTotal, buildDeliveryDates, canPauseDate, londonToday, renewalStartDate, earliestStartDate, pickSubscriptions, PAUSE_LIMITS_BY_DURATION } from "../lib/subscription.js"
@@ -112,29 +113,25 @@ subscriptionsRouter.post(
     discountAmount = result.discountAmount
   }
 
-  const subscription = await prisma.subscription.create({
-    data: {
-      customerId: customer.id,
+  const subscription = await saveUnpaidPlan(
+    customer.id,
+    {
       planDuration: body.planDuration,
       startDate,
       mealsPerDay: body.mealsPerDay,
       tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
       deliveryTimeSlot: body.deliveryTimeSlot as never,
-      status: "PENDING_PAYMENT",
-      promoCodeId,
+      promoCodeId: promoCodeId ?? null,
       discountAmount,
-      orders: {
-        create: dayItems.map((day) => ({
-          deliveryDate: day[0].date,
-          // No default meals: a day is only filled once the customer (or an admin) picks.
-          items: { create: day.flatMap((d) => (d.item ? [{ menuItemId: d.item.id, slot: d.slot }] : [])) },
-          menuChosenAt: day.every((d) => d.item) ? new Date() : null,
-        })),
-      },
     },
-    include: { orders: { include: { items: { include: { menuItem: true } } } } },
-  })
+    dayItems.map((day) => ({
+      deliveryDate: day[0].date,
+      // No default meals: a day is only filled once the customer (or an admin) picks.
+      items: { create: day.flatMap((d) => (d.item ? [{ menuItemId: d.item.id, slot: d.slot }] : [])) },
+      menuChosenAt: day.every((d) => d.item) ? new Date() : null,
+    }))
+  )
 
   await prisma.customer.update({
     where: { id: customer.id },
@@ -321,29 +318,25 @@ subscriptionsRouter.post("/:id/renew", validateBody(renewSchema), async (req, re
     discountAmount = result.discountAmount
   }
 
-  const subscription = await prisma.subscription.create({
-    data: {
-      customerId: req.customerId!,
+  const subscription = await saveUnpaidPlan(
+    req.customerId!,
+    {
       planDuration: body.planDuration,
       startDate,
       mealsPerDay: body.mealsPerDay,
-      promoCodeId,
+      promoCodeId: promoCodeId ?? null,
       discountAmount,
       tier: body.tier as PlanTier,
       deliverySlot: body.deliverySlot as never,
       deliveryTimeSlot: body.deliveryTimeSlot as never,
-      status: "PENDING_PAYMENT",
-      orders: {
-        create: dayItems.map((day) => ({
-          deliveryDate: day[0].date,
-          // No default meals: a day is only filled once the customer (or an admin) picks.
-          items: { create: day.flatMap((d) => (d.item ? [{ menuItemId: d.item.id, slot: d.slot }] : [])) },
-          menuChosenAt: day.every((d) => d.item) ? new Date() : null,
-        })),
-      },
     },
-    include: { orders: { include: { items: { include: { menuItem: true } } } } },
-  })
+    dayItems.map((day) => ({
+      deliveryDate: day[0].date,
+      // No default meals: a day is only filled once the customer (or an admin) picks.
+      items: { create: day.flatMap((d) => (d.item ? [{ menuItemId: d.item.id, slot: d.slot }] : [])) },
+      menuChosenAt: day.every((d) => d.item) ? new Date() : null,
+    }))
+  )
 
   const total = Math.max(0, price - discountAmount)
 

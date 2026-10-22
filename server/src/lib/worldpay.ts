@@ -102,16 +102,17 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 // failure: a customer can be charged while we are still waiting to hear, so only an explicit failure event may fail a payment.
 export type PaymentOutcome = "succeeded" | "failed" | "pending"
 
-export async function queryPaymentStatus(statusQueryUrl: string): Promise<{ outcome: PaymentOutcome; raw: unknown }> {
+export async function queryPaymentStatus(statusQueryUrl: string, opts: { retry?: boolean } = {}): Promise<{ outcome: PaymentOutcome; raw: unknown }> {
   // Right after the HPP redirect, Worldpay's Payment Queries index can briefly lag behind the
   // actual payment outcome — confirmed against a real sandbox payment where the query returned
   // an empty payments list moments before the transaction was indexed. Retry until we see a
   // known terminal event rather than treating "not indexed yet" the same as "declined".
   let result = { lastEvent: "", raw: undefined as unknown, actions: {} as RefundActions }
-  for (let attempt = 0; attempt < 5; attempt++) {
+  const attempts = opts.retry === false ? 1 : 5
+  for (let attempt = 0; attempt < attempts; attempt++) {
     result = await fetchPaymentStatus(statusQueryUrl)
     if (SUCCESS_EVENTS.includes(result.lastEvent) || FAILURE_EVENTS.includes(result.lastEvent)) break
-    if (attempt < 4) await sleep(1500)
+    if (attempt < attempts - 1) await sleep(1500)
   }
   const outcome: PaymentOutcome = SUCCESS_EVENTS.includes(result.lastEvent) ? "succeeded" : FAILURE_EVENTS.includes(result.lastEvent) ? "failed" : "pending"
   return { outcome, raw: result.raw }
