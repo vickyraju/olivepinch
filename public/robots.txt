@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /subscribe
+Disallow: /login
+Disallow: /complete-account
+
+Sitemap: https://www.olivepinch.com/sitemap.xml
