@@ -166,6 +166,8 @@ model MenuItem {
   carbs        Int      @default(0)
   fat          Int      @default(0)
 
+  // Set instead of deleting when the item appears in past orders or old weekly menus: hidden everywhere, history intact.
+  archivedAt DateTime?
   orderItems OrderItem[]
   weekItems  MenuWeekItem[]
 }

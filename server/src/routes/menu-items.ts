@@ -4,6 +4,6 @@ import { prisma } from "../lib/prisma.js"
 export const menuItemsRouter = Router()
 
 menuItemsRouter.get("/", async (_req, res) => {
-  const items = await prisma.menuItem.findMany({ orderBy: { slot: "asc" } })
+  const items = await prisma.menuItem.findMany({ where: { archivedAt: null }, orderBy: { slot: "asc" } })
   res.json(items)
 })

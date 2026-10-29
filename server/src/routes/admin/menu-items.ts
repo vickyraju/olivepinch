@@ -7,12 +7,13 @@ import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
 import { GOAL_VALUES, DIET_VALUES, MEAL_SLOT_VALUES, PLAN_TIER_VALUES } from "../../lib/enums.js"
 import { storeMenuPhoto } from "../../lib/menu-photos.js"
+import { londonToday } from "../../lib/subscription.js"
 
 export const adminMenuItemsRouter = Router()
 adminMenuItemsRouter.use(requireAdminAuth)
 
 adminMenuItemsRouter.get("/", async (_req, res) => {
-  res.json(await prisma.menuItem.findMany({ orderBy: [{ slot: "asc" }, { name: "asc" }] }))
+  res.json(await prisma.menuItem.findMany({ where: { archivedAt: null }, orderBy: [{ slot: "asc" }, { name: "asc" }] }))
 })
 
 const menuItemSchema = z.object({
@@ -61,19 +62,37 @@ adminMenuItemsRouter.patch("/:id", validateBody(menuItemSchema.partial()), async
   res.json(item)
 })
 
+// Deleting a meal that customers have already been served (or have lined up) must not break their history.
+//  - Still in a customer's upcoming delivery: refused, naming how many, so the admin changes those meals first.
+//  - Otherwise it comes off every weekly menu that hasn't been served yet.
+//  - If past orders or old weekly menus still point at it, it is archived (hidden everywhere, history intact);
+//    if nothing does, it is deleted for good.
 adminMenuItemsRouter.delete("/:id", async (req, res) => {
-  try {
-    await prisma.menuItem.delete({ where: { id: req.params.id as string } })
-    res.status(204).send()
-  } catch (err) {
-    // P2003: foreign key violation — this item is referenced by an OrderItem (near-certain
-    // for anything that's ever actually been served, since orders are created for the whole
-    // plan duration up front) or a MenuWeekItem. There's no soft-delete/active flag on
-    // MenuItem to redirect to yet, so the clearest thing to do today is explain why, rather
-    // than let the raw constraint error surface as an opaque 500.
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2003") {
-      return res.status(409).json({ error: "This item has already been used in orders and can't be deleted." })
-    }
-    throw err
+  const id = req.params.id as string
+  const item = await prisma.menuItem.findUnique({ where: { id } })
+  if (!item) return res.status(404).json({ error: "That menu item no longer exists." })
+  const today = londonToday()
+
+  const upcoming = await prisma.orderItem.findMany({
+    where: { menuItemId: id, order: { deliveryDate: { gte: today }, status: { in: ["SCHEDULED", "PAUSED"] }, subscription: { status: { in: ["ACTIVE", "PENDING_PAYMENT"] } } } },
+    select: { order: { select: { deliveryDate: true, subscription: { select: { customer: { select: { fullName: true } } } } } } },
+  })
+  if (upcoming.length > 0) {
+    const names = [...new Set(upcoming.map((u) => u.order.subscription.customer.fullName))]
+    const shown = names.slice(0, 3).join(", ") + (names.length > 3 ? ` and ${names.length - 3} more` : "")
+    return res.status(409).json({
+      error: `"${item.name}" is still chosen for ${upcoming.length} upcoming ${upcoming.length === 1 ? "delivery" : "deliveries"} (${shown}). Change those meals first (Customers, then Meals), then delete it.`,
+    })
   }
+
+  await prisma.$transaction([
+    prisma.menuWeekItem.deleteMany({ where: { menuItemId: id, date: { gte: today } } }),
+  ])
+  const stillUsed = (await prisma.orderItem.count({ where: { menuItemId: id } })) + (await prisma.menuWeekItem.count({ where: { menuItemId: id } }))
+  if (stillUsed > 0) {
+    await prisma.menuItem.update({ where: { id }, data: { archivedAt: new Date() } })
+    return res.json({ archived: true })
+  }
+  await prisma.menuItem.delete({ where: { id } })
+  res.json({ archived: false })
 })
