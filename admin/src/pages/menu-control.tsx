@@ -116,7 +116,7 @@ function MenuItemCard({
               {t}
             </span>
           ))}
-          {item.goalTags.slice(0, 1).map((t) => (
+          {item.goalTags.map((t) => (
             <span key={t} className="px-2 py-0.5 rounded-full text-[11px] font-semibold border bg-purple-50 text-purple-700 border-purple-200">
               {GOAL_LABELS[t] ?? t}
             </span>
@@ -143,6 +143,8 @@ function MenuControl() {
   const [showModal, setShowModal] = useState(false)
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
   const [deletingItem, setDeletingItem] = useState<MenuItem | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | undefined>()
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | undefined>()
@@ -168,9 +170,19 @@ function MenuControl() {
   }, [menuQuery.data, search, slotFilter])
 
   async function deleteItem(item: MenuItem) {
-    await api.del(`/menu-items/${item.id}`)
-    setDeletingItem(null)
-    await queryClient.invalidateQueries({ queryKey: ["menu-items"] })
+    setDeleting(true)
+    setDeleteError(undefined)
+    try {
+      await api.del(`/menu-items/${item.id}`)
+      setDeletingItem(null)
+      await queryClient.invalidateQueries({ queryKey: ["menu-items"] })
+      await queryClient.invalidateQueries({ queryKey: ["menu-weeks"] })
+    } catch (err) {
+      // Typically "still chosen for N upcoming deliveries": keep the dialog open and say why.
+      setDeleteError(err instanceof ApiError ? err.message : "Couldn't delete this item. Try again.")
+    } finally {
+      setDeleting(false)
+    }
   }
 
   function openCreateModal() {
@@ -192,7 +204,7 @@ function MenuControl() {
       slot: item.slot,
       dietTags: item.dietTags,
       allergenTags: item.allergenTags,
-      goalTags: item.goalTags.slice(0, 1),
+      goalTags: item.goalTags,
       tier: item.tier,
       kcal: String(item.kcal),
       protein: String(item.protein),
@@ -216,7 +228,8 @@ function MenuControl() {
   }
 
   function selectGoal(goal: string) {
-    setForm((f) => ({ ...f, goalTags: f.goalTags.includes(goal) ? [] : [goal] }))
+    // A meal can suit several styles (e.g. weight loss and muscle building), so this toggles rather than replaces.
+    setForm((f) => ({ ...f, goalTags: f.goalTags.includes(goal) ? f.goalTags.filter((g) => g !== goal) : [...f.goalTags, goal] }))
   }
 
   function toggleAllergen(allergen: string) {
@@ -342,7 +355,7 @@ function MenuControl() {
           ) : (
             <>
               {items.map((item) => (
-                <MenuItemCard key={item.id} item={item} onEdit={openEditModal} onRequestDelete={setDeletingItem} />
+                <MenuItemCard key={item.id} item={item} onEdit={openEditModal} onRequestDelete={(i) => { setDeleteError(undefined); setDeletingItem(i) }} />
               ))}
               {items.length === 0 ? <p className="col-span-full text-center text-sm text-gray-400 py-10">No menu items found.</p> : null}
             </>
@@ -558,16 +571,24 @@ function MenuControl() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-[16px] w-[400px] shadow-xl p-6">
             <h3 className="text-[18px] font-bold mb-2">Delete "{deletingItem.name}"?</h3>
-            <p className="text-sm text-gray-500 mb-6">It will no longer appear as a default menu option. This can't be undone.</p>
+            <p className="text-sm text-gray-500 mb-4">
+              It comes off every upcoming weekly menu and won't be offered again. Orders customers have already had keep showing it. This can't be undone.
+            </p>
+            {deleteError ? (
+              <p role="alert" className="mb-4 rounded-lg bg-red-50 border border-red-100 px-3 py-2 text-sm text-status-red">
+                {deleteError}
+              </p>
+            ) : null}
             <div className="flex justify-end gap-3">
               <button onClick={() => setDeletingItem(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer">
                 Cancel
               </button>
               <button
                 onClick={() => deleteItem(deletingItem)}
-                className="px-4 py-2 bg-status-red text-white rounded-lg text-sm font-semibold cursor-pointer"
+                disabled={deleting}
+                className="px-4 py-2 bg-status-red text-white rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
               >
-                Delete
+                {deleting ? "Deleting…" : "Delete"}
               </button>
             </div>
           </div>
