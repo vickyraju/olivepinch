@@ -169,8 +169,8 @@ What happens next:
                           <tbody>
                             <tr>
                               <td style="width:200px;">
-                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
-                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                <a href="https://www.olivepinch.com" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://www.olivepinch.com/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
                                 </a>
                               </td>
                             </tr>
@@ -588,8 +588,8 @@ Your delivery details carry over. Change them any time from your dashboard: ${p.
                           <tbody>
                             <tr>
                               <td style="width:200px;">
-                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
-                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                <a href="https://www.olivepinch.com" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://www.olivepinch.com/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
                                 </a>
                               </td>
                             </tr>
@@ -955,8 +955,8 @@ Changing your style or meal count? You can adjust it as you renew.
                           <tbody>
                             <tr>
                               <td style="width:200px;">
-                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
-                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                <a href="https://www.olivepinch.com" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://www.olivepinch.com/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
                                 </a>
                               </td>
                             </tr>
@@ -1312,8 +1312,8 @@ Whenever you want to come back, you can start a new plan from your dashboard: ${
                           <tbody>
                             <tr>
                               <td style="width:200px;">
-                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
-                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                <a href="https://www.olivepinch.com" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://www.olivepinch.com/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
                                 </a>
                               </td>
                             </tr>
@@ -1671,8 +1671,8 @@ Nothing else is needed — your plan and payment are already saved.
                           <tbody>
                             <tr>
                               <td style="width:200px;">
-                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
-                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                <a href="https://www.olivepinch.com" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://www.olivepinch.com/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
                                 </a>
                               </td>
                             </tr>
@@ -2061,8 +2061,8 @@ Or clear your data — if you'd rather we didn't keep your details, you can expo
                           <tbody>
                             <tr>
                               <td style="width:200px;">
-                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
-                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                <a href="https://www.olivepinch.com" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://www.olivepinch.com/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
                                 </a>
                               </td>
                             </tr>
@@ -2420,8 +2420,8 @@ Don't fancy choosing? Leave it with us — we'll match your meals to your style 
                           <tbody>
                             <tr>
                               <td style="width:200px;">
-                                <a href="https://olivepinch.vercel.app" target="_blank" title="OlivePinch">
-                                  <img alt="OlivePinch" src="https://olivepinch.vercel.app/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
+                                <a href="https://www.olivepinch.com" target="_blank" title="OlivePinch">
+                                  <img alt="OlivePinch" src="https://www.olivepinch.com/email/logo.png" style="border:0;display:block;outline:none;text-decoration:none;height:auto;width:100%;font-size:13px;" title="OlivePinch" width="200" height="auto" />
                                 </a>
                               </td>
                             </tr>

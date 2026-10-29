@@ -23,7 +23,7 @@ import { errorHandler } from "./middleware/error.js"
 
 // Used only when CORS_ORIGIN isn't set — a safe floor (the two real frontends) rather than
 // the wildcard this used to fall back to, which would accept requests from any origin.
-const DEFAULT_PRODUCTION_ORIGINS = ["https://olivepinch.vercel.app", "https://olivepinch-admin.vercel.app"]
+const DEFAULT_PRODUCTION_ORIGINS = ["https://www.olivepinch.com", "https://admin.olivepinch.com"]
 
 
 export function createApp() {

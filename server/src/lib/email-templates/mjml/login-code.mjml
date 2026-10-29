@@ -24,7 +24,7 @@
         <mj-text align="center" font-size="11px" letter-spacing="2px" color="#646e38" font-weight="bold" padding="0 0 10px">
           BIRMINGHAM &middot; FRESHLY PREPARED, DAILY
         </mj-text>
-        <mj-image src="https://olivepinch.vercel.app/email/logo.png" alt="OlivePinch" title="OlivePinch" width="200px" align="center" padding="0" href="https://olivepinch.vercel.app" />
+        <mj-image src="https://www.olivepinch.com/email/logo.png" alt="OlivePinch" title="OlivePinch" width="200px" align="center" padding="0" href="https://www.olivepinch.com" />
       </mj-column>
     </mj-section>
 
