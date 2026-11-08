@@ -12,6 +12,7 @@ import { GOALS, GOAL_PHOTOS, type Goal } from "@/data/menu"
 import type { PlanTier } from "@/lib/subscribe-context"
 import { usePlans, priceFor, formatGBP } from "@/lib/pricing"
 import { cn } from "@/lib/utils"
+import { SampleMenu } from "./sample-menu"
 
 const TEASER_META: Record<Goal, { kcal: string; protein: string; from: string }> = {
   "Weight Loss": { kcal: "~450 kcal", protein: "35g protein", from: "5.20" },
@@ -164,6 +165,8 @@ function DietPlans() {
           </div>
         </div>
       </section>
+
+      <SampleMenu />
 
       <section className="pb-20 sm:pb-28 bg-cream-100 py-16 sm:py-20">
         <div className="mx-auto max-w-2xl px-5 sm:px-8">
