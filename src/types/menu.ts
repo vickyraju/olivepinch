@@ -4,6 +4,7 @@ export interface PublishedMenuItem {
   slot: string // raw backend enum, e.g. "BREAKFAST"
   price: string // Prisma Decimal serializes as a string
   dietTags: string[]
+  tier: string // "BASIC" | "ADVANCED": a Basic plan is only offered Basic dishes, Advanced only Advanced
   allergenTags: string[]
   photoUrl: string | null
   description: string

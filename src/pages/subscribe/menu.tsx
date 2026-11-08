@@ -4,7 +4,7 @@ import { Info } from "lucide-react"
 import { useSubscribe } from "@/lib/subscribe-context"
 import { SLOTS_BY_MEALS_PER_DAY, type MealSlot } from "@/data/menu"
 import { mondayOf, toDateKey, fromDateKey } from "@/lib/subscription"
-import { mealSlotFromEnum, DIET_TO_ENUM } from "@/lib/enum-map"
+import { mealSlotFromEnum, DIET_TO_ENUM, TIER_TO_ENUM } from "@/lib/enum-map"
 import { api, ApiError } from "@/lib/api"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -84,6 +84,8 @@ function Menu() {
   const slots = SLOTS_BY_MEALS_PER_DAY[state.mealsPerDay]
   const dietEnums = new Set(state.dietTypes.map((d) => DIET_TO_ENUM[d]))
   const excludedAllergens = new Set(state.allergens)
+  // Only the tier the customer picked (Basic or Advanced): showing both was confusing.
+  const planTier = TIER_TO_ENUM[state.tier ?? "Basic"]
 
   function optionsFor(weekStart: string, date: string, slot: MealSlot): PublishedMenuItem[] {
     const items = weeks?.[weekStart]
@@ -92,6 +94,7 @@ function Menu() {
       (item) =>
         item.date === date &&
         mealSlotFromEnum(item.slot) === slot &&
+        item.tier === planTier &&
         item.dietTags.some((tag) => dietEnums.has(tag)) &&
         !item.allergenTags.some((a) => excludedAllergens.has(a))
     )

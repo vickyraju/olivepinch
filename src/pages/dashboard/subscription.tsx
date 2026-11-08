@@ -194,6 +194,10 @@ function Subscription() {
             <dd className="mt-1 text-ink font-medium">{sub.planDuration} days</dd>
           </div>
           <div>
+            <dt className="text-xs text-ink-muted uppercase tracking-wide">Tier</dt>
+            <dd className="mt-1 text-ink font-medium">{sub.tier === "ADVANCED" ? "Advanced" : "Basic"}</dd>
+          </div>
+          <div>
             <dt className="text-xs text-ink-muted uppercase tracking-wide">Ends</dt>
             <dd className="mt-1 text-ink font-medium">{new Date(endDate).toLocaleDateString("en-GB")}</dd>
           </div>

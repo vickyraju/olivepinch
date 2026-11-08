@@ -30,6 +30,8 @@ export interface OrderDay {
 
 export interface Subscription {
   id: string
+  /** "BASIC" | "ADVANCED": decides which dishes the customer can choose. */
+  tier: "BASIC" | "ADVANCED"
   status: "active" | "expired" | "cancelled"
   planDuration: 7 | 14 | 28
   startDate: string
@@ -63,6 +65,7 @@ export interface DashboardCustomer {
 
 interface RawSubscription {
   id: string
+  tier?: "BASIC" | "ADVANCED"
   status: "PENDING_PAYMENT" | "ACTIVE" | "EXPIRED"
   planDuration: 7 | 14 | 28
   startDate: string
@@ -108,6 +111,7 @@ function mapOrder(o: RawOrder): OrderDay {
 function mapSubscription(raw: RawSubscription, goal: Goal, dietTypes: DietType[], allergens: string[]): Subscription {
   return {
     id: raw.id,
+    tier: raw.tier ?? "BASIC",
     status: subscriptionStatusFromEnum(raw.status),
     planDuration: raw.planDuration,
     startDate: raw.startDate.slice(0, 10),
