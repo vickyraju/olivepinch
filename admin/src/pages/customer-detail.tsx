@@ -90,6 +90,7 @@ interface CustomerDetail {
   renewals: Renewal[]
   planEndDate: string | null
   planStatus: string | null
+  planTier: string | null
   planCancelledAt: string | null
 }
 
@@ -578,6 +579,7 @@ function CustomerDetail() {
                     ? planEndLabel(customer.planEndDate)
                     : "No plan",
               ],
+              ["Tier", customer.planTier ? (customer.planTier === "ADVANCED" ? "Advanced" : "Basic") : "—"],
               ["Date of birth", customer.dateOfBirth ? new Date(customer.dateOfBirth).toLocaleDateString("en-GB") : "—"],
               ["Gender", customer.gender ?? "—"],
               ["Height", customer.heightCm ? `${customer.heightCm} cm` : "—"],

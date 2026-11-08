@@ -93,11 +93,15 @@ function addDays(iso: string, days: number): string {
   return d.toISOString().slice(0, 10)
 }
 
-// Mirrors publishEditLockFor on the backend — customer choosing opens the Wednesday before
-// weekStart, so a published week's roster is frozen from that moment on (weekStart - 5 days).
-function isPastEditLock(mondayIso: string): boolean {
-  if (!isMonday(mondayIso)) return false
-  return new Date() >= new Date(`${addDays(mondayIso, -5)}T00:00:00.000Z`)
+// A published week stays editable until it's over; the server keeps today and past days as they were.
+function todayIsoUk(): string {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" })
+}
+function isWeekOver(mondayIso: string): boolean {
+  return isMonday(mondayIso) && addDays(mondayIso, 6) < todayIsoUk()
+}
+function hasWeekStarted(mondayIso: string): boolean {
+  return isMonday(mondayIso) && mondayIso <= todayIsoUk()
 }
 
 function formatWeekRange(mondayIso: string): string {
@@ -254,6 +258,10 @@ function MenuWeeks() {
   const [pendingExpanded, setPendingExpanded] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
   const [showUnlockModal, setShowUnlockModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletingWeek, setDeletingWeek] = useState(false)
+  // Outcome of the last save/delete of a live week, e.g. how many customer days went back to "Not chosen".
+  const [composerNotice, setComposerNotice] = useState("")
   const locked = composerPublished && !unlocked
 
   const itemCountsQuery = useQuery({
@@ -262,6 +270,7 @@ function MenuWeeks() {
     enabled: composerPublished && isMonday(composerWeek),
   })
   const itemCounts = itemCountsQuery.data ?? {}
+  const pickedCount = Object.values(itemCounts).reduce((sum, n) => sum + n, 0)
 
   const deepLinkWeek = searchParams.get("week")
   const pendingWeek = deepLinkWeek && isMonday(deepLinkWeek) ? deepLinkWeek : nextMondayIso()
@@ -275,6 +284,7 @@ function MenuWeeks() {
   function loadComposerWeek(weekStart: string) {
     setComposerWeek(weekStart)
     setComposerError("")
+    setComposerNotice("")
     setUnlocked(false)
     // Clear straight away so the previous week's items and status never show against the new dates.
     setComposerItemsByDate({})
@@ -358,8 +368,17 @@ function MenuWeeks() {
     setComposerError("")
     try {
       const dayItems = composerDates.map((date) => ({ date, menuItemIds: composerItemsByDate[date] ?? [] }))
-      await api.put(`/menu-weeks/${composerWeek}`, { dayItems })
+      const result = await api.put<{ resetDays: number; customers: number; pastDaysKept: boolean } | undefined>(`/menu-weeks/${composerWeek}`, { dayItems })
       await queryClient.invalidateQueries({ queryKey: ["menu-weeks"] })
+      // Reload so the screen matches what was kept (today and past days are never changed).
+      if (result?.pastDaysKept) loadComposerWeek(composerWeek)
+      setComposerNotice(
+        result?.resetDays
+          ? `Saved. ${result.resetDays} customer day${result.resetDays === 1 ? "" : "s"} (${result.customers} customer${result.customers === 1 ? "" : "s"}) had a dish you removed and now show "Not chosen" — they'll need to pick again.`
+          : composerPublished
+            ? "Saved. No customer's choices were affected."
+            : ""
+      )
       if (composerPublished) {
         await queryClient.invalidateQueries({ queryKey: ["menu-week-item-counts", composerWeek] })
         setUnlocked(false)
@@ -373,6 +392,25 @@ function MenuWeeks() {
 
   function discardChanges() {
     loadComposerWeek(composerWeek)
+  }
+
+  async function deleteWeek() {
+    setDeletingWeek(true)
+    setComposerError("")
+    try {
+      const result = await api.del<{ resetDays: number; customers: number }>(`/menu-weeks/${composerWeek}`)
+      setShowDeleteModal(false)
+      await queryClient.invalidateQueries({ queryKey: ["menu-weeks"] })
+      loadComposerWeek(composerWeek)
+      setComposerNotice(
+        `Week deleted.${result?.resetDays ? ` ${result.resetDays} customer day${result.resetDays === 1 ? "" : "s"} went back to "Not chosen".` : ""}`
+      )
+    } catch (err) {
+      setShowDeleteModal(false)
+      setComposerError(err instanceof ApiError ? err.message : "Couldn't delete this week's menu.")
+    } finally {
+      setDeletingWeek(false)
+    }
   }
 
   async function publish() {
@@ -562,8 +600,8 @@ function MenuWeeks() {
 
             {composerPublished && unlocked && (
               <p className="mb-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                Safe to change — customers can't choose from this week's menu until Wednesday, so nobody has picked
-                anything yet.
+                You're editing a live week. If you remove a dish a customer has already picked, that day goes back to
+                "Not chosen" for them. {hasWeekStarted(composerWeek) ? "Today and past days stay as they were." : ""}
               </p>
             )}
 
@@ -642,27 +680,43 @@ function MenuWeeks() {
                 {composerError}
               </p>
             )}
+            {composerNotice && (
+              <p role="status" className="mt-4 text-sm text-[#2E6B3E] bg-[#F0F7F3] border border-[#cfe6d7] rounded-lg px-3 py-2">
+                {composerNotice}
+              </p>
+            )}
 
             <div className="flex gap-3 pt-5">
               {!composerReady ? (
                 <Skeleton className="h-10 w-40" />
               ) : locked ? (
-                isPastEditLock(composerWeek) ? (
+                isWeekOver(composerWeek) ? (
                   <span
-                    title="Customers can choose from this week's menu starting Wednesday — the roster is locked from that point on"
+                    title="This week has been served, so its menu is kept as a record"
                     className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-400 cursor-not-allowed"
                   >
-                    Locked
+                    Week finished
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => setShowUnlockModal(true)}
-                    disabled={!isMonday(composerWeek)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
-                  >
-                    Edit menu
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setShowUnlockModal(true)}
+                      disabled={!isMonday(composerWeek)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+                    >
+                      Edit menu
+                    </button>
+                    {!hasWeekStarted(composerWeek) && (
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteModal(true)}
+                        className="px-4 py-2 border border-red-200 text-status-red rounded-lg text-sm font-semibold cursor-pointer"
+                      >
+                        Delete week
+                      </button>
+                    )}
+                  </>
                 )
               ) : composerPublished ? (
                 <>
@@ -852,13 +906,48 @@ function MenuWeeks() {
         </div>
       </div>
 
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[12px] max-w-md w-full mx-4 p-6">
+            <h3 className="text-base font-bold text-gray-900 mb-2">Delete this week's menu?</h3>
+            <p className="text-sm text-gray-600 mb-5">
+              The whole menu for {formatWeekRange(composerWeek)} is removed and customers can no longer choose from it.
+              {pickedCount > 0
+                ? ` ${pickedCount} meal${pickedCount === 1 ? " has" : "s have"} already been picked; those days go back to "Not chosen".`
+                : " Nobody has picked from it yet."}{" "}
+              This can't be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={deleteWeek}
+                disabled={deletingWeek}
+                className="px-4 py-2 bg-status-red text-white rounded-lg text-sm font-semibold cursor-pointer disabled:opacity-50"
+              >
+                {deletingWeek ? "Deleting…" : "Delete week"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showUnlockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-[12px] max-w-md w-full mx-4 p-6">
             <h3 className="text-base font-bold text-gray-900 mb-2">Edit a published week?</h3>
             <p className="text-sm text-gray-600 mb-5">
-              Customers can't choose from this week's menu until Wednesday, so nothing's been picked yet — safe to
-              change until then. Once Wednesday arrives, this roster locks and can't be edited anymore.
+              {pickedCount > 0
+                ? `Customers have already picked ${pickedCount} meal${pickedCount === 1 ? "" : "s"} from this week. `
+                : "Nobody has picked from this week yet. "}
+              If you remove a dish someone picked, that day goes back to "Not chosen" for them and they'll need to pick
+              again. {hasWeekStarted(composerWeek) ? "Today and past days can't be changed." : ""}
             </p>
             <div className="flex justify-end gap-3">
               <button

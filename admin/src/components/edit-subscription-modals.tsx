@@ -14,6 +14,7 @@ export interface EditableSubscription {
   id: string
   planDuration: number
   mealsPerDay: number
+  tier?: string
   deliverySlot: string
   deliveryTimeSlot: string
   orders: EditableOrder[]
@@ -25,6 +26,7 @@ interface MenuItem {
   slot: string
   allergenTags: string[]
   dietTags: string[]
+  tier?: string
 }
 
 interface TimeSlot {
@@ -255,12 +257,14 @@ export function MealsModal({
                         {(() => {
                           const options = (menuQuery.data ?? [])
                             .filter((m) => m.slot === box || m.id === d.current[i])
-                            .sort((a, b) => a.name.localeCompare(b.name))
+                            // The plan's own tier first: customers only see that tier, admins can still pick any dish.
+                            .sort((a, b) => Number(b.tier === subscription.tier) - Number(a.tier === subscription.tier) || a.name.localeCompare(b.name))
                           const render = (m: MenuItem) => {
                             const bad = clashes(m)
                             return (
                               <option key={m.id} value={m.id} disabled={bad.length > 0 && m.id !== picks[d.date]?.[i]}>
                                 {m.name}
+                                {subscription.tier && m.tier && m.tier !== subscription.tier ? ` (${m.tier === "ADVANCED" ? "Advanced" : "Basic"})` : ""}
                                 {bad.length ? ` — contains ${bad.join(", ")}` : ""}
                               </option>
                             )

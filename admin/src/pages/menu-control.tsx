@@ -64,10 +64,12 @@ const MAX_PHOTO_BYTES = 20 * 1024 * 1024
 function MenuItemCard({
   item,
   onEdit,
+  onDuplicate,
   onRequestDelete,
 }: {
   item: MenuItem
   onEdit: (item: MenuItem) => void
+  onDuplicate: (item: MenuItem) => void
   onRequestDelete: (item: MenuItem) => void
 }) {
   return (
@@ -96,6 +98,14 @@ function MenuItemCard({
             className="w-8 h-8 rounded-full bg-white/90 text-gray-700 hover:bg-[#2E6B3E] hover:text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
           >
             <span className="material-symbols-outlined text-[18px]">edit</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onDuplicate(item)}
+            title="Duplicate item"
+            className="w-8 h-8 rounded-full bg-white/90 text-gray-700 hover:bg-[#2E6B3E] hover:text-white flex items-center justify-center transition-colors shadow-sm cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">content_copy</span>
           </button>
           <button
             type="button"
@@ -214,6 +224,14 @@ function MenuControl() {
     setPhotoError(undefined)
     setError(undefined)
     setShowModal(true)
+  }
+
+  // Opens the Add form pre-filled from an existing dish (same photo, tags and macros), so a variant
+  // such as a higher-calorie version can be made by changing just what differs. Saves as a new item.
+  function openDuplicateModal(item: MenuItem) {
+    openEditModal(item)
+    setEditingItem(null)
+    setForm((f) => ({ ...f, name: `${item.name} (copy)` }))
   }
 
   function closeModal() {
@@ -355,7 +373,7 @@ function MenuControl() {
           ) : (
             <>
               {items.map((item) => (
-                <MenuItemCard key={item.id} item={item} onEdit={openEditModal} onRequestDelete={(i) => { setDeleteError(undefined); setDeletingItem(i) }} />
+                <MenuItemCard key={item.id} item={item} onEdit={openEditModal} onDuplicate={openDuplicateModal} onRequestDelete={(i) => { setDeleteError(undefined); setDeletingItem(i) }} />
               ))}
               {items.length === 0 ? <p className="col-span-full text-center text-sm text-gray-400 py-10">No menu items found.</p> : null}
             </>
