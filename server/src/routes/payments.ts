@@ -4,7 +4,7 @@ import { prisma } from "../lib/prisma.js"
 import { worldpayConfig, createHostedPayment, queryPaymentStatus } from "../lib/worldpay.js"
 import { validateBody } from "../middleware/validate.js"
 import { sendEmail } from "../lib/email.js"
-import { subscriptionConfirmationEmail, renewalConfirmationEmail } from "../lib/email-templates.js"
+import { subscriptionConfirmationEmail, renewalConfirmationEmail, adminNewSubscriptionEmail } from "../lib/email-templates.js"
 import { planPrice } from "../lib/pricing.js"
 import { GOAL_LABELS } from "../lib/enums.js"
 import type { Goal, PlanTier } from "@prisma/client"
@@ -165,6 +165,26 @@ async function confirmPayment(subscriptionId: string): Promise<ConfirmResult> {
   }
 
   const subscription = await activateSubscription(subscriptionId)
+
+  // Tell the team (hello@olivepinch.com unless ADMIN_NOTIFY_EMAIL says otherwise). Never fails the checkout.
+  try {
+    const priorPlans = await prisma.subscription.count({ where: { customerId: subscription.customerId, id: { not: subscription.id }, status: { not: "PENDING_PAYMENT" } } })
+    const { subject, text, html } = adminNewSubscriptionEmail({
+      kind: priorPlans > 0 ? "Renewal" : "New subscription",
+      name: subscription.customer.fullName,
+      email: subscription.customer.email,
+      phone: subscription.customer.phone,
+      planDuration: subscription.planDuration,
+      tier: subscription.tier,
+      mealsPerDay: subscription.mealsPerDay,
+      startDate: subscription.startDate.toISOString().slice(0, 10),
+      total: await subscriptionTotal(subscriptionId),
+      adminUrl: `${process.env.ADMIN_URL ?? "https://admin.olivepinch.com"}/customers/${subscription.customerId}`,
+    })
+    await sendEmail(process.env.ADMIN_NOTIFY_EMAIL ?? "hello@olivepinch.com", subject, text, html)
+  } catch (err) {
+    console.error("admin new-subscription email failed", subscriptionId, err)
+  }
 
   // First-ever subscription for this customer (renewals create a new Subscription row too,
   // so "only one exists" is what distinguishes initial signup from a renewal) — send the

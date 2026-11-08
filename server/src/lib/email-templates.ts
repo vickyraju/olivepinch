@@ -5,7 +5,7 @@
 
 // p.name comes straight from Customer.fullName (user-supplied at signup, unsanitized) — escape
 // before interpolating into HTML so a name like "<img src=x onerror=...>" can't inject markup.
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -2646,5 +2646,39 @@ Don't fancy choosing? Leave it with us — we'll match your meals to your style 
 </body>
 
 </html>`
+  return { subject, text, html }
+}
+
+// Internal heads-up to the OlivePinch team when a plan is paid for. Not customer-facing, so plain and short.
+export function adminNewSubscriptionEmail(p: {
+  kind: "New subscription" | "Renewal"
+  name: string
+  email: string | null
+  phone: string | null
+  planDuration: number
+  tier: string
+  mealsPerDay: number
+  startDate: string
+  total: number
+  adminUrl: string
+}) {
+  const tier = p.tier === "ADVANCED" ? "Advanced" : "Basic"
+  const rows: [string, string][] = [
+    ["Customer", p.name],
+    ["Email", p.email ?? "-"],
+    ["Phone", p.phone ?? "-"],
+    ["Plan", `${p.planDuration} days, ${tier}, ${p.mealsPerDay} meal${p.mealsPerDay === 1 ? "" : "s"}/day`],
+    ["Starts", formatDate(p.startDate)],
+    ["Paid", `£${p.total.toFixed(2)}`],
+  ]
+  const subject = `${p.kind}: ${p.name} (${p.planDuration}-day ${tier}, £${p.total.toFixed(2)})`
+  const text = `${p.kind} on OlivePinch.\n\n${rows.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nOpen in admin: ${p.adminUrl}\n`
+  const html = `<div style="font-family:Arial,sans-serif;font-size:14px;color:#222">
+<p style="font-size:16px;font-weight:bold;margin:0 0 12px">${p.kind} on OlivePinch</p>
+<table cellpadding="6" style="border-collapse:collapse">${rows
+    .map(([k, v]) => `<tr><td style="color:#666">${k}</td><td><strong>${escapeHtml(v)}</strong></td></tr>`)
+    .join("")}</table>
+<p style="margin-top:16px"><a href="${p.adminUrl}">Open this customer in the admin panel</a></p>
+</div>`
   return { subject, text, html }
 }

@@ -91,6 +91,9 @@ subscriptionsRouter.post(
           if (customItemId && (!customItem || customItem.slot !== slot)) {
             throw Object.assign(new Error(`Invalid menu selection for ${isoDate} (${slot})`), { status: 400 })
           }
+          if (customItem && customItem.tier !== body.tier) {
+            throw Object.assign(new Error(`"${customItem.name}" isn't part of the ${body.tier === "ADVANCED" ? "Advanced" : "Basic"} plan. Choose another meal for ${isoDate}.`), { status: 400 })
+          }
           if (customItem && customer.allergens.some((al) => customItem.allergenTags.some((t: string) => t.trim().toLowerCase() === al.trim().toLowerCase()))) {
             throw Object.assign(new Error(`"${customItem.name}" contains an allergen you avoid. Choose another meal for ${isoDate}.`), { status: 400 })
           }
@@ -248,19 +251,27 @@ const weekSelectionSchema = z.object({
   dayItems: z.array(z.object({ date: z.string(), items: z.array(z.string()) })),
 })
 
-// Customer picks next week's menu from whatever the admin has published, up until the
-// Friday cutoff (locks out once Saturday starts) for that week.
+// Customer picks meals from whatever the admin has published:
+//  - next week: the whole week at once, up until the Friday cutoff (locks out once Saturday starts);
+//  - the current week (e.g. a plan that starts mid-week): day by day, each day until 12:30pm the day
+//    before it (the same cutoff as pausing), so a new customer can choose from their very first day.
 subscriptionsRouter.patch("/:id/menu-weeks/:weekStart", validateBody(weekSelectionSchema), async (req, res) => {
   const subscription = await prisma.subscription.findFirstOrThrow({ where: { id: req.params.id as string, customerId: req.customerId } })
   if (subscription.status !== "ACTIVE") {
     return res.status(400).json({ error: "This plan is no longer active, so its deliveries can't be changed." })
   }
   const weekStart = assertMonday(req.params.weekStart as string)
-  if (Date.now() >= fridayCutoffFor(weekStart).getTime()) {
+  const { dayItems } = req.body as z.infer<typeof weekSelectionSchema>
+  const isCurrentWeek = weekStart.getTime() <= londonToday().getTime()
+  if (isCurrentWeek) {
+    const late = dayItems.filter((d) => !canPauseDate(new Date(`${d.date}T00:00:00.000Z`)))
+    if (late.length > 0) {
+      return res.status(400).json({ error: `It's too late to change ${late.map((d) => d.date).join(", ")}: meals must be chosen by 12:30pm the day before.` })
+    }
+  } else if (Date.now() >= fridayCutoffFor(weekStart).getTime()) {
     return res.status(400).json({ error: "Selection window has closed for this week" })
   }
-  const { dayItems } = req.body as z.infer<typeof weekSelectionSchema>
-  await applyWeekSelection(req.params.id as string, weekStart, dayItems)
+  await applyWeekSelection(req.params.id as string, weekStart, dayItems, { onlyGivenDays: isCurrentWeek })
   await logCustomerActivity(req.customerId!, "menu-chosen", `Chose meals for ${dayItems.length} day${dayItems.length === 1 ? "" : "s"} in the week of ${weekStart.toISOString().slice(0, 10)}`)
   res.status(204).send()
 })

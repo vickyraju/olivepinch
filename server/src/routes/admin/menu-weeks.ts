@@ -3,7 +3,8 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
-import { assertMonday, applyWeekSelection, weekDates, isWeekComplete, publishEditLockFor } from "../../lib/menu-week.js"
+import { assertMonday, applyWeekSelection, weekDates, isWeekComplete } from "../../lib/menu-week.js"
+import { londonToday } from "../../lib/subscription.js"
 import { formatAddress } from "../../lib/address.js"
 
 export const adminMenuWeeksRouter = Router()
@@ -11,6 +12,32 @@ adminMenuWeeksRouter.use(requireAdminAuth)
 
 function logAction(adminId: string, action: string, customerId?: string, detail?: string) {
   return prisma.adminAuditLog.create({ data: { adminId, action, customerId, detail } })
+}
+
+// After a week's menu changes (or is deleted), any upcoming customer day whose chosen dish is no
+// longer on that day's menu goes back to "Not chosen", so nobody is sent a dish that was taken off.
+// Today and past days are never touched (the kitchen has started on them).
+async function resetPicksNotOnMenu(weekStart: Date) {
+  const today = londonToday()
+  const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart }, include: { items: true } })
+  const onMenu = new Set((menuWeek?.items ?? []).map((i) => `${i.date.toISOString().slice(0, 10)}|${i.menuItemId}`))
+  const orders = await prisma.order.findMany({
+    where: {
+      deliveryDate: { in: weekDates(weekStart).filter((d) => d.getTime() > today.getTime()) },
+      status: { in: ["SCHEDULED", "PAUSED"] },
+      subscription: { status: { in: ["ACTIVE", "PENDING_PAYMENT"] } },
+      items: { some: {} },
+    },
+    include: { items: true, subscription: { select: { customerId: true } } },
+  })
+  const affected = orders.filter((o) => o.items.some((i) => !onMenu.has(`${o.deliveryDate.toISOString().slice(0, 10)}|${i.menuItemId}`)))
+  if (affected.length > 0) {
+    await prisma.$transaction([
+      prisma.orderItem.deleteMany({ where: { orderId: { in: affected.map((o) => o.id) } } }),
+      prisma.order.updateMany({ where: { id: { in: affected.map((o) => o.id) } }, data: { menuChosenAt: null } }),
+    ])
+  }
+  return { resetDays: affected.length, customers: new Set(affected.map((o) => o.subscription.customerId)).size }
 }
 
 adminMenuWeeksRouter.get("/", async (_req, res) => {
@@ -70,24 +97,45 @@ adminMenuWeeksRouter.put("/:weekStart", validateBody(putWeekSchema), async (req,
     seenItemIdsByDate.set(date, seen)
   }
 
-  const existing = await prisma.menuWeek.findUnique({ where: { weekStart } })
-  if (existing?.published && new Date() >= publishEditLockFor(weekStart)) {
-    return res.status(400).json({ error: "This week's menu is locked — customers have started choosing and it can no longer be edited" })
-  }
-
+  // Published weeks stay editable (an admin can fix a mistake), but today and past days are frozen:
+  // whatever was on those days' menus is kept exactly as it was, whatever the request says.
+  const todayIso = londonToday().toISOString().slice(0, 10)
   const menuWeek = await prisma.menuWeek.upsert({
     where: { weekStart },
     create: { weekStart },
     update: {},
   })
+  const futureRows = rows.filter((r) => r.date > todayIso)
   await prisma.$transaction([
-    prisma.menuWeekItem.deleteMany({ where: { menuWeekId: menuWeek.id } }),
+    prisma.menuWeekItem.deleteMany({ where: { menuWeekId: menuWeek.id, date: { gt: new Date(`${todayIso}T00:00:00.000Z`) } } }),
     prisma.menuWeekItem.createMany({
-      data: rows.map((r) => ({ menuWeekId: menuWeek.id, menuItemId: r.menuItemId, date: new Date(`${r.date}T00:00:00.000Z`) })),
+      data: futureRows.map((r) => ({ menuWeekId: menuWeek.id, menuItemId: r.menuItemId, date: new Date(`${r.date}T00:00:00.000Z`) })),
     }),
   ])
-  await logAction(req.adminId!, "menu-week-compose", undefined, `week ${req.params.weekStart}, ${rows.length} items`)
-  res.status(204).send()
+  const reset = menuWeek.published ? await resetPicksNotOnMenu(weekStart) : { resetDays: 0, customers: 0 }
+  await logAction(
+    req.adminId!,
+    "menu-week-compose",
+    undefined,
+    `week ${req.params.weekStart}, ${futureRows.length} upcoming items${reset.resetDays ? `; reset ${reset.resetDays} customer day(s)` : ""}`
+  )
+  res.json({ ...reset, pastDaysKept: rows.length !== futureRows.length || weekStart.getTime() <= londonToday().getTime() })
+})
+
+// Delete a week's menu (e.g. published by mistake). Only weeks that haven't started: once a day has
+// been served or is being prepared, the week is history. Customers who had picked from it go back
+// to "Not chosen" for those days.
+adminMenuWeeksRouter.delete("/:weekStart", async (req, res) => {
+  const weekStart = assertMonday(req.params.weekStart as string)
+  if (weekStart.getTime() <= londonToday().getTime()) {
+    return res.status(400).json({ error: "This week has already started, so its menu can't be deleted. Edit the upcoming days instead." })
+  }
+  const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart } })
+  if (!menuWeek) return res.status(404).json({ error: "There's no menu for that week." })
+  await prisma.menuWeek.delete({ where: { id: menuWeek.id } }) // its items go with it (cascade)
+  const reset = await resetPicksNotOnMenu(weekStart)
+  await logAction(req.adminId!, "menu-week-delete", undefined, `week ${req.params.weekStart}${reset.resetDays ? `; reset ${reset.resetDays} customer day(s)` : ""}`)
+  res.json(reset)
 })
 
 adminMenuWeeksRouter.post("/:weekStart/publish", async (req, res) => {

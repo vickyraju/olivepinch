@@ -62,7 +62,9 @@ export interface WeekDaySelection {
 
 // Shared by the customer-facing and admin-override endpoints — they differ only in whether
 // the Friday cutoff is enforced (checked by the caller) and how the change gets logged.
-export async function applyWeekSelection(subscriptionId: string, weekStart: Date, dayItems: WeekDaySelection[]) {
+// onlyGivenDays: change just the days sent (the rest of the current week); otherwise every
+// day of the plan in that week must be sent (next week's full selection).
+export async function applyWeekSelection(subscriptionId: string, weekStart: Date, dayItems: WeekDaySelection[], opts: { onlyGivenDays?: boolean } = {}) {
   const subscription = await prisma.subscription.findUniqueOrThrow({ where: { id: subscriptionId }, include: { customer: { select: { allergens: true, dietTypes: true } } } })
   const avoided = new Set(subscription.customer.allergens.map((a) => a.trim().toLowerCase()))
   const slots = SLOTS_BY_MEALS_PER_DAY[subscription.mealsPerDay as 1 | 2 | 3]
@@ -81,12 +83,14 @@ export async function applyWeekSelection(subscriptionId: string, weekStart: Date
 
   // Only the days that actually belong to this subscription within the week (a plan can
   // start or end mid-week, so not every one of the 7 calendar days necessarily has an Order).
-  const orders = await prisma.order.findMany({
+  const byDate = new Map(dayItems.map((d) => [d.date, d.items]))
+  const allOrders = await prisma.order.findMany({
     where: { subscriptionId, deliveryDate: { in: weekDates(weekStart) } },
   })
-  if (orders.length === 0) throw httpError(400, "This subscription has no deliveries in that week")
-
-  const byDate = new Map(dayItems.map((d) => [d.date, d.items]))
+  const orders = opts.onlyGivenDays ? allOrders.filter((o) => byDate.has(o.deliveryDate.toISOString().slice(0, 10))) : allOrders
+  if (orders.length === 0) throw httpError(400, "This subscription has no deliveries on those days")
+  // A plan's tier decides which dishes it gets: Basic plans pick from Basic dishes, Advanced from Advanced.
+  const fitsPlan = (m: { tier: string }) => m.tier === subscription.tier
 
   const updates = orders.map((order) => {
     const date = order.deliveryDate.toISOString().slice(0, 10)
@@ -99,7 +103,7 @@ export async function applyWeekSelection(subscriptionId: string, weekStart: Date
       // customer app shows "nothing to choose here"); otherwise a meal must be picked.
       if (id === "") {
         const fits = [...(availableByDate.get(date)?.values() ?? [])].some(
-          (m) => m.slot === slots[i] && m.dietTags.some((d) => subscription.customer.dietTypes.includes(d)) && !m.allergenTags.some((a) => avoided.has(a.trim().toLowerCase()))
+          (m) => m.slot === slots[i] && fitsPlan(m) && m.dietTags.some((d) => subscription.customer.dietTypes.includes(d)) && !m.allergenTags.some((a) => avoided.has(a.trim().toLowerCase()))
         )
         if (fits) throw httpError(400, `Choose a meal for ${date} (${slots[i]}).`)
         return []
@@ -107,6 +111,9 @@ export async function applyWeekSelection(subscriptionId: string, weekStart: Date
       const item = availableByDate.get(date)?.get(id)
       if (!item || item.slot !== slots[i]) {
         throw httpError(400, `Invalid menu selection for ${date} (${slots[i]})`)
+      }
+      if (!fitsPlan(item)) {
+        throw httpError(400, `"${item.name}" isn't part of your ${subscription.tier === "ADVANCED" ? "Advanced" : "Basic"} plan. Choose another meal for ${date}.`)
       }
       // Never put an allergen the customer avoids in their box, whatever the client sent.
       const clash = item.allergenTags.filter((a) => avoided.has(a.trim().toLowerCase()))
