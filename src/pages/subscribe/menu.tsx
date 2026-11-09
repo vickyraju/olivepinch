@@ -12,6 +12,7 @@ import { FoodPhoto } from "@/components/ui/food-photo"
 import { Badge } from "@/components/ui/badge"
 import type { PublishedMenuItem } from "@/types/menu"
 import { preloadImages } from "@/lib/preload-images"
+import { optionsForBox, type MenuOption } from "@/lib/menu-options"
 import { scrollToFirstInvalid } from "@/lib/invalid"
 import { StepNav } from "./step-nav"
 
@@ -87,17 +88,10 @@ function Menu() {
   // Only the tier the customer picked (Basic or Advanced): showing both was confusing.
   const planTier = TIER_TO_ENUM[state.tier ?? "Basic"]
 
-  function optionsFor(weekStart: string, date: string, slot: MealSlot): PublishedMenuItem[] {
+  function optionsFor(weekStart: string, date: string, slot: MealSlot): MenuOption[] {
     const items = weeks?.[weekStart]
     if (!Array.isArray(items)) return []
-    return items.filter(
-      (item) =>
-        item.date === date &&
-        mealSlotFromEnum(item.slot) === slot &&
-        item.tier === planTier &&
-        item.dietTags.some((tag) => dietEnums.has(tag)) &&
-        !item.allergenTags.some((a) => excludedAllergens.has(a))
-    )
+    return optionsForBox(items.filter((item) => item.date === date && mealSlotFromEnum(item.slot) === slot), planTier, dietEnums, excludedAllergens)
   }
 
   function setItem(date: string, slotIndex: number, itemId: string) {
@@ -189,6 +183,7 @@ function Menu() {
                                       <span className="flex items-center gap-2">
                                         <FoodPhoto eager src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
                                         <span className="min-w-0 truncate">{opt.name}</span>
+                                        {opt.outsideFoodTypes && <span className="shrink-0 text-xs text-ink-muted">· outside your food types</span>}
                                       </span>
                                     </SelectItem>
                                   ))}

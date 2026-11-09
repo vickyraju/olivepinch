@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import type { PublishedMenuItem } from "@/types/menu"
 import { preloadImages } from "@/lib/preload-images"
 import { scrollToFirstInvalid } from "@/lib/invalid"
+import { optionsForBox, type MenuOption } from "@/lib/menu-options"
 
 type WeekItems = PublishedMenuItem[] | null | "loading" | "unpublished"
 
@@ -71,12 +72,14 @@ function DayPickers({
   // Only meals of the customer's tier that fit their food types and avoid their allergens, as at signup.
   const dietEnums = new Set(sub.dietTypes.map((d) => DIET_TO_ENUM[d]))
   const avoided = new Set(sub.allergens)
-  const optionsByDateSlot = new Map<string, PublishedMenuItem[]>()
+  const byDateSlot = new Map<string, PublishedMenuItem[]>()
   for (const item of items) {
-    if (item.tier !== sub.tier || !item.dietTags.some((tag) => dietEnums.has(tag)) || item.allergenTags.some((a) => avoided.has(a))) continue
     const key = `${item.date}|${mealSlotFromEnum(item.slot)}`
-    optionsByDateSlot.set(key, [...(optionsByDateSlot.get(key) ?? []), item])
+    byDateSlot.set(key, [...(byDateSlot.get(key) ?? []), item])
   }
+  const optionsByDateSlot = new Map<string, MenuOption[]>(
+    [...byDateSlot].map(([key, list]) => [key, optionsForBox(list, sub.tier, dietEnums, avoided)])
+  )
 
   // Boxes with no options at all do not need a pick.
   const isDone = (o: OrderDay) => slotsFor(o).every((slot, i) => (optionsByDateSlot.get(`${o.date}|${slot}`) ?? []).length === 0 || Boolean(selections[o.date]?.[i]))
@@ -147,6 +150,7 @@ function DayPickers({
                                   <span className="flex items-center gap-2">
                                     <FoodPhoto eager src={opt.photoUrl ?? undefined} alt={opt.name} className="h-8 w-8 shrink-0" />
                                     <span className="min-w-0 truncate">{opt.name}</span>
+                                    {opt.outsideFoodTypes && <span className="shrink-0 text-xs text-ink-muted">· outside your food types</span>}
                                   </span>
                                 </SelectItem>
                               ))}
