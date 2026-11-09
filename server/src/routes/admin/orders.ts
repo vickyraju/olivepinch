@@ -1,6 +1,7 @@
 import { Router } from "express"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { buildKitchenExportWorkbook } from "../../lib/kitchen-export.js"
+import { addDays, londonToday } from "../../lib/subscription.js"
 
 export const adminOrdersRouter = Router()
 adminOrdersRouter.use(requireAdminAuth)
@@ -8,8 +9,9 @@ adminOrdersRouter.use(requireAdminAuth)
 // Styled .xlsx for the kitchen: portions needed per item per day, colored by meal slot. A
 // single-day export is just this same query with from === to, not a separate code path.
 adminOrdersRouter.get("/kitchen-export", async (req, res) => {
-  const today = new Date().toISOString().slice(0, 10)
-  const from = String(req.query.from ?? today)
+  // Defaults to tomorrow (UK date): the kitchen prepares the day before delivery.
+  const tomorrow = addDays(londonToday(), 1).toISOString().slice(0, 10)
+  const from = String(req.query.from ?? tomorrow)
   const to = String(req.query.to ?? from)
 
   const workbook = await buildKitchenExportWorkbook(from, to)

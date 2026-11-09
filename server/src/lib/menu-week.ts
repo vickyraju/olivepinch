@@ -103,7 +103,9 @@ export async function applyWeekSelection(subscriptionId: string, weekStart: Date
       // customer app shows "nothing to choose here"); otherwise a meal must be picked.
       if (id === "") {
         const fits = [...(availableByDate.get(date)?.values() ?? [])].some(
-          (m) => m.slot === slots[i] && fitsPlan(m) && m.dietTags.some((d) => subscription.customer.dietTypes.includes(d)) && !m.allergenTags.some((a) => avoided.has(a.trim().toLowerCase()))
+          // Food types only order the list (a dish outside them is offered when nothing matches), so a box may be
+          // left empty only when no dish of the plan's tier without the customer's allergens is on that day.
+          (m) => m.slot === slots[i] && fitsPlan(m) && !m.allergenTags.some((a) => avoided.has(a.trim().toLowerCase()))
         )
         if (fits) throw httpError(400, `Choose a meal for ${date} (${slots[i]}).`)
         return []

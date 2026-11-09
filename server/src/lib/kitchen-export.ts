@@ -17,6 +17,10 @@ interface Row {
   customerName: string
   type: string
   deliveryTime: string
+  // Only on "NO MEAL CHOSEN" rows: how to reach the customer and how many boxes they need.
+  phone?: string
+  plan?: string
+  missing?: boolean
 }
 
 const SLOT_FILL: Record<string, string> = {
@@ -35,6 +39,8 @@ async function buildRows(from: string, to: string): Promise<Row[]> {
     where: {
       deliveryDate: { gte: new Date(`${from}T00:00:00.000Z`), lte: new Date(`${to}T00:00:00.000Z`) },
       status: { not: "PAUSED" }, // paused orders keep their OrderItem rows but need no food
+      // Only paid, running plans: an unpaid checkout, or a cancelled or ended plan, needs no food.
+      subscription: { status: "ACTIVE" },
     },
     include: { subscription: { include: { customer: true } }, items: { include: { menuItem: true } } },
   })
@@ -51,6 +57,9 @@ async function buildRows(from: string, to: string): Promise<Row[]> {
         customerName: order.subscription.customer.fullName,
         type: TIER_LABELS[order.subscription.tier] ?? order.subscription.tier,
         deliveryTime: order.subscription.deliveryTimeSlot,
+        phone: order.subscription.customer.phone ?? "",
+        plan: `${order.subscription.mealsPerDay} meal${order.subscription.mealsPerDay === 1 ? "" : "s"}/day`,
+        missing: true,
       })
     }
     for (const item of order.items) {
@@ -68,6 +77,8 @@ async function buildRows(from: string, to: string): Promise<Row[]> {
   return rows.sort(
     (a, b) =>
       a.date.localeCompare(b.date) ||
+      // Unchosen days first, so they're dealt with before prep starts.
+      Number(Boolean(b.missing)) - Number(Boolean(a.missing)) ||
       a.deliveryTime.localeCompare(b.deliveryTime) ||
       a.slot.localeCompare(b.slot) ||
       a.itemName.localeCompare(b.itemName) ||
@@ -87,6 +98,8 @@ export async function buildKitchenExportWorkbook(from: string, to: string): Prom
     { header: "Item", key: "item", width: 32 },
     { header: "Customer Name", key: "customerName", width: 24 },
     { header: "Type", key: "type", width: 12 },
+    { header: "Phone (if no meal chosen)", key: "phone", width: 20 },
+    { header: "Plan", key: "plan", width: 12 },
   ]
 
   const headerRow = sheet.getRow(1)
@@ -103,7 +116,11 @@ export async function buildKitchenExportWorkbook(from: string, to: string): Prom
       item: sanitizeForSpreadsheet(row.itemName),
       customerName: sanitizeForSpreadsheet(row.customerName),
       type: row.type,
+      // Phones are validated to "+" and digits on save, so no formula risk; escaping would show a stray apostrophe.
+      phone: row.phone ?? "",
+      plan: row.plan ?? "",
     })
+    if (row.missing) excelRow.eachCell((cell) => { cell.font = { bold: true, color: { argb: "FFB42318" } } })
     const fill = SLOT_FILL[row.slot]
     if (fill) {
       excelRow.eachCell((cell) => {

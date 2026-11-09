@@ -21,6 +21,27 @@ adminDashboardRouter.get("/customer-changes", async (_req, res) => {
   res.json(rows.map((r) => ({ id: r.id, customerId: r.customer.id, customerName: r.customer.fullName, action: r.action, detail: r.detail, createdAt: r.createdAt })))
 })
 
+// Deliveries on a given day (default tomorrow, UK) that have no meals chosen yet, for paid running plans:
+// the admin picks for these customers before prep.
+adminDashboardRouter.get("/unchosen", async (req, res) => {
+  const fallback = addDays(londonToday(), 1).toISOString().slice(0, 10)
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(String(req.query.date ?? "")) ? String(req.query.date) : fallback
+  const orders = await prisma.order.findMany({
+    where: { deliveryDate: new Date(`${date}T00:00:00.000Z`), status: { not: "PAUSED" }, subscription: { status: "ACTIVE" }, items: { none: {} } },
+    include: { subscription: { include: { customer: { select: { id: true, fullName: true, phone: true } } } } },
+  })
+  res.json({
+    date,
+    orders: orders.map((o) => ({
+      customerId: o.subscription.customer.id,
+      customerName: o.subscription.customer.fullName,
+      phone: o.subscription.customer.phone,
+      mealsPerDay: o.subscription.mealsPerDay,
+      tier: o.subscription.tier,
+    })),
+  })
+})
+
 adminDashboardRouter.post("/customer-changes/seen-all", async (_req, res) => {
   await prisma.customerActivity.updateMany({ where: { action: { in: PROFILE_ACTIONS }, adminSeenAt: null }, data: { adminSeenAt: new Date() } })
   res.status(204).send()

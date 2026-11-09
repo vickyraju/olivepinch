@@ -90,6 +90,8 @@ adminCustomersRouter.get("/", async (req, res) => {
       // active subscription — distinct from accountStatus, which is the identity/login state.
       subscribed: latest?.status === "ACTIVE",
       planDuration: latest?.planDuration ?? null,
+      // A customer can sign up today for a plan that starts later, so the first delivery date is shown separately.
+      planStartDate: latest?.startDate ?? null,
       planEndDate,
       address: formatAddress(c),
     }
@@ -159,6 +161,7 @@ adminCustomersRouter.get("/:id", async (req, res) => {
     planEndDate: currentWithEnd?.endDate ?? null,
     planStatus: current?.status ?? null,
     planTier: current?.tier ?? null,
+    planStartDate: current?.startDate ?? null,
     planCancelledAt: current?.cancelledAt ?? null,
     address: formatAddress(customer),
     renewals: renewalsFor(customer.subscriptions, customer.payments),
