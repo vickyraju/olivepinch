@@ -91,6 +91,7 @@ interface CustomerDetail {
   planEndDate: string | null
   planStatus: string | null
   planTier: string | null
+  planStartDate: string | null
   planCancelledAt: string | null
 }
 
@@ -579,6 +580,7 @@ function CustomerDetail() {
                     ? planEndLabel(customer.planEndDate)
                     : "No plan",
               ],
+              ["Plan starts", customer.planStartDate ? new Date(customer.planStartDate).toLocaleDateString("en-GB", { timeZone: "UTC" }) : "—"],
               ["Tier", customer.planTier ? (customer.planTier === "ADVANCED" ? "Advanced" : "Basic") : "—"],
               ["Date of birth", customer.dateOfBirth ? new Date(customer.dateOfBirth).toLocaleDateString("en-GB") : "—"],
               ["Gender", customer.gender ?? "—"],

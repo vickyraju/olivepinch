@@ -17,6 +17,7 @@ interface CustomerRow {
   subscribed: boolean
   goal: string | null
   planDuration: number | null
+  planStartDate: string | null
   planEndDate: string | null
   lastRenewedAt: string | null
   createdAt: string
@@ -124,7 +125,8 @@ function Customers() {
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Style</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan</th>
-                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan Ends</th>
+                  <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan Starts</th>
+                <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Plan Ends</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Last Renewed</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Joined</th>
                   <th className="py-3 px-6 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
@@ -133,7 +135,7 @@ function Customers() {
               <tbody className="divide-y divide-gray-100 text-sm">
                 {customersQuery.isError ? (
                   <tr>
-                    <td colSpan={10}>
+                    <td colSpan={11}>
                       <QueryError onRetry={() => customersQuery.refetch()} />
                     </td>
                   </tr>
@@ -172,6 +174,9 @@ function Customers() {
                         <td className="py-4 px-6 text-gray-600">{c.goal ? GOAL_LABELS[c.goal] ?? c.goal : "—"}</td>
                         <td className="py-4 px-6 text-gray-600">{c.planDuration ? `${c.planDuration} days` : "—"}</td>
                         <td className="py-4 px-6 text-gray-600">
+                          {c.planStartDate ? new Date(c.planStartDate).toLocaleDateString("en-GB", { timeZone: "UTC" }) : "—"}
+                        </td>
+                        <td className="py-4 px-6 text-gray-600">
                           {c.planEndDate ? new Date(c.planEndDate).toLocaleDateString("en-GB") : "—"}
                         </td>
                         <td className="py-4 px-6 text-gray-600">
@@ -195,7 +200,7 @@ function Customers() {
                   })}
                 {!customersQuery.isLoading && !customersQuery.isError && (data?.customers ?? []).length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="py-10 text-center text-sm text-gray-400">
+                    <td colSpan={11} className="py-10 text-center text-sm text-gray-400">
                       No customers found.
                     </td>
                   </tr>

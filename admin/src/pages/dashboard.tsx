@@ -134,12 +134,23 @@ function DistributionRows({ rows, styles, loading, emptyText }: { rows: StatusCo
 function Dashboard() {
   const nextMonday = nextMondayIso()
   const [exporting, setExporting] = useState(false)
+  // The kitchen prepares the day before delivery, so the report defaults to tomorrow (UK date).
+  const [exportDate, setExportDate] = useState(() => {
+    const d = new Date(`${new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" })}T12:00:00Z`)
+    d.setUTCDate(d.getUTCDate() + 1)
+    return d.toISOString().slice(0, 10)
+  })
+  const unchosenQuery = useQuery({
+    queryKey: ["unchosen", exportDate],
+    queryFn: () => api.get<{ date: string; orders: { customerId: string; customerName: string; phone: string | null; mealsPerDay: number; tier: string }[] }>(`/dashboard/unchosen?date=${exportDate}`),
+    refetchInterval: 60_000,
+  })
+  const unchosen = unchosenQuery.data?.orders ?? []
 
   async function exportForKitchen() {
     setExporting(true)
     try {
-      const today = new Date().toISOString().slice(0, 10)
-      const res = await fetch(`${BASE_URL}/orders/kitchen-export?from=${today}&to=${today}`, {
+      const res = await fetch(`${BASE_URL}/orders/kitchen-export?from=${exportDate}&to=${exportDate}`, {
         headers: { Authorization: `Bearer ${getToken()}` },
       })
       if (!res.ok) throw new Error("Couldn't export the kitchen sheet.")
@@ -147,7 +158,7 @@ function Dashboard() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `kitchen-export-${today}.xlsx`
+      link.download = `kitchen-export-${exportDate}.xlsx`
       link.click()
       URL.revokeObjectURL(url)
     } catch (err) {
@@ -209,6 +220,17 @@ function Dashboard() {
       <Header
         title="Dashboard Overview"
         actions={
+          <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-gray-500" htmlFor="kitchen-date">
+            Kitchen report for
+          </label>
+          <input
+            id="kitchen-date"
+            type="date"
+            value={exportDate}
+            onChange={(e) => e.target.value && setExportDate(e.target.value)}
+            className="h-9 border border-gray-300 rounded-lg px-2 text-sm"
+          />
           <button
             type="button"
             onClick={exportForKitchen}
@@ -217,6 +239,7 @@ function Dashboard() {
           >
             {exporting ? "Exporting…" : "Export for Kitchen"}
           </button>
+          </div>
         }
       />
       <div className="flex-1 overflow-y-auto p-[32px] space-y-[24px]">
@@ -227,6 +250,29 @@ function Dashboard() {
               revenueQuery.refetch()
             }}
           />
+        ) : null}
+        {unchosen.length > 0 ? (
+          <div className="bg-white border border-red-200 rounded-[12px] overflow-hidden">
+            <div className="px-6 py-4 border-b border-red-100 bg-red-50">
+              <h2 className="text-[16px] font-bold text-gray-900">
+                {unchosen.length} deliver{unchosen.length === 1 ? "y" : "ies"} on{" "}
+                {new Date(`${exportDate}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" })} have no meals chosen
+              </h2>
+              <p className="text-xs text-gray-600 mt-0.5">Choose meals for these customers before prep (open the customer, then Meals). They show as "NO MEAL CHOSEN" in the kitchen report.</p>
+            </div>
+            <ul className="divide-y divide-gray-100">
+              {unchosen.map((o) => (
+                <li key={o.customerId}>
+                  <Link to={`/customers/${o.customerId}`} className="flex items-center justify-between px-6 py-3 hover:bg-gray-50">
+                    <span className="text-sm font-semibold text-gray-900">{o.customerName}</span>
+                    <span className="text-xs text-gray-500">
+                      {o.tier === "ADVANCED" ? "Advanced" : "Basic"} · {o.mealsPerDay} meal{o.mealsPerDay === 1 ? "" : "s"}/day{o.phone ? ` · ${o.phone}` : ""}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         ) : null}
         {changes.length > 0 ? (
           <div className="bg-white border border-amber-200 rounded-[12px] overflow-hidden">
