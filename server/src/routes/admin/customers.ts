@@ -22,14 +22,21 @@ export const adminCustomersRouter = Router()
 adminCustomersRouter.use(requireAdminAuth)
 
 const PAGE_SIZE = 50
-const SORTABLE = { newest: { createdAt: "desc" as const }, oldest: { createdAt: "asc" as const } }
+// Columns the list can be sorted by. "joined" and "name" sort in the database; the rest are derived
+// from the customer's current plan and sort in memory (see below). "newest"/"oldest" are the old values.
+const SORT_FIELDS = ["name", "status", "style", "plan", "planStartDate", "planEndDate", "lastRenewed", "joined"] as const
+type SortField = (typeof SORT_FIELDS)[number]
 
 // FR-A04: search/view profiles, subscription history, pause history, payment records
 adminCustomersRouter.get("/", async (req, res) => {
   const search = String(req.query.search ?? "").trim()
   const status = String(req.query.status ?? "").trim()
   const subscribed = String(req.query.subscribed ?? "").trim()
-  const sort = String(req.query.sort ?? "newest")
+  const rawSort = String(req.query.sort ?? "joined")
+  const legacy: Record<string, [SortField, "asc" | "desc"]> = { newest: ["joined", "desc"], oldest: ["joined", "asc"] }
+  const sort: SortField = legacy[rawSort]?.[0] ?? (SORT_FIELDS.includes(rawSort as SortField) ? (rawSort as SortField) : "joined")
+  const dir: "asc" | "desc" = legacy[rawSort]?.[1] ?? (req.query.dir === "asc" ? "asc" : "desc")
+  const dbOrder = sort === "name" ? { fullName: dir } : { createdAt: dir }
   // "Recently renewed" window in days; anything else means no renewal filter.
   const renewedDays = [7, 14, 30].includes(Number(req.query.renewed)) ? Number(req.query.renewed) : null
   const page = Math.max(1, Number(req.query.page ?? 1) || 1)
@@ -97,20 +104,33 @@ adminCustomersRouter.get("/", async (req, res) => {
     }
   }
 
-  if (sort === "planEndDate" || sort === "lastRenewed" || renewedDays) {
+  if ((sort !== "joined" && sort !== "name") || renewedDays) {
     // ponytail: plan end date and renewal dates are derived (startDate + duration + pauses; later
     // paid subscriptions), not sortable/filterable DB columns, so these sort and filter in memory
     // rather than at the DB. Fine at this customer-base scale (single-city delivery); move to
     // stored columns if the table grows large.
-    const all = (await prisma.customer.findMany({ where, select, orderBy: SORTABLE[sort as keyof typeof SORTABLE] ?? SORTABLE.newest })).map(toRow)
+    const all = (await prisma.customer.findMany({ where, select, orderBy: dbOrder })).map(toRow)
     const cutoff = renewedDays ? Date.now() - renewedDays * 86_400_000 : null
     const matching = cutoff === null ? all : all.filter((r) => r.lastRenewedAt !== null && r.lastRenewedAt.getTime() >= cutoff)
-    const newestFirst = (field: "planEndDate" | "lastRenewedAt") => (a: (typeof all)[number], b: (typeof all)[number]) => {
-      if (a[field] === null) return 1
-      if (b[field] === null) return -1
-      return b[field]!.getTime() - a[field]!.getTime()
+    type Row = (typeof all)[number]
+    const keyOf: Record<SortField, (r: Row) => number | string | null> = {
+      name: (r) => r.fullName.toLowerCase(),
+      status: (r) => (r.subscribed ? 1 : 0),
+      style: (r) => r.goal ?? null,
+      plan: (r) => r.planDuration,
+      planStartDate: (r) => r.planStartDate?.getTime() ?? null,
+      planEndDate: (r) => r.planEndDate?.getTime() ?? null,
+      lastRenewed: (r) => r.lastRenewedAt?.getTime() ?? null,
+      joined: (r) => r.createdAt.getTime(),
     }
-    const ordered = sort === "planEndDate" ? [...matching].sort(newestFirst("planEndDate")) : sort === "lastRenewed" ? [...matching].sort(newestFirst("lastRenewedAt")) : matching
+    // Empty values (no plan, never renewed) always go last, whichever direction.
+    const compare = (a: Row, b: Row) => {
+      const x = keyOf[sort](a), y = keyOf[sort](b)
+      if (x === null || y === null) return x === y ? 0 : x === null ? 1 : -1
+      const c = typeof x === "string" ? x.localeCompare(y as string) : x - (y as number)
+      return dir === "asc" ? c : -c
+    }
+    const ordered = [...matching].sort(compare)
     const rows = ordered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
     return res.json({ customers: rows, page, pageSize: PAGE_SIZE, total: matching.length, totalPages: Math.max(1, Math.ceil(matching.length / PAGE_SIZE)) })
   }
@@ -118,7 +138,7 @@ adminCustomersRouter.get("/", async (req, res) => {
   const [customers, total] = await Promise.all([
     prisma.customer.findMany({
       where,
-      orderBy: SORTABLE[sort as keyof typeof SORTABLE] ?? SORTABLE.newest,
+      orderBy: dbOrder,
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
       select,
