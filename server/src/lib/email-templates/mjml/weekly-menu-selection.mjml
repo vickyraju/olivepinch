@@ -68,7 +68,7 @@
             Choose my meals
           </mj-button>
           <mj-text align="center" font-size="13px" color="#6b6b5f" padding="0">
-            Don't fancy choosing? Leave it with us &mdash; we'll match your meals to your style automatically.
+            Haven't chosen by Friday? No problem &mdash; our team will pick meals for you that suit your style and leave out your allergens.
           </mj-text>
         </mj-column>
       </mj-section>
