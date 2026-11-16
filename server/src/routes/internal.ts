@@ -186,7 +186,13 @@ export async function runMenuSelectionSweep() {
   // today and bailing unless it's a Monday means this is a no-op on the other six days.
   const weekStart = addDays(londonToday(), 5)
   if (weekStart.getUTCDay() !== 1) return { sent: 0 }
+  return sendMenuSelectionEmails(weekStart)
+}
 
+// Emails every active customer with unchosen days in that week to go and choose. Each customer is
+// emailed at most once per week (the notification record), so the Wednesday sweep and a late publish
+// never both send. Also called when the admin publishes after Wednesday's sweep has already run.
+export async function sendMenuSelectionEmails(weekStart: Date) {
   const menuWeek = await prisma.menuWeek.findUnique({ where: { weekStart } })
   if (!menuWeek || !menuWeek.published) return { sent: 0 }
 

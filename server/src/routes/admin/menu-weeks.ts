@@ -3,7 +3,9 @@ import { z } from "zod"
 import { prisma } from "../../lib/prisma.js"
 import { requireAdminAuth } from "../../middleware/admin-auth.js"
 import { validateBody } from "../../middleware/validate.js"
-import { assertMonday, applyWeekSelection, weekDates, isWeekComplete } from "../../lib/menu-week.js"
+import { assertMonday, applyWeekSelection, weekDates, isWeekComplete, fridayCutoffFor } from "../../lib/menu-week.js"
+import { sendMenuSelectionEmails } from "../internal.js"
+import { addDays } from "../../lib/subscription.js"
 import { londonToday } from "../../lib/subscription.js"
 import { formatAddress } from "../../lib/address.js"
 
@@ -149,7 +151,31 @@ adminMenuWeeksRouter.post("/:weekStart/publish", async (req, res) => {
 
   await prisma.menuWeek.update({ where: { id: menuWeek.id }, data: { published: true, publishedAt: new Date() } })
   await logAction(req.adminId!, "menu-week-publish", undefined, `week ${req.params.weekStart}`)
-  res.status(204).send()
+
+  // Customers choose next week's meals from Wednesday until Friday end of day (unchanged). The admin
+  // can publish as late as Sunday end of day: if that's after Wednesday's reminder email went out but
+  // customers can still choose, email them now; after Friday, the admin picks their meals instead.
+  const now = new Date()
+  const choosingOpened = now.getTime() >= addDays(weekStart, -5).getTime()
+  const customersCanChoose = now.getTime() < fridayCutoffFor(weekStart).getTime()
+  let emailed = 0
+  if (choosingOpened && customersCanChoose) {
+    try {
+      emailed = (await sendMenuSelectionEmails(weekStart)).sent
+    } catch (err) {
+      console.error("late-publish menu emails failed", req.params.weekStart, err)
+    }
+  }
+  const unchosenCustomers = customersCanChoose
+    ? 0
+    : (
+        await prisma.order.findMany({
+          where: { deliveryDate: { in: weekDates(weekStart) }, menuChosenAt: null, status: { not: "PAUSED" }, subscription: { status: "ACTIVE" } },
+          select: { subscriptionId: true },
+          distinct: ["subscriptionId"],
+        })
+      ).length
+  res.json({ customersCanChoose, emailed, unchosenCustomers })
 })
 
 // How many customer orders already reference each menu item in this week — lets the admin
