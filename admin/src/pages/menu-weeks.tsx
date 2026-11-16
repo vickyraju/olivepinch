@@ -417,8 +417,17 @@ function MenuWeeks() {
     setPublishing(true)
     setComposerError("")
     try {
-      await api.post(`/menu-weeks/${composerWeek}/publish`)
+      const result = await api.post<{ customersCanChoose: boolean; emailed: number; unchosenCustomers: number } | undefined>(`/menu-weeks/${composerWeek}/publish`)
       setComposerPublished(true)
+      if (result && !result.customersCanChoose) {
+        setComposerNotice(
+          `Published. Customers' choosing window (until Friday) has passed, so ${result.unchosenCustomers} customer${result.unchosenCustomers === 1 ? " needs" : "s need"} their meals picked by you — see "Customers who haven't chosen yet" below.`
+        )
+        setPendingExpanded(true)
+        loadPending(composerWeek)
+      } else if (result?.emailed) {
+        setComposerNotice(`Published. ${result.emailed} customer${result.emailed === 1 ? " was" : "s were"} emailed to choose their meals by Friday.`)
+      }
       await queryClient.invalidateQueries({ queryKey: ["menu-weeks"] })
     } catch (err) {
       setComposerError(err instanceof ApiError ? err.message : "Couldn't publish this week's menu.")
@@ -499,8 +508,9 @@ function MenuWeeks() {
       <div className="flex-1 overflow-y-auto p-8">
         <p className="mb-6 text-sm text-gray-500">
           Set a different lineup for each day of the week — you can reuse items across days; each day shows where else a dish appears — then publish by Tuesday night so
-          customers can choose Wednesday through Friday. Anyone who hasn't chosen by Friday end of day needs to be
-          assigned manually below.
+          customers can choose Wednesday through Friday. The latest you can publish next week's menu is Sunday end of day. Customers can only
+          choose until Friday end of day, so anyone who hasn't chosen by then (or everyone, if the menu goes up at the weekend) needs their
+          meals assigned below.
         </p>
 
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">

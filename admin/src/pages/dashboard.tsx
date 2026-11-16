@@ -66,11 +66,22 @@ function nextMondayIso(): string {
   return d.toISOString().slice(0, 10)
 }
 
-// Admin's soft target is to publish next week's menu by Tuesday night — don't nag about an
-// unpublished week before then, since nextMondayIso() on a Monday points a week further out.
+// UK day of the week, 0 = Sunday.
+function londonWeekday(): number {
+  return new Date(`${new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" })}T12:00:00Z`).getUTCDay()
+}
+
+// Admin's soft target is to publish next week's menu by Tuesday night (hard latest: Sunday end of day) —
+// don't nag about an unpublished week before Wednesday, since nextMondayIso() on a Monday points a week further out.
 function isPastPublishSoftDeadline(): boolean {
-  const day = new Date().getUTCDay()
+  const day = londonWeekday()
   return day !== 1 && day !== 2
+}
+
+// Customers can choose next week's meals until Friday end of day; from Saturday only the admin can.
+function isPastCustomerCutoff(): boolean {
+  const day = londonWeekday()
+  return day === 6 || day === 0
 }
 
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -324,9 +335,18 @@ function Dashboard() {
                 to={`/menu-weeks?week=${nextMonday}`}
                 className="flex items-center justify-between bg-red-50 border border-red-200 rounded-[12px] px-5 py-3 hover:bg-red-100 transition-colors"
               >
-                <span className="flex items-center gap-2 text-sm font-semibold text-red-800">
+                <span className="flex items-start gap-2 text-sm text-red-800">
                   <span className="material-symbols-outlined text-[18px]">warning</span>
-                  Next week's menu ({nextMonday}) isn't published yet
+                  <span>
+                    <span className="block font-semibold">
+                      Next week's menu (starting {new Date(`${nextMonday}T00:00:00Z`).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })}) isn't published yet. Publish by Sunday end of day.
+                    </span>
+                    <span className="block text-xs mt-0.5">
+                      {isPastCustomerCutoff()
+                        ? "Customers can no longer choose for next week (their cutoff was Friday). Once you publish, pick their meals in Weekly Menu → Customers who haven't chosen yet."
+                        : "Customers can choose until Friday end of day; they'll be emailed as soon as you publish."}
+                    </span>
+                  </span>
                 </span>
                 <span className="text-xs font-semibold text-red-700">Publish →</span>
               </Link>
